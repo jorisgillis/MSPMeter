@@ -1,0 +1,43 @@
+10
+
+dir
+59
+svn+ssh://www.clips.ua.ac.be/home/joris/svn/msp/trunk/src
+svn+ssh://www.clips.ua.ac.be/home/joris/svn/msp
+
+
+
+2010-05-12T10:54:06.449112Z
+59
+joris
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+a5eb82cc-a052-0410-b4b7-f4de4e3d3592
+
+test
+dir
+
+msp
+dir
+
+dataflow
+dir
+
+io
+dir
+
+ui
+dir
+

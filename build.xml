@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+
+<project name="MyProject" default="dist" basedir=".">
+  <description>
+    Build file for building MSPMeter
+  </description>
+  
+  <!-- set global properties for this build -->
+  <property name="src" location="src" />
+  <property name="lib" location= "lib" />
+  <property name="build" location="build" />
+  <property name="dist"  location="dist" />
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+    <mkdir dir="${dist}"/>
+  </target>
+  
+  <target name="compile" depends="init"
+	  description="compile the source" >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}" source="1.5">
+      <include name="**/*.java"/>
+      <exclude name="**/*Test*"/>
+      <classpath>
+	<pathelement path="${lib}/jcommon-1.0.16.jar"/>
+	<pathelement path="${lib}/jfreechart-1.0.13.jar"/>
+	<pathelement path="${lib}/log4j-1.2.16.jar"/>
+	<pathelement path="${lib}/jxl.jar"/>
+	<pathelement path="${lib}/xercesImpl.jar"/>
+      </classpath>
+    </javac>
+  </target>
+  
+
+  <target name="dist" depends="compile"
+          description="generate the distribution" >
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <delete file="${dist}/MSPMeter.jar"/>
+    <jar jarfile="${dist}/MSPMeter.jar">
+      <fileset dir="${build}"/>
+      <zipfileset src="${lib}/jcommon-1.0.16.jar"/>
+      <zipfileset src="${lib}/jfreechart-1.0.13.jar"/>
+      <zipfileset src="${lib}/jxl.jar"/>
+      <zipfileset src="${lib}/log4j-1.2.16.jar"/>
+      <zipfileset src="${lib}/xercesImpl.jar"/>
+      <manifest>
+	<attribute name="Built-By" value="${user.name}"/>
+	<attribute name="Main-Class" value="msp.MSPMeter"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="clean"
+         description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>
