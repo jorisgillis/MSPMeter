@@ -1,0 +1,47 @@
+digraph {
+	files[shape=box];
+	firstSeparator[shape=box];
+	secondSeparator[shape=box];
+	lemmaEquivalences[shape=box];
+	categoryEquivalences[shape=box];
+	useInMSP[shape=box];
+	subLemmas[shape=box];
+	allLemmas[shape=box];
+	version[shape=box];
+	
+	categoryEquivalencesPanel[shape=diamond,color=red,fontcolor=white,style=filled];
+	lemmaEquivalencesPanel[shape=diamond,color=red,fontcolor=white,style=filled];
+	cubeInformation[shape=diamond,color=red,fontcolor=white,style=filled];
+	versionPanel[shape=diamond,color=red,fontcolor=white,style=filled];
+	
+	resultsChart[shape=diamond];
+	resultsTable[shape=diamond];
+	sampleInformation[shape=diamond];
+	
+	files -> originalDC[color="red"];
+	firstSeparator -> originalDC[color="red"];
+	secondSeparator -> originalDC[color="red"];
+	lemmaEquivalences -> lemmadDC[color="red"];
+	useInMSP -> lemmadDC[color="red"];
+	originalDC -> lemmadDC[color="red"];
+	lemmaEquivalences -> workingDC[color="red"];
+	useInMSP -> workingDC[color="red"];
+	categoryEquivalences -> workingDC[color="red"];
+	lemmadDC -> workingDC[color="red"];
+	workingDC -> cumulatedDC[color="red"];
+	workingDC -> results;
+	cumulatedDC -> results;
+	version -> results;
+	results -> resultsTable;
+	results -> resultsChart;
+	workingDC -> versionPanel[color="red"];
+	cumulatedDC -> versionPanel[color="red"];
+	lemmaEquivalences -> categoryEquivalencesPanel[color="red"];
+	subLemmas -> categoryEquivalencesPanel[color="red"];
+	allLemmas -> categoryEquivalencesPanel[color="red"];
+	lemmadDC -> categoryEquivalencesPanel[color="red"];
+	originalDC -> lemmaEquivalencesPanel[color="red"];
+	workingDC -> cubeInformation[color="red"];
+	cumulatedDC -> cubeInformation[color="red"];
+	results -> sampleInformation;
+}
