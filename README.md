@@ -15,6 +15,7 @@ Build from source
 -----------------
 
 Build requirement:
+
 * [Git](http://www.git-scm.com)
 * [Java SDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 1.6 or higher
 * [Apache Ant](http://ant.apache.org) 1.8 or higher
