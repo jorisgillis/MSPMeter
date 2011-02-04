@@ -1,6 +1,8 @@
 MSPMeter
 ========
 
+MSPMeter is licensed under [EUPL v1.1](http://www.osor.eu/eupl).  
+
 Installation
 ------------
 
