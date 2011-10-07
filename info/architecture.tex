@@ -1,0 +1,27 @@
+\documentclass{article}
+
+\title{MSPMeter: Software Architecture}
+\author{Joris Gillis}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Introduction}
+
+This document describes the overall software architecture of MSPMeter. The software is modeled as a collection of cells. There is a cell for each element of the input, i.e., a cell for the input files, a cell for the sample size, a cell for each version of MSP (weighted vs unweighted and entropy versus frequency, cumulative, etc). Basically, there is a cell for each element of the graphical user interface (GUI). The second type of cells are the ``internal cells''. These cells contain intermediate values, for example, the data with lemma equivalences applied. Last but not least, there are output cells linked to the output widgets of the GUI. 
+
+Cells on their own are only useful for storing information. The computation arises if cells are connected in a network. The connections between cells are asymmetric (or directed), i.e., if cell A is connected to cell B, a change in cell A is reported to cell B, but a change in cell B is not reported to cell A. Cell B can distinguish signals from different cells, and has ``handlers'' for each signal. For example, if cells A and B are connected to cell C, a change in cell A can trigger a different mutation of the information stored in cell C then a change in cell B. 
+
+
+\section{The Grid}
+
+
+
+
+\section{Sampling}
+
+
+
+\end{document}
