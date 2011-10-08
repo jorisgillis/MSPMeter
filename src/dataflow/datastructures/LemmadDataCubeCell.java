@@ -54,7 +54,10 @@ public class LemmadDataCubeCell extends DataCubeCell {
 	 * (non-Javadoc)
 	 * @see dataflow.datastructures.Cell#recalculate(dataflow.datastructures.Cell)
 	 */
-	public void recalculate( Vector<String> children ) throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {
+	public void recalculate( Vector<String> children ) 
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {
 		Grid grid = Grid.instance();
 		for( String cellName : children ) {
 			//- Which cell has been changed?
@@ -71,7 +74,8 @@ public class LemmadDataCubeCell extends DataCubeCell {
 			if( useInMSP && lemmaEquivalences != null )
 				cube = originalDC.lemmaEquivalences(lemmaEquivalences);
 			else
-				cube = originalDC;
+				// TODO should we take a copy? Just to be sure there is no cross-talk?
+				cube = originalDC; 
 		}
 	}
 

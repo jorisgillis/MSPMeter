@@ -74,7 +74,8 @@ import dataflow.datastructures.SubLemmasCell;
  * @author Joris Gillis
  */
 @SuppressWarnings("serial")
-public class CategoryEquivalencesPanel extends EquivalencesPanel implements FileRequestor, ItemListener, ActionListener, Cell {
+public class CategoryEquivalencesPanel extends EquivalencesPanel 
+		implements FileRequestor, ItemListener, ActionListener, Cell {
 	
 	/**
 	 * Mapping from lemmas to their category equivalences.<br />
