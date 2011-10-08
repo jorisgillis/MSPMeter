@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<!-- MAIN -->
+<xsd:element name="project" type="projectTy" />
+<xsd:complexType name="projectTy">
+	<xsd:sequence>
+		<xsd:element name="files" type="filesTy" />
+		<xsd:element name="linestructures" type="linestructuresTy" />
+		<xsd:element name="lemmaequivalences" type="lemmaequivalencesTy" />
+		<xsd:element name="categoryequivalences" type="categoryequivalencesTy" />
+		<xsd:element name="version" type="versionTy" />
+	</xsd:sequence>
+</xsd:complexType>
+
+
+<!-- FILES -->
+<xsd:complexType name="filesTy">
+	<xsd:sequence minOccurs="1" maxOccurs="unbounded">
+		<xsd:element name="file">
+			<xsd:complexType>
+				<xsd:sequence>
+					<xsd:element name="filename" type="xsd:string" />
+					<xsd:element name="order" type="xsd:integer" />
+					<xsd:element name="annotation" type="xsd:string" />
+				</xsd:sequence>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:sequence>
+</xsd:complexType>
+
+
+<!-- LINE STRUCTURES -->
+<xsd:complexType name="linestructuresTy">
+	<xsd:sequence minOccurs="1" maxOccurs="1">
+		<xsd:element name="firstSeparator" type="xsd:anyType" />
+		<xsd:element name="secondSeparator" type="xsd:anyType" />
+	</xsd:sequence>
+</xsd:complexType>
+
+
+<!-- LEMMA EQUIVALENCES -->
+<xsd:complexType name="lemmaequivalencesTy">
+	<xsd:sequence minOccurs="0" maxOccurs="1">
+		<xsd:element name="file" type="xsd:string" />
+	</xsd:sequence>
+</xsd:complexType>
+
+
+<!-- CATEGORY EQUIVALENCES -->
+<xsd:complexType name="categoryequivalencesTy">
+	<xsd:sequence>
+		<xsd:sequence minOccurs="0" maxOccurs="1">
+			<xsd:element name="file" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:sequence>
+</xsd:complexType>
+
+
+<!-- VERSION -->
+<xsd:complexType name="versionTy">
+	<xsd:sequence>
+		<xsd:element name="weighting" type="xsd:boolean" />
+		<xsd:element name="entropy" type="xsd:boolean" />
+		<xsd:element name="mode" type="xsd:integer" />
+		<xsd:element name="subsamplesizemode" type="xsd:integer" />
+		<xsd:element name="subsamplesize" type="xsd:integer" />
+		<xsd:element name="numberofsamplesmode" type="xsd:integer" />
+		<xsd:element name="numberofsamples" type="xsd:double" />
+	</xsd:sequence>
+</xsd:complexType>
+
+</xsd:schema>
