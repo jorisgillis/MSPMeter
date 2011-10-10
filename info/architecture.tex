@@ -91,6 +91,8 @@ Whenever the content of a cell changes (signaled to the grid by the cell itself)
 
 At the moment cell A signals a change, two possible scenarios unfold. If cell A is connected to a hot-flowing cell in the closure, all hot-flowing descendants of cell A are added to the \emph{hot queue}, scheduled to be recomputed as soon as possible. All cold-flowing descendants of cell A are added to the \emph{cold queue}, scheduled to be recomputed whenever the user instructs. Both queues are ordered, based on the structure of the grid. A cell is not recomputed before all its ancestors in the queue (cells linking to that cell in the closure) are have been recomputed. For example, suppose cell A is connected to cell B and cell C, and cells B and C are connected to cell D. All are hot-flowing. A change in cell A results in the addition of cells B, C and D to the hot queue. The order in which cells B and C are recomputed is unimportant. However, it is very important that cells B and C are recomputed before cell D is recomputed. Indeed, if we would recompute cell B, then recompute cell D and finish with recomputing cell C, cell D would not have the correct value because the recomputing of cell C can have important information for the recomputing of cell D. 
 
+If a cell is not a predecessor of a hot-flowing cell, then a change in the cell is recorded, by the addition of the cell and its descendants in the cold queue. The change has no direct consequence on other cells or the GUI, because all recomputations are delayed until the user directs MSPMeter to compute.
+
 
 
 \section{Sampling}
@@ -129,8 +131,36 @@ Analogous to the Improved Sampling Factor Sampler, the Fixed Size Sampler needs 
 
 
 
+\section{Input/Output}
+
+MSPMeter operates on several different types of files. 
 
 
+
+\subsection{Input files}
+
+Files that can be used as input to MSPMeter, are \emph{frequency files}. A frequency file is basically a text file obliging to a certain syntax. A line in a frequency file consists of two parts: a \emph{count} and \emph{token-data}. Both parts are separated by a whitespace. The token-data contains two important pieces of information: a lemma and a category, although the category may not be present. In most cases the pipe ($|$) indicates the start of the lemma. The end of the lemma is either a newline or a character indicating the start of the category. 
+
+Lines that are not in accord to this form are discarded.
+
+
+\subsection{Project files}
+
+A project file is an XML-formatted file, which stores the input of the user in MSPMeter, i.e.\ which files are the input, which version of MSP, which lemma equivalences, etc. The structure of the project file is described in the file \texttt{project.xsd}, a XML Schema file defining the valid files. The classes \texttt{ProjectReader} (based on a SAX parser) and \texttt{ProjectWriter} are responsible for reading and writing the project files.
+
+
+\subsection{Result files}
+
+The MSP values of a set of spans can be saved in different formats. Concretely:
+\begin{itemize}
+\item \emph{CSV} (Comma-Separated Values): exports a file containing three fields (span name, MSP and standard deviation of MSP) separated by commas. 
+
+\item \emph{Tab-delimited}: exports a file containing three fields (span name, MSP and standard deviation of MSP) separated by tabs. 
+
+\item \emph{Excel}: exports an Excel sheet with three columns (span name, MSP and standard deviation of MSP). 
+
+\item \emph{XML}: exports a XML file with three fields (span name, MSP and standard deviation of MSP).
+\end{itemize}
 
 
 
