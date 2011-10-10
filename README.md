@@ -25,3 +25,11 @@ Build requirement:
 To build MSPMeter from the sources, first checkout the sources with
 git from the url shown above.  Then run ant using the provided build
 file (build.xml).  A jar is available in the directory dist.
+
+Guide to the Source Code
+------------------------
+
+The document architecture.pdf elaborates on the general architecture,
+data structures and algorithms used in MSPMeter.  Reading this
+document is recommended to anyone interested in understanding/editing
+the source code of MSPMeter.
