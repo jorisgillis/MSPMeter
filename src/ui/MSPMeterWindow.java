@@ -49,6 +49,9 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import msp.defaults.Defaults;
+import msp.defaults.NoValueException;
+
 import org.xml.sax.SAXException;
 
 import ui.panels.Panel;
@@ -461,7 +464,20 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 		
 		
 		if( ok == JOptionPane.OK_OPTION ) {
-			File f = askForFile( projectFile );
+			File f;
+			if (projectFile == null) {
+				// Defaults: working directory
+				String workingDirectory = null;
+				try {
+					workingDirectory = 
+						Defaults.instance().getString("working directory");
+				} catch (NoValueException e1) {
+					e1.printStackTrace();
+				}
+				f = askForOpenFile(workingDirectory);
+			} else
+				// Start from file
+				f = askForOpenFile( projectFile );
 			
 			if( f != null ) {
 				try {
@@ -486,7 +502,7 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	public void save() {
 		if( projectFile == null ) {
 			// ask for file
-			File f = askForFile();
+			File f = askForSaveFile();
 			if( f != null )
 				projectFile = f.getAbsolutePath();
 		}
@@ -513,7 +529,7 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	 */
 	public void saveAs() {
 		// ask for file
-		File f = askForFile();
+		File f = askForSaveFile();
 		if( f != null ) {
 			projectFile = f.getAbsolutePath();
 			try {
@@ -533,12 +549,43 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	}
 	
 	/**
-	 * Ask the user for a file, but don't give him a suggestion.
+	 * Ask the user for a file to open, but don't give him a suggestion.
 	 * @return	the file selected by the user
 	 */
-	protected File askForFile() {
-		return askForFile(null);
+	protected File askForOpenFile() {
+		return askForOpenFile(null);
 	}
+	
+	
+	/**
+	 * Ask the user for a file to save to, but don't give him a suggestion.
+	 * @return	the file selected by the user
+	 */
+	protected File askForSaveFile() {
+		return askForSaveFile(null);
+	}
+	
+	
+	/**
+	 * Ask the user for a file, the given string is a suggestion of a location 
+	 * where the file could be. If the suggestion <code>== null</code>, then no 
+	 * suggestion is made. 
+	 * @param suggestion	the suggestion
+	 * @return				the file selected by the user
+	 */
+	protected File askForOpenFile(String suggestion) {
+		JFileChooser fc = null;
+		if( suggestion == null )
+			fc = new JFileChooser();
+		else
+			fc = new JFileChooser( suggestion );
+		
+		if( fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION )
+			return fc.getSelectedFile();
+		
+		return null;
+	}
+	
 	
 	/**
 	 * Ask the user for a file, the given string is a suggestion of a location where the file could be.
@@ -546,7 +593,7 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	 * @param suggestion	the suggestion
 	 * @return				the file selected by the user
 	 */
-	protected File askForFile(String suggestion) {
+	protected File askForSaveFile(String suggestion) {
 		JFileChooser fc = null;
 		if( suggestion == null )
 			fc = new JFileChooser();

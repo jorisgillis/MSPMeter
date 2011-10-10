@@ -59,6 +59,7 @@ public class ProjectReader implements ContentHandler {
 	//-- Variables to contain information from XML file
 	protected Vector<FileRow> files;
 	protected FileRow currentFR;
+	protected String fileName = "";
 	
 	protected String firstSeparator;
 	protected String secondSeparator;
@@ -141,7 +142,7 @@ public class ProjectReader implements ContentHandler {
 		boolean validated = false;
 		try {
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			Schema schema = schemaFactory.newSchema(new URL("http://www.cnts.ua.ac.be/msp/project.xsd"));
+			Schema schema = schemaFactory.newSchema(new URL("http://www.clips.ua.ac.be/msp/project.xsd"));
 			Validator validator = schema.newValidator();
 			validator.validate(new SAXSource(new InputSource(new FileReader(fileName))), null);
 			validated = true;
@@ -172,7 +173,9 @@ public class ProjectReader implements ContentHandler {
 		
 		if( sFiles ) {
 			if( sFilesName )
-				currentFR = new FileRow(0, new File(data), "");
+				// Sometimes the data gets chopped up, thus collect and 
+				// instantiate file if all data is received!
+				fileName += data;
 			else if( sFilesOrder )
 				currentFR.setOrder(Integer.parseInt(data));
 			else if( sFilesAnnotation )
@@ -240,9 +243,11 @@ public class ProjectReader implements ContentHandler {
 			throws SAXException {
 		if( sFiles ) {
 			// files
-			if( name.equals("filename") )
+			if( name.equals("filename") ) {
+				currentFR = new FileRow(0, new File(fileName), "");
 				sFilesName = false;
-			else if( name.equals("order") )
+				fileName = "";
+			} else if( name.equals("order") )
 				sFilesOrder = false;
 			else if( name.equals("annotation") ) {
 				sFilesAnnotation = false;

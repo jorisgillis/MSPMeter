@@ -210,7 +210,7 @@ public class VersionPanel extends Panel
 		int subSampleMode		= subSampleModeCB.getSelectedIndex();
 		int numberOfSamplesMode	= numberOfSamplesModeCB.getSelectedIndex();
 		int subSampleSize		= Integer.parseInt(subSampleSizeText.getText());
-		double numberOfSamples	= Integer.parseInt(numberOfSamplesText.getText());
+		double numberOfSamples	= Double.parseDouble(numberOfSamplesText.getText());
 		
 		try {
 			versionCell.setValue(weighting, 

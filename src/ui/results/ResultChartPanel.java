@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.general.DefaultKeyedValues2DDataset;
 
@@ -73,6 +74,8 @@ public class ResultChartPanel extends JPanel implements Cell {
 		dataset.addChangeListener(chart.getPlot());
 		chart.getPlot().addChangeListener(chart);
 		chart.addChangeListener(panel);
+		
+		((CategoryPlot)chart.getPlot()).getRangeAxis().setAutoRange(true);
 		
 		// Doing the interface
 		setLayout(new BorderLayout());
