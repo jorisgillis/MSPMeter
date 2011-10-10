@@ -475,15 +475,18 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	
 	
-	
+	//==========================================================================
 	//== Resampling the datacube into a list of new datacubes
+	//==========================================================================
 	/**
-	 * Make random resamplings from the original datacube. This method constructs a set of subcorpora.<br />
-	 * Let S be the expected total number of tokens per subcorpus. B = N/T subcorpora are constructed. A
-	 * token is selected for a subcorpus with P = T/N.
+	 * Make random resamplings from the original datacube. This method 
+	 * constructs a set of subcorpora.<br />
+	 * Let S be the expected total number of tokens per subcorpus. B = N/T 
+	 * subcorpora are constructed. A token is selected for a subcorpus with 
+	 * P = T/N.
 	 * @param S		number of tokens per subcorpus
-	 * @param xMode	what is the mode in which we need to use X?	0: B = N * X / S, 1: B = X
-	 * @param X		X-factor (sampling factor)
+	 * @param xMode	sampling mode: X ? 0: B = N * X / S, 1: B = X
+	 * @param X		X-factor (sampling factor or fixed value)
 	 */
 	public DataCube[] resample( int S, int xMode, double X ) {
 		// determine B
@@ -517,9 +520,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		
 		/* making the list of tokens that can be chosen
 		 * a random number is chosen:
-		 * 	- run through the list from front to back always subtracting the number of occurrences of
-		 * 	the word-form
-		 * 	- if the random number (subtractions taken into account) becomes negative, we choose the
+		 * 	- run through the list from front to back always subtracting the 
+		 * 	number of occurrences of the word-form
+		 * 	- if the random number (subtractions taken into account) becomes 
+		 * 	negative, we choose the
 		 * 	current element under the "head" 
 		 */
 		
@@ -619,6 +623,11 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		return subCorpora;
 	}
 	
+	
+	
+	//==========================================================================
+	//== Number of tokens in a cube or slice.
+	//==========================================================================
 	/**
 	 * The number of tokens available in the corpus. Size of the corpus.
 	 * @return	size of the corpus
@@ -713,7 +722,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	
 	
-	
+	//==========================================================================
+	//== Calculating the maximum size of a sample
+	//==========================================================================
 	/**
 	 * Calculates the biggest value one can choose as sample size, when doing cumulate & resample
 	 * @return	maximum sample size

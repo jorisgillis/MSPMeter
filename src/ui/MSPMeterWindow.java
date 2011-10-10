@@ -184,12 +184,18 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 		mNext = new JMenuItem("Next");
 		mCalculate = new JMenuItem("Calculate");
 		
-		JMenuItem mSaveProject = new JMenuItem("Save Project");
-		JMenuItem mSaveProjectAs = new JMenuItem("Save Project As ...");
-		JMenuItem mSaveLemmas = new JMenuItem("Save Lemma Equivalences");
-		JMenuItem mSaveLemmasAs = new JMenuItem("Save Lemma Equivalences As ...");
-		JMenuItem mSaveCategories = new JMenuItem("Save Category Equivalences");
-		JMenuItem mSaveCategoriesAs = new JMenuItem("Save Category Equivalences As ...");
+		JMenuItem mSaveProject = 
+			new JMenuItem("Save Project");
+		JMenuItem mSaveProjectAs = 
+			new JMenuItem("Save Project As ...");
+		JMenuItem mSaveLemmas = 
+			new JMenuItem("Save Lemma Equivalences");
+		JMenuItem mSaveLemmasAs = 
+			new JMenuItem("Save Lemma Equivalences As ...");
+		JMenuItem mSaveCategories = 
+			new JMenuItem("Save Category Equivalences");
+		JMenuItem mSaveCategoriesAs = 
+			new JMenuItem("Save Category Equivalences As ...");
 		
 		JMenuItem mOpenProject = new JMenuItem("Open Project");
 		
@@ -277,7 +283,12 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	 * Setting up the MainTabPanel
 	 */
 	private void setupMainTabPanel() {
-		String[] tabTitles = new String[]{"Files", "Line Parsing", "Lemma Equivalences", "Category Equivalences", "MSP Version"};
+		String[] tabTitles = new String[]{
+					"Files", 
+					"Line Parsing", 
+					"Lemma Equivalences", 
+					"Category Equivalences", 
+					"MSP Version"};
 		tabPanel = new JTabbedPane();
 		for( int i = 0; i < panels.size(); i++ )
 			tabPanel.addTab(tabTitles[i], panels.get(i));
@@ -386,7 +397,8 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	
 	
 	/**
-	 * Advance to next panel. Hide the current panel and make the next one visible.
+	 * Advance to next panel. Hide the current panel and make the next one 
+	 * visible.
 	 * Increment the panelPosition counter by one.
 	 */
 	protected synchronized void nextPanel() {
@@ -399,7 +411,8 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	}
 	
 	/**
-	 * Decline to the previous panel. Hide the current panel and make the previous one visible.
+	 * Decline to the previous panel. Hide the current panel and make the 
+	 * previous one visible. 
 	 * Decrement the panelPosition counter by one.
 	 */
 	protected synchronized void prevPanel() {
@@ -412,7 +425,8 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	}
 	
 	/**
-	 * Controls the enabling and disabling of the next/previous button and menuitem
+	 * Controls the enabling and disabling of the next/previous button and 
+	 * menu item.
 	 */
 	protected synchronized void buttonMenuControl() {
 		// disable next button if necessary
@@ -461,7 +475,11 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 		// Asking the user whether he knows that this will discard current changes
 		int ok = JOptionPane.OK_OPTION;
 		if( Grid.instance().changes() )
-			ok = JOptionPane.showConfirmDialog(this, "Are you sure you want to open a project?\nOpening a project will discard the changes to the current project.");
+			ok = JOptionPane.showConfirmDialog(
+					this, 
+					"Are you sure you want to open a project?\n"+
+					"Opening a project will discard the changes "+
+					"to the current project.");
 		
 		
 		if( ok == JOptionPane.OK_OPTION ) {
@@ -663,8 +681,12 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	 * Ask the user whether he wants to save his project or not.
 	 */
 	protected boolean saveOrDiscard() {
-		int r = JOptionPane.showConfirmDialog(this, "Do you want to save your project?", "Project Saving", 
-						JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+		int r = JOptionPane.showConfirmDialog(
+					this, 
+					"Do you want to save your project?",
+					"Project Saving", 
+					JOptionPane.YES_NO_CANCEL_OPTION,
+					JOptionPane.WARNING_MESSAGE);
 		if( r == JOptionPane.YES_OPTION )
 			// save and exit
 			save();
