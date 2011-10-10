@@ -48,6 +48,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import msp.defaults.Defaults;
 import msp.defaults.NoValueException;
@@ -240,7 +241,7 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 		mNext.setActionCommand("next");
 		mCalculate.setActionCommand("apply");
 		mSaveProject.setActionCommand("save project");
-		mSaveProjectAs.setActionCommand("save projet as");
+		mSaveProjectAs.setActionCommand("save project as");
 		mSaveLemmas.setActionCommand("save lemmas");
 		mSaveLemmasAs.setActionCommand("save lemmas as");
 		mSaveCategories.setActionCommand("save categories");
@@ -464,7 +465,10 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 		
 		
 		if( ok == JOptionPane.OK_OPTION ) {
+			// Getting a file to open
 			File f;
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(
+			        "Project File", "xml");
 			if (projectFile == null) {
 				// Defaults: working directory
 				String workingDirectory = null;
@@ -474,10 +478,10 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 				} catch (NoValueException e1) {
 					e1.printStackTrace();
 				}
-				f = askForOpenFile(workingDirectory);
+				f = askForOpenFile( workingDirectory, filter );
 			} else
 				// Start from file
-				f = askForOpenFile( projectFile );
+				f = askForOpenFile( projectFile, filter );
 			
 			if( f != null ) {
 				try {
@@ -487,9 +491,11 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 					
 					StatusBar.getInstance().addStatus("Opened project "+ projectFile);
 				} catch( SAXException e ) {
-					showWarning("Fault while reading the project file:\n"+ e.getMessage());
+					showWarning("Fault while reading the project file:\n"+ 
+							e.getMessage());
 				} catch( IOException e ) {
-					showWarning("Fault while reading the project file:\n"+ e.getMessage());
+					showWarning("Fault while reading the project file:\n"+ 
+							e.getMessage());
 				}
 			}
 		}
@@ -505,23 +511,8 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 			File f = askForSaveFile();
 			if( f != null )
 				projectFile = f.getAbsolutePath();
-		}
-		
-		if( projectFile != null ) {
-			try {
-				// opening the writer and writing it out
-				calculate();	// get the latest information
-				ProjectWriter w = new ProjectWriter(projectFile);
-				w.writeProject();
-				
-				Grid.instance().saved();
-				StatusBar.getInstance().addStatus("Saved project to "+ projectFile);
-			} catch( FileNotFoundException e ) {
-				showWarning("Fault while saving project: \n"+ e.getMessage());
-			} catch( IOException e ) {
-				showWarning("Fault while saving project: \n"+ e.getMessage());
-			}
-		}
+		} else
+			saveProject(new File(projectFile));
 	}
 	
 	/**
@@ -529,9 +520,55 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	 */
 	public void saveAs() {
 		// ask for file
-		File f = askForSaveFile();
-		if( f != null ) {
+		File f;
+		FileNameExtensionFilter filter = 
+			new FileNameExtensionFilter("Project File", "xml");
+		if (projectFile == null) {
+			// Defaults: working directory
+			String workingDirectory = null;
+			try {
+				workingDirectory = 
+					Defaults.instance().getString("working directory");
+			} catch (NoValueException e1) {
+				e1.printStackTrace();
+			}
+			f = askForSaveFile( workingDirectory, filter );
+		} else
+			// Start from previous project file file
+			f = askForSaveFile( projectFile, filter );
+		
+		try {
+			// Checking
+			// 1. No directory
+			if (f.isDirectory())
+				throw new ValidationException(
+						"Choosen file is a directory! Nothing saved.");
+			
+			// 2. Already exists?
+			if (f.exists())
+				if (!overwrite(f))
+					throw new ValidationException(
+							f.getName() +" NOT overwritten. Nothing saved.");
+			
+			// 3. If f does not end in ".xml"
+			if (!f.getName().endsWith(".xml"))
+				f = new File(f.getAbsolutePath() + ".xml");
+			
+			// Saving
 			projectFile = f.getAbsolutePath();
+			saveProject(f);
+		} catch(ValidationException e) {
+			if (e.getMessage() != null)
+				StatusBar.getInstance().addStatus(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Saves the project to the given file.  
+	 * @param f
+	 */
+	private void saveProject(File f) {
+		if( f != null ) {
 			try {
 				// opening the writer and writing it out
 				calculate();	// get the latest information
@@ -553,7 +590,7 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	 * @return	the file selected by the user
 	 */
 	protected File askForOpenFile() {
-		return askForOpenFile(null);
+		return askForOpenFile(null, null);
 	}
 	
 	
@@ -562,7 +599,7 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	 * @return	the file selected by the user
 	 */
 	protected File askForSaveFile() {
-		return askForSaveFile(null);
+		return askForSaveFile(null, null);
 	}
 	
 	
@@ -571,15 +608,23 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	 * where the file could be. If the suggestion <code>== null</code>, then no 
 	 * suggestion is made. 
 	 * @param suggestion	the suggestion
+	 * @param filter		filters files based on extension 
 	 * @return				the file selected by the user
 	 */
-	protected File askForOpenFile(String suggestion) {
+	protected File askForOpenFile(String suggestion, 
+									FileNameExtensionFilter filter) {
+		// Setting up the file chooser
 		JFileChooser fc = null;
 		if( suggestion == null )
 			fc = new JFileChooser();
 		else
 			fc = new JFileChooser( suggestion );
 		
+		// Adding the filter
+		if (filter != null)
+			fc.setFileFilter(filter);
+		
+		// Opening a dialog
 		if( fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION )
 			return fc.getSelectedFile();
 		
@@ -591,15 +636,23 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	 * Ask the user for a file, the given string is a suggestion of a location where the file could be.
 	 * If the suggestion <code>== null</code>, then no suggestion is made. 
 	 * @param suggestion	the suggestion
+	 * @param filter		filters files based on extension
 	 * @return				the file selected by the user
 	 */
-	protected File askForSaveFile(String suggestion) {
+	protected File askForSaveFile(String suggestion, 
+									FileNameExtensionFilter filter) {
+		// Setting up the file chooser
 		JFileChooser fc = null;
 		if( suggestion == null )
 			fc = new JFileChooser();
 		else
 			fc = new JFileChooser( suggestion );
 		
+		// Adding the filter
+		if (filter != null)
+			fc.setFileFilter( filter );
+		
+		// Opening a dialog
 		if( fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION )
 			return fc.getSelectedFile();
 		
@@ -621,5 +674,20 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 		
 		// exit
 		return true;
+	}
+	
+	/**
+	 * Checks with the user whether it is okay to overwrite the given file.
+	 * @param f		file that will be overwritten
+	 * @return		true if ok, false otherwise
+	 */
+	protected boolean overwrite(File f) {
+		int r = JOptionPane.showConfirmDialog(
+					this, 
+					"Do you want to overwrite file "+ f.getName() +"?", 
+					"Project Saving", 
+					JOptionPane.YES_NO_OPTION, 
+					JOptionPane.WARNING_MESSAGE);
+		return r == JOptionPane.YES_OPTION;
 	}
 }
