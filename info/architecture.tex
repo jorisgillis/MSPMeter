@@ -21,7 +21,7 @@ Cells on their own are only useful for storing information. The computation aris
 
 The data on which MSPMeter works is represented by a three-dimensional cube, called \emph{data cube}.  The first dimension of the cube is the ``age'', as defined by the user by inputting files. We will call this the \emph{span-dimension}, as it is defined by the spans. The second dimension consists of all the lemmas in all files. The third dimension is made up of categories. If there are no categories defined in the data, a default category is introduced, i.e.\ the data cube becomes a data plane. 
 
-The \texttt{DataCube} class is essential in the design of MSPMeter. It contains the data and the functions to manipulate the data (e.g.\ sampling, calculating properties of the data necessary to compute the MSP, etc).
+The \texttt{DataCube} class is crucial in the design of MSPMeter. It contains the data and the functions to manipulate the data (e.g.\ sampling, calculating properties of the data necessary to compute the MSP, etc).
 
 
 \section{The Grid}
@@ -38,7 +38,7 @@ Notice that some connections (i.e.\ arrows) are colored red. This are ``hot flow
 \end{figure}
 
 
-An overview of all cells:
+\subsection{Cells}
 \begin{description}
 \item[\texttt{files}] Contains an ordered list of spans. A \emph{span} is a set of files, together making up a logic unit the development of a child. For example, the speech of a child is recorded several times each month. All sessions recorded in one month are then bundled in a single span. 
 
@@ -85,7 +85,52 @@ An overview of all cells:
 
 
 
+\subsection{Flowing through the Grid}
+
+Whenever the content of a cell changes (signaled to the grid by the cell itself), information starts flowing in the grid. When adding connections between cells, the grid also keeps track of the closure of the network. In the closure, a cell is connected to all cells that are influenced by a change in the first cell. For example, if cell A is connected to cell B and cell B is connected to cell C, cell A will be connected to both cell B and cell C in the closure. Indeed, if cell A changes value, this will flow to cell B. The change in cell B can possibly change the value of cell C. 
+
+At the moment cell A signals a change, two possible scenarios unfold. If cell A is connected to a hot-flowing cell in the closure, all hot-flowing descendants of cell A are added to the \emph{hot queue}, scheduled to be recomputed as soon as possible. All cold-flowing descendants of cell A are added to the \emph{cold queue}, scheduled to be recomputed whenever the user instructs. Both queues are ordered, based on the structure of the grid. A cell is not recomputed before all its ancestors in the queue (cells linking to that cell in the closure) are have been recomputed. For example, suppose cell A is connected to cell B and cell C, and cells B and C are connected to cell D. All are hot-flowing. A change in cell A results in the addition of cells B, C and D to the hot queue. The order in which cells B and C are recomputed is unimportant. However, it is very important that cells B and C are recomputed before cell D is recomputed. Indeed, if we would recompute cell B, then recompute cell D and finish with recomputing cell C, cell D would not have the correct value because the recomputing of cell C can have important information for the recomputing of cell D. 
+
+
+
 \section{Sampling}
+
+Several sampling algorithms have been implemented in MSPMeter. A sampling procedure has two \emph{scopes} either sampling occurs on the span-level or on the corpus-level. Sampling on the span-level implies that a number of samples are taken for each span. The MSP for each sample of the span is calculated and the MSP value for the span is the average value of the samples. Sampling on the corpus-level draws samples from the whole corpus, i.e.\ it is possible that some spans in a sample of the corpus are empty. All three sampling procedures work both for the span- and corpus-level. 
+
+Secondly, the user has control over the \emph{number of samples}. Again there are two options. Either the user choose a sampling factor or a fixed number of samples. If the user enters a \emph{sampling factor}, denoted by $\sigma$, the sampling algorithm will automatically determine the number of samples, denoted $n$, for a span/corpus, denoted by $\mathcal{D}$, by applying the following formula: 
+$$n = \lceil \frac{\sigma \times |\mathcal{D}|}{S} \rceil$$
+where $S$ is the sample size. In other words, averaging over all sets of samples, each token will occur $\sigma$ times. 
+
+All samplers view the initial data in the same way: the data is one long array of tokens. If a token occurs, for example, three times in the data, three (consecutive) spaces in the array are filled with this token. Let $\mathcal{D}$ be the dataset, then we denote by $A(\mathcal{D})$ the array of the dataset.
+
+\subsection{Sampling Factor Sampler}
+
+The user specifies a sample size $S$. This sampler will then generate samples that are \emph{on average} of size $S$. It generates a sample by running over $A(\mathcal{D})$ and selecting a token with probability:
+$$\frac{S}{|A(\mathcal{D})|} \enspace.$$
+
+Clearly, it is not guaranteed that a sample is of size $S$, however, on average it will be.
+
+
+
+\subsection{Improved Sampling Factor Sampler}
+
+An improvement on the previous sampler, makes sure that each sample is of size $S$. Let $i$ be the number of already selected tokens and let $m$ the number of tokens already visited in the array. The improved sampling factor sampler runs over $A(\mathcal{D})$ and selects a token with probability:
+$$\frac{S-i}{N-m} \enspace.$$ 
+
+Clearly, if the sample already contains $S$ tokens, the probability drops to zero, i.e.\ no more tokens are selected. On the other hand, if the sampler reaches the end of the array, and the sample is not yet full, the probability will go up, as the difference between $S-i$ and $N-m$ diminishes.
+
+
+\subsection{Fixed Size Sampler}
+
+Analogous to the Improved Sampling Factor Sampler, the Fixed Size Sampler needs the user to specify the size of the samples. Unlike the previous sampler, this sampler starts picking tokens from $A(\mathcal{D})$ until the sample is full. Once a token is picked from the dataset, it is removed from the dataset, i.e.\ if a token occurs four times in the dataset, it cannot occur more than four times in any sample. In other words, this sampler takes an arbitrary combination of size $S$ of the data. 
+
+
+
+
+
+
+
+
 
 
 
