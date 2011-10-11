@@ -479,27 +479,23 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	//== Resampling the datacube into a list of new datacubes
 	//==========================================================================
 	/**
+	 * <p>
 	 * Make random resamplings from the original datacube. This method 
-	 * constructs a set of subcorpora.<br />
+	 * constructs a set of subcorpora.
+	 * </p>
+	 * <p>
 	 * Let S be the expected total number of tokens per subcorpus. B = N/T 
 	 * subcorpora are constructed. A token is selected for a subcorpus with 
 	 * P = T/N.
+	 * </p>
 	 * @param S		number of tokens per subcorpus
 	 * @param xMode	sampling mode: X ? 0: B = N * X / S, 1: B = X
 	 * @param X		X-factor (sampling factor or fixed value)
 	 */
 	public DataCube[] resample( int S, int xMode, double X ) {
 		// determine B
-		int N = numberOfTokens();
-		int B = 2;
-		if( xMode == 0 )
-			B = (int)Math.ceil(N*X/S);
-		else
-			B = (int)Math.ceil(X);
-		
-		// at least two samples have to be taken
-		if( B < 2 )
-			B = 2;
+		int N = numberOfTokens();					// Number of Tokens
+		int B = numberOfSamples(S, xMode, X, N);	// Number of Samples
 		
 //		System.out.println("N = "+ N);
 //		System.out.println("B = "+ B);
@@ -527,22 +523,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		 * 	current element under the "head" 
 		 */
 		
-		// running through the cube: constructing a keylist
-		Vector<DataCubeKey> keyList = new Vector<DataCubeKey>();
-		Iterator<String> i1 = cube.keySet().iterator();
-		while( i1.hasNext() ) {
-			String month = i1.next();
-			Iterator<String> i2 = cube.get(month).keySet().iterator();
-			while( i2.hasNext() ) {
-				String lemma = i2.next();
-				Iterator<String> i3 = cube.get(month).get(lemma).keySet().iterator();
-				while( i3.hasNext() ) {
-					String category = i3.next();
-					keyList.add(new DataCubeKey(month, lemma, category, 
-							cube.get(month).get(lemma).get(category)));
-				}
-			}
-		}
+		// running through the cube: constructing an entry-list
+		Vector<DataCubeEntry> entryList = createEntryVector();
 		
 		// for each subcorpora
 		for( int i = 0; i < B; i++ ) {
@@ -553,26 +535,27 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			HashMap<String, HashMap<String, HashMap<String, Integer>>> cubicle 
 				= new HashMap<String, HashMap<String,HashMap<String,Integer>>>();
 			
-			// take a copy of the infrastructure (keyList)
+			//- 1. take a copy of the infrastructure (keyList)
 			int M = N;
-			Vector<DataCubeKey> keys = new Vector<DataCubeKey>(keyList.size());
-			for( int k = 0; k < keyList.size(); k++ ) {
-				DataCubeKey key = keyList.get(k);
-				keys.add(new DataCubeKey(key.getMonth(), 
+			Vector<DataCubeEntry> entries = 
+				new Vector<DataCubeEntry>(entryList.size());
+			for( int k = 0; k < entryList.size(); k++ ) {
+				DataCubeEntry key = entryList.get(k);
+				entries.add(new DataCubeEntry(key.getMonth(), 
 											key.getLemma(), 
 											key.getCategory(), 
 											key.getFrequency()));
 			}
 			
-			// for each space in the subcorpus
+			//- 2. for each space in the subcorpus
 			for( int j = 0; j < S; j++ ) {
 				//- choose
 				// random number and run through the key list
 				double random = Math.random()*M;
-				DataCubeKey chosen = null;
+				DataCubeEntry chosen = null;
 				int head = 0;
 				while( random > 0 ) {
-					chosen = keys.get(head++);
+					chosen = entries.get(head++);
 					random -= chosen.getFrequency();
 				}
 				M--;
@@ -608,7 +591,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			Vector<String> ls = new Vector<String>(usedLemmas);
 			Vector<String> cs = new Vector<String>(usedCategories);
 			
-			// keep the time vector in order
+			// keep the time vector in order: add missing times
 			for( int j = 0; j < time.size(); j++ )
 				if( usedTime.contains(time.get(j)) )
 					ts.add(time.get(j));
@@ -621,6 +604,183 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		}
 		
 		return subCorpora;
+	}
+
+
+
+
+	/**
+	 * Creates a vector of DataCubeEntries. Each entry is entered once in
+	 * the cube, unlike the DataCube array!
+	 * @return	vector of DataCubeEntries
+	 */
+	protected Vector<DataCubeEntry> createEntryVector() {
+		Vector<DataCubeEntry> entryList = new Vector<DataCubeEntry>();
+		Iterator<String> i1 = cube.keySet().iterator();
+		while( i1.hasNext() ) {
+			String month = i1.next();
+			Iterator<String> i2 = cube.get(month).keySet().iterator();
+			while( i2.hasNext() ) {
+				String lemma = i2.next();
+				Iterator<String> i3 = cube.get(month).get(lemma).keySet().iterator();
+				while( i3.hasNext() ) {
+					String category = i3.next();
+					entryList.add(new DataCubeEntry(month, lemma, category, 
+							cube.get(month).get(lemma).get(category)));
+				}
+			}
+		}
+		return entryList;
+	}
+	
+	
+	/**
+	 * Sampling procedure based on the Laaha-Xanthos procedure: run over the 
+	 * array of entries. The advantage of this procedure is that we do not
+	 * have to take a copy of the entries for each sample.
+	 * @param S		Sample size
+	 * @param xMode	Sampling mode (Sampling factor or Fixed Value)
+	 * @param X		Sampling factor or Fixed Value
+	 * @return
+	 */
+	public DataCube[] resampleAlternate( int S, int xMode, double X ) {
+		// The numbers
+		int N = numberOfTokens();
+		int B = numberOfSamples(S, xMode, X, N);
+		
+		// the subcorpora
+		DataCube[] subCorpora = new DataCube[B];
+		for( int i = 0; i < B; i++ )
+			subCorpora[i] = null;
+		
+		/*
+		 * If we need to take more samples from the cube, than there are
+		 * elements in the cube, we need to return empty subCorpora. 
+		 */
+		if( numElements() < S )
+			return subCorpora;
+		
+		// Constructing the array of tokens
+		DataCubeEntry[] entries = createEntryArray(N);
+		
+		// Run over array
+		for( int j = 0; j < B; j++ ) {
+			//- keep track of the axes
+			TreeSet<String> usedTime = new TreeSet<String>();
+			TreeSet<String> usedLemmas = new TreeSet<String>();
+			TreeSet<String> usedCategories = new TreeSet<String>();
+			HashMap<String, HashMap<String, HashMap<String, Integer>>> cubicle 
+				= new HashMap<String, HashMap<String,HashMap<String,Integer>>>();
+			
+			int m = 0;	// Chosen
+			for( int i = 0; i < N && m < S; i++) {
+				double chance = (S-m)/(N-i);
+				if (chance <= Math.random()) {
+					String month = entries[i].getMonth();
+					String lemma = entries[i].getLemma();
+					String category = entries[i].getCategory();
+					
+					// Updating axes
+					usedTime.add(month);
+					usedLemmas.add(lemma);
+					usedCategories.add(category);
+					
+					// Updating cubicle
+					if( cubicle.get(month) == null )
+						cubicle.put(month, 
+								new HashMap<String, HashMap<String, Integer>>());
+					if( cubicle.get(month).get(lemma) == null )
+						cubicle.get(month).put(lemma, new HashMap<String, Integer>());
+					if( cubicle.get(month).get(lemma).get(category) == null )
+						cubicle.get(month).get(lemma).put(category, 1);
+					else {
+						int x = cubicle.get(month).get(lemma).get(category);
+						x++;
+						cubicle.get(month).get(lemma).remove(category);
+						cubicle.get(month).get(lemma).put(category, x);
+					}
+					
+					// Increment chosen counter
+					m++;
+				}
+			}
+			
+			// Converting sets to vectors
+			Vector<String> ts = new Vector<String>(usedTime.size());
+			Vector<String> ls = new Vector<String>(usedLemmas);
+			Vector<String> cs = new Vector<String>(usedCategories);
+			
+			// keep the time vector in order: add missing times
+			for( int i = 0; i < time.size(); i++ )
+				if( usedTime.contains(time.get(i)) )
+					ts.add(time.get(i));
+			
+			// Storing the sample
+			subCorpora[j] = new DataCube();
+			subCorpora[j].setCube(cubicle);
+			subCorpora[j].setCategories(cs);
+			subCorpora[j].setLemmas(ls);
+			subCorpora[j].setTime(ts);
+		}
+		
+		return subCorpora;
+	}
+
+
+
+
+	/**
+	 * Creates an array out of the datacube. There are as many spaces occupied
+	 * by an entry as the frequency of that entry.
+	 * @param N		number of tokens
+	 * @return		array of DataCubeEntries
+	 */
+	protected DataCubeEntry[] createEntryArray(int N) {
+		DataCubeEntry[] entries = new DataCubeEntry[N];
+		int i = 0;
+		Iterator<String> i1 = cube.keySet().iterator();
+		while( i1.hasNext() ) {
+			String month = i1.next();
+			Iterator<String> i2 = cube.get(month).keySet().iterator();
+			while( i2.hasNext() ) {
+				String lemma = i2.next();
+				Iterator<String> i3 = cube.get(month).get(lemma).keySet().iterator();
+				while( i3.hasNext() ) {
+					String category = i3.next();
+					
+					// Adding the entries freq times
+					int freq = cube.get(month).get(lemma).get(category);
+					for( int k = 0; k < freq; k++ ) {
+						entries[i] = new DataCubeEntry(month, lemma, category, 
+								cube.get(month).get(lemma).get(category));
+						i++;
+					}
+				}
+			}
+		}
+		return entries;
+	}
+	
+	
+	/**
+	 * Computes the number of samples taken
+	 * @param S		size of samples
+	 * @param xMode	sampling mode (sampling factor or fixed value)
+	 * @param X		Sampling factor or Fixed value
+	 * @param N		number of tokens in the datacube
+	 * @return
+	 */
+	protected int numberOfSamples(int S, int xMode, double X, int N) {
+		int B = 2;
+		if( xMode == 0 )
+			B = (int)Math.ceil(N*X/S);
+		else
+			B = (int)Math.ceil(X);
+		
+		// at least two samples have to be taken
+		if( B < 2 )
+			B = 2;
+		return B;
 	}
 	
 	

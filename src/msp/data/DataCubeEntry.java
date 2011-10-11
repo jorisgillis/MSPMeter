@@ -27,7 +27,7 @@ package msp.data;
  * frequency count. 
  * @author Joris Gillis
  */
-public class DataCubeKey {
+public class DataCubeEntry {
 	
 	/** Month */
 	private String month;
@@ -46,7 +46,7 @@ public class DataCubeKey {
 	 * @param category
 	 * @param frequency
 	 */
-	public DataCubeKey( String month, String lemma, String category, int frequency ) {
+	public DataCubeEntry( String month, String lemma, String category, int frequency ) {
 		this.month = month;
 		this.lemma = lemma;
 		this.category = category;
