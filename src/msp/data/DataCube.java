@@ -1214,10 +1214,6 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		if( subSampleMode == ONE_SPAN ) {
 			//- Calculate resampled MSP: MSP(S)
 			for( int i = 0; i < time.size(); i++ ) {
-				// for each slice
-				//	resample the current slice
-				//	calculate the msp for each sample
-				//	calculate the average and standard deviation
 				String span = time.get(i);
 				
 				// Compute the number of samples
@@ -1225,7 +1221,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				int B = numberOfSamples(
 							N, 
 							subSampleSize, 
-							subSampleMode, 
+							numberOfSamplesMode, 
 							numberOfSamples);
 				
 				// Make room in sampleMSPs
@@ -1410,108 +1406,103 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param numberOfSamplesMode	factor or fixed?
 	 * @param numberOfSamples		X
 	 */
-	public MSPResult resampleCumulateMSP( boolean weighted, boolean entropy, int S,
-			int numberOfSamplesMode, double numberOfSamples ) throws ImpossibleCalculationException {
-		MSPSpan[] result = new MSPSpan[cube.keySet().size()];
+	public MSPResult resampleCumulateMSP( boolean weighted, boolean entropy, 
+			int S, int numberOfSamplesMode, double numberOfSamples ) 
+			throws ImpossibleCalculationException {
+		// Output data structures
+		MSPSpan[] result = new MSPSpan[time.size()];
 		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(time.size());
 		
-		// Resample the corpus into several subcorpora
-		DataCube[] dataCubes = resample(S, numberOfSamplesMode, numberOfSamples);
-		notifyProgressListeners(10);
-		
 		// Checking for oversampling
-		boolean overSampled = false;
-		for( int i = 0; i < dataCubes.length; i++ )
-			if( dataCubes[i] == null )
-				overSampled = true;
+		int N = numberOfTokens();
+		boolean overSampled = N < S;
 		
 		if( !overSampled ) {
-			// Cumulate
-			for( int i = 0; i < dataCubes.length; i++ )
-				dataCubes[i] = dataCubes[i].cumulate();
-			notifyProgressListeners(20);
+			// How many samples do we need to take
+			int B = numberOfSamples(N, S, numberOfSamplesMode, numberOfSamples);
 			
-			// calculate the MSPs
-			double[][] msps = new double[result.length][dataCubes.length];
+			// Creating entries of datacube
+			DataCubeEntry[] entries = createEntryArray(N);
+			
+			// For each span: MSP values from samples
+//			HashMap<String, List<Double>> msps = 
+//				new HashMap<String, List<Double>>();
+			
+			// Initialize sampleMSPs & msps
 			for( int i = 0; i < time.size(); i++ ) {
-				String month = time.get(i);
-				sampleMSPs.add(new ArrayList<Double>(dataCubes.length));
+				sampleMSPs.add(new ArrayList<Double>(B));
+			}
+			
+			for ( int k = 0; k < B; k++ ) {
+				// Taking a sample & Cumulate
+				DataCube cube = sampleCube(S, N, entries);
+				cube.cumulate();
 				
-				if( !weighted && !entropy ) {
-					// unweighted variety
-					for( int j = 0; j < dataCubes.length; j++ )
+				// calculate the MSPs
+				for( int i = 0; i < time.size(); i++ ) {
+					String month = time.get(i);
+					
+					double msp = -1;
+					if( !weighted && !entropy )
+						// unweighted variety
 						try {
-							msps[i][j] = dataCubes[j].mspVarietyUnweighted(month);
-							sampleMSPs.get(i).add(msps[i][j]);
+							msp = cube.mspVarietyUnweighted(month);
 						} catch( NoDataException e ) {
 							// no data available for a given month, indicate this with a -1
 							// this way we can take the absence of data into account, rather than using NaN's
 							logger.debug("Empty month: "+ month);
-							msps[i][j] = -1;
 						}
-				}
-				else if( weighted && !entropy ) {
-					// weighted variety
-					for( int j = 0; j < dataCubes.length; j++ )
+					else if( weighted && !entropy )
+						// weighted variety
 						try {
-							msps[i][j] = dataCubes[j].mspVarietyWeighted(month);
-							sampleMSPs.get(i).add(msps[i][j]);
+							msp = cube.mspVarietyWeighted(month);
 						} catch( NoDataException e ) {
 							// no data available for a given month, indicate this with a -1
 							// this way we can take the absence of data into account, rather than using NaN's
 							logger.debug("Empty month: "+ month);
-							msps[i][j] = -1;
 						}
-				}
-				else if( !weighted && entropy ) {
-					// unweighted entropy
-					for( int j = 0; j < dataCubes.length; j++ )
+					else if( !weighted && entropy )
+						// unweighted entropy
 						try {
-							msps[i][j] = dataCubes[j].mspEntropyUnweighted(month);
-							sampleMSPs.get(i).add(msps[i][j]);
+							msp = cube.mspEntropyUnweighted(month);
 						} catch( NoDataException e ) {
 							// no data available for a given month, indicate this with a -1
 							// this way we can take the absence of data into account, rather than using NaN's
 							logger.debug("Empty month: "+ month);
-							msps[i][j] = -1;
 						}
-				}
-				else if( weighted && entropy ) {
-					// weighted entropy
-					for( int j = 0; j < dataCubes.length; j++ )
+					else if( weighted && entropy )
+						// weighted entropy
 						try {
-							msps[i][j] = dataCubes[j].mspEntropyWeighted(month);
-							sampleMSPs.get(i).add(msps[i][j]);
+							msp = cube.mspEntropyWeighted(month);
 						} catch( NoDataException e ) {
 							// no data available for a given month, indicate this with a -1
 							// this way we can take the absence of data into account, rather than using NaN's
 							logger.debug("Empty month: "+ month);
-							msps[i][j] = -1;
 						}
+					sampleMSPs.get(i).add(msp);
+					
+					// making progress
+					notifyProgressListeners( 20.0 + (((double)i+1)/time.size())*70 );
 				}
-				
-				
-				// making progress
-				notifyProgressListeners( 20.0 + (((double)i+1)/time.size())*70 );
 			}
 			
 			
 			
 			// calculate the averages and standard deviations
-			for( int i = 0; i < msps.length; i++ ) {
+			for( int i = 0; i < sampleMSPs.size(); i++ ) {
 				int count = 0;
 				double average = 0.0;
-				for( int j = 0; j < msps[i].length; j++ )
-					if( msps[i][j] > 0.0 ) {
-						average += msps[i][j];
+				for( int j = 0; j < sampleMSPs.get(i).size(); j++ )
+					if( sampleMSPs.get(i).get(j) > 0.0 ) {
+						average += sampleMSPs.get(i).get(j);
 						count++;
 					}
 				average /= count;
 				
 				double variance = 0.0;
-				for( int j = 0; j < msps[i].length; j++ )
-					if( msps[i][j] > 0.0 )
-						variance += Math.pow(msps[i][j] - average, 2);
+				for( int j = 0; j < sampleMSPs.get(i).size(); j++ )
+					if( sampleMSPs.get(i).get(j) > 0.0 )
+						variance += Math.pow(sampleMSPs.get(i).get(j) - average, 2);
 				variance /= count;
 				double stddev = Math.sqrt(variance);
 				
@@ -1521,7 +1512,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			// Oversampled: thus making empty result datastructures
 			// a. Result
 			for( int i = 0; i < result.length; i++ )
-				result[i] = new MSPSpan(0, 0, ""+ (i+1));
+				result[i] = new MSPSpan(0, 0, time.get(i));
 			
 			// b. sampleMSPs
 			for( int i = 0; i < time.size(); i++ )

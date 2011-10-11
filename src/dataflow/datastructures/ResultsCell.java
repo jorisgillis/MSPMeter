@@ -114,16 +114,30 @@ public class ResultsCell extends DefaultCell {
 				pair = cumulatedDC.MSP( weighting, entropy );
 				break;
 			case MODE_RESAMPLE:
-				pair = workingDC.resampleMSP( weighting, entropy, 
-						subSampleMode, subSampleSize, numberOfSamplesMode, numberOfSamples );
+				pair = workingDC.resampleMSP(
+							weighting, 
+							entropy, 
+							subSampleMode, 
+							subSampleSize, 
+							numberOfSamplesMode, 
+							numberOfSamples );
 				break;
 			case MODE_CUMULATE_RESAMPLE:
-				pair = cumulatedDC.resampleMSP( weighting, entropy, 
-						subSampleMode, subSampleSize, numberOfSamplesMode, numberOfSamples );
+				pair = cumulatedDC.resampleMSP( 
+							weighting, 
+							entropy, 
+							subSampleMode, 
+							subSampleSize, 
+							numberOfSamplesMode, 
+							numberOfSamples );
 				break;
 			case MODE_RESAMPLE_CUMULATE:
-				pair = workingDC.resampleCumulateMSP( weighting, entropy, 
-						subSampleSize, numberOfSamplesMode, numberOfSamples );
+				pair = workingDC.resampleCumulateMSP( 
+							weighting, 
+							entropy, 
+							subSampleSize, 
+							numberOfSamplesMode, 
+							numberOfSamples );
 				break;
 			}
 			
