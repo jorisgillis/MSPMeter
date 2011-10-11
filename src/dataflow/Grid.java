@@ -147,7 +147,6 @@ public class Grid implements ProgressProvider {
 	//===========================================================================
 	/**
 	 * Adds a cell the grid with the given name.
-	 * @param name	name of the cell
 	 * @param cell	the cell
 	 */
 	public void addCell( Cell cell ) {

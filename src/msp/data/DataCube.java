@@ -55,7 +55,14 @@ import ui.panels.file.FileRow;
  * @author Joris Gillis
  */
 public class DataCube implements Progressor, ProgressListener, Cloneable {
-
+	
+	//===========================================================================
+	// Constants
+	//===========================================================================
+	public final int ONE_SPAN	= 0;
+	public final int ALL_SPAN	= 1;
+	
+	
 	//===========================================================================
 	// Variables
 	//===========================================================================
@@ -475,10 +482,195 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	
 	
+	/**
+	 * <p>
+	 * The preferred sampling procedure: run over the array of entries and 
+	 * select a token with dynamic probability, based on the number of already 
+	 * selected tokens and the number of tokens still remaining in the array. 
+	 * The advantage of this procedure is that we do not have to take a copy of 
+	 * the entries for each sample, thus saving both time and memory.
+	 * </p>
+	 * <p>
+	 * This function returns an array of samples.
+	 * </p>
+	 * @param S		Sample size
+	 * @param xMode	Sampling mode (Sampling factor or Fixed Value)
+	 * @param X		Sampling factor or Fixed Value
+	 * @return		An array of samples
+	 */
+	public DataCube[] resample( int S, int xMode, double X ) {
+		// The numbers
+		int N = numberOfTokens();
+		int B = numberOfSamples(N, S, xMode, X);
+		
+		// the subcorpora
+		DataCube[] subCorpora = new DataCube[B];
+		for( int i = 0; i < B; i++ )
+			subCorpora[i] = null;
+		
+		/*
+		 * If we need to take more samples from the cube, than there are
+		 * elements in the cube, we need to return empty subCorpora. 
+		 */
+		if( numElements() < S )
+			return subCorpora;
+		
+		// Constructing the array of tokens
+		DataCubeEntry[] entries = createEntryArray(N);
+		
+		// Run over array
+		for( int j = 0; j < B; j++ )
+			subCorpora[j] = sampleCube(S, N, entries);
+		
+		return subCorpora;
+	}
+
+
+
+
+	/**
+	 * <p>
+	 * Function to perform a single all-span sampling of a datacube. The 
+	 * preferred sampling procedure: run over the array of entries and 
+	 * select a token with dynamic probability, based on the number of already 
+	 * selected tokens and the number of tokens still remaining in the array. 
+	 * The advantage of this procedure is that we do not have to take a copy of 
+	 * the entries for each sample, thus saving both time and memory.
+	 * </p>
+	 * <p>
+	 * This function returns only one sample!
+	 * </p>
+	 * @param S			sample size
+	 * @param N			number of tokens in cube
+	 * @param entries	entry array of this cube
+	 */
+	protected DataCube sampleCube(int S, int N, DataCubeEntry[] entries) {
+		//- keep track of the axes
+		TreeSet<String> usedTime = new TreeSet<String>();
+		TreeSet<String> usedLemmas = new TreeSet<String>();
+		TreeSet<String> usedCategories = new TreeSet<String>();
+		HashMap<String, HashMap<String, HashMap<String, Integer>>> cubicle 
+			= new HashMap<String, HashMap<String,HashMap<String,Integer>>>();
+		
+		int m = 0;	// Chosen
+		for( int i = 0; i < N && m < S; i++) {
+			double chance = ((double)(S-m))/(N-i);
+			if (chance >= Math.random()) {
+				String month = entries[i].getMonth();
+				String lemma = entries[i].getLemma();
+				String category = entries[i].getCategory();
+				
+				// Updating axes
+				usedTime.add(month);
+				usedLemmas.add(lemma);
+				usedCategories.add(category);
+				
+				// Updating cubicle
+				if( cubicle.get(month) == null )
+					cubicle.put(month, 
+							new HashMap<String, HashMap<String, Integer>>());
+				if( cubicle.get(month).get(lemma) == null )
+					cubicle.get(month).put(lemma, new HashMap<String, Integer>());
+				if( cubicle.get(month).get(lemma).get(category) == null )
+					cubicle.get(month).get(lemma).put(category, 1);
+				else {
+					int x = cubicle.get(month).get(lemma).get(category);
+					x++;
+					cubicle.get(month).get(lemma).remove(category);
+					cubicle.get(month).get(lemma).put(category, x);
+				}
+				
+				// Increment chosen counter
+				m++;
+			}
+		}
+		
+		// Converting sets to vectors
+		Vector<String> ts = new Vector<String>(usedTime.size());
+		Vector<String> ls = new Vector<String>(usedLemmas);
+		Vector<String> cs = new Vector<String>(usedCategories);
+		
+		// keep the time vector in order: add missing times
+		for( int i = 0; i < time.size(); i++ )
+			if( usedTime.contains(time.get(i)) )
+				ts.add(time.get(i));
+		
+		// Storing the sample
+		DataCube c = new DataCube();
+		c.setCube(cubicle);
+		c.setCategories(cs);
+		c.setLemmas(ls);
+		c.setTime(ts);
+		
+		return c;
+	}
+
+
+
+
+	/**
+	 * Creates an array out of the datacube. There are as many spaces occupied
+	 * by an entry as the frequency of that entry.
+	 * @param N		number of tokens
+	 * @return		array of DataCubeEntries
+	 */
+	protected DataCubeEntry[] createEntryArray(int N) {
+		DataCubeEntry[] entries = new DataCubeEntry[N];
+		int i = 0;
+		Iterator<String> i1 = cube.keySet().iterator();
+		while( i1.hasNext() ) {
+			String month = i1.next();
+			Iterator<String> i2 = cube.get(month).keySet().iterator();
+			while( i2.hasNext() ) {
+				String lemma = i2.next();
+				Iterator<String> i3 = cube.get(month).get(lemma).keySet().iterator();
+				while( i3.hasNext() ) {
+					String category = i3.next();
+					
+					// Adding the entries freq times
+					int freq = cube.get(month).get(lemma).get(category);
+					for( int k = 0; k < freq; k++ ) {
+						entries[i] = new DataCubeEntry(month, lemma, category, 
+								cube.get(month).get(lemma).get(category));
+						i++;
+					}
+				}
+			}
+		}
+		return entries;
+	}
+	
+	
+	/**
+	 * Computes the number of samples taken
+	 * @param N		number of tokens in the data
+	 * @param S		size of samples
+	 * @param xMode	sampling mode (sampling factor or fixed value)
+	 * @param X		Sampling factor or Fixed value
+	 * @return
+	 */
+	protected int numberOfSamples(int N, int S, int xMode, double X) {
+		int B = 2;
+		if( xMode == 0 )
+			B = (int)Math.ceil(N*X/S);
+		else
+			B = (int)Math.ceil(X);
+		
+		// at least two samples have to be taken
+		if( B < 2 )
+			B = 2;
+		return B;
+	}
+	
+	
+	
 	//==========================================================================
 	//== Resampling the datacube into a list of new datacubes
 	//==========================================================================
 	/**
+	 * <p>
+	 * Alternative, slower sampling procedure.
+	 * </p>
 	 * <p>
 	 * Make random resamplings from the original datacube. This method 
 	 * constructs a set of subcorpora.
@@ -495,7 +687,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	public DataCube[] resampleAlternate( int S, int xMode, double X ) {
 		// determine B
 		int N = numberOfTokens();					// Number of Tokens
-		int B = numberOfSamples(S, xMode, X, N);	// Number of Samples
+		int B = numberOfSamples(N, S, xMode, X);	// Number of Samples
 		
 //		System.out.println("N = "+ N);
 //		System.out.println("B = "+ B);
@@ -632,292 +824,260 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		}
 		return entryList;
 	}
-	
-	
+
+
+
+
 	/**
-	 * Sampling procedure based on the Laaha-Xanthos procedure: run over the 
-	 * array of entries. The advantage of this procedure is that we do not
-	 * have to take a copy of the entries for each sample.
-	 * @param S		Sample size
-	 * @param xMode	Sampling mode (Sampling factor or Fixed Value)
-	 * @param X		Sampling factor or Fixed Value
-	 * @return
+	 * Make several samples of the given slice.
+	 * @param slice	the slice
+	 * @param S		number of tokens in the sample
+	 * @param xMode	0: B = N * X / S, 1: B = X
+	 * @param X		X-factor (resampling factor or fixed value)
+	 * @return		samples
 	 */
-	public DataCube[] resample( int S, int xMode, double X ) {
-		// The numbers
-		int N = numberOfTokens();
-		int B = numberOfSamples(S, xMode, X, N);
+	public HashMap<String, HashMap<String, Integer>>[] resampleAlternate( 
+			HashMap<String,	HashMap<String, Integer>> slice, 
+			int S, 
+			int xMode, 
+			double X) {
+		//- 1. Setting the variables
+		int N = numberOfTokens( slice );
+		int B = numberOfSamples(N, S, xMode, X);
 		
-		// the subcorpora
-		DataCube[] subCorpora = new DataCube[B];
+		// Initialize array of samples with null
+		HashMap<String, HashMap<String, Integer>>[] samples 
+			= (HashMap<String, HashMap<String, Integer>>[])new HashMap[B];
 		for( int i = 0; i < B; i++ )
-			subCorpora[i] = null;
+			samples[i] = null;
+		
+		// System.out.println("B = "+ B);
 		
 		/*
-		 * If we need to take more samples from the cube, than there are
-		 * elements in the cube, we need to return empty subCorpora. 
+		 * If the number of samples is larger than the number of available elements
+		 * in the slice, we need to return an array of empty slices. 
 		 */
-		if( numElements() < S )
-			return subCorpora;
+		if( elementsInSlice( slice ) < S )
+			return samples;
 		
-		// Constructing the array of tokens
-		DataCubeEntry[] entries = createEntryArray(N);
 		
-		// Run over array
-		for( int j = 0; j < B; j++ ) {
-			//- keep track of the axes
-			TreeSet<String> usedTime = new TreeSet<String>();
-			TreeSet<String> usedLemmas = new TreeSet<String>();
-			TreeSet<String> usedCategories = new TreeSet<String>();
-			HashMap<String, HashMap<String, HashMap<String, Integer>>> cubicle 
-				= new HashMap<String, HashMap<String,HashMap<String,Integer>>>();
+		//- 2. running through the slice constructing a keylist
+		Vector<SliceEntry> keyList = createSliceEntryVector(slice);
+		
+		
+		/*
+		 * Choosing a random number, browsing through the keylist, always 
+		 * decreasing the random number until it hits the zero.
+		 */
+		for( int i = 0; i < B; i++ ) {
+			// for the new sample
+			HashMap<String, HashMap<String, Integer>> newSlice = new HashMap<String, HashMap<String, Integer>>();
 			
-			int m = 0;	// Chosen
-			for( int i = 0; i < N && m < S; i++) {
-				double chance = ((double)(S-m))/(N-i);
-				if (chance >= Math.random()) {
-					String month = entries[i].getMonth();
-					String lemma = entries[i].getLemma();
-					String category = entries[i].getCategory();
-					
-					// Updating axes
-					usedTime.add(month);
-					usedLemmas.add(lemma);
-					usedCategories.add(category);
-					
-					// Updating cubicle
-					if( cubicle.get(month) == null )
-						cubicle.put(month, 
-								new HashMap<String, HashMap<String, Integer>>());
-					if( cubicle.get(month).get(lemma) == null )
-						cubicle.get(month).put(lemma, new HashMap<String, Integer>());
-					if( cubicle.get(month).get(lemma).get(category) == null )
-						cubicle.get(month).get(lemma).put(category, 1);
-					else {
-						int x = cubicle.get(month).get(lemma).get(category);
-						x++;
-						cubicle.get(month).get(lemma).remove(category);
-						cubicle.get(month).get(lemma).put(category, x);
-					}
-					
-					// Increment chosen counter
-					m++;
+			// take a copy of the infrastructure
+			int M = N;
+			Vector<SliceEntry> keys = new Vector<SliceEntry>(keyList.size());
+			for( int k = 0; k < keyList.size(); k++ ) {
+				SliceEntry key = keyList.get(k);
+				keys.add(new SliceEntry(key.getLemma(), key.getCategory(), key.getFrequency()));
+			}
+			
+			// choose a sample
+			for( int j = 0; j < S; j++ ) {
+				SliceEntry chosen = null;
+				double random = Math.random()*M;
+				int head = 0;
+				while( random >= 0 ) {
+					chosen = keys.get(head++);
+					random -= chosen.getFrequency();
+				}
+				M--;
+				chosen.setFrequency(chosen.getFrequency()-1);
+				
+				// add
+				String lemma = chosen.getLemma();
+				String category = chosen.getCategory();
+				
+				if( !newSlice.containsKey(lemma) )
+					newSlice.put(lemma, new HashMap<String, Integer>());
+				if( !newSlice.get(lemma).containsKey(category) )
+					newSlice.get(lemma).put(category, 1);
+				else {
+					Integer x = newSlice.get(lemma).get(category);
+					Integer y = x + 1;
+					newSlice.get(lemma).remove(category);
+					newSlice.get(lemma).put(category, y);
 				}
 			}
 			
-			// Converting sets to vectors
-			Vector<String> ts = new Vector<String>(usedTime.size());
-			Vector<String> ls = new Vector<String>(usedLemmas);
-			Vector<String> cs = new Vector<String>(usedCategories);
-			
-			// keep the time vector in order: add missing times
-			for( int i = 0; i < time.size(); i++ )
-				if( usedTime.contains(time.get(i)) )
-					ts.add(time.get(i));
-			
-			// Storing the sample
-			subCorpora[j] = new DataCube();
-			subCorpora[j].setCube(cubicle);
-			subCorpora[j].setCategories(cs);
-			subCorpora[j].setLemmas(ls);
-			subCorpora[j].setTime(ts);
+			samples[i] = newSlice;
 		}
 		
-		return subCorpora;
+		
+		return samples;
 	}
 
 
 
 
 	/**
-	 * Creates an array out of the datacube. There are as many spaces occupied
-	 * by an entry as the frequency of that entry.
-	 * @param N		number of tokens
-	 * @return		array of DataCubeEntries
+	 * <p>
+	 * Creates a vector of tokens from the given slice, tokens are not repeated!
+	 * </p>
+	 * @param slice	slice to create the array from
+	 * @return		vector of entries
 	 */
-	protected DataCubeEntry[] createEntryArray(int N) {
-		DataCubeEntry[] entries = new DataCubeEntry[N];
-		int i = 0;
-		Iterator<String> i1 = cube.keySet().iterator();
+	protected Vector<SliceEntry> createSliceEntryVector(
+			HashMap<String, HashMap<String, Integer>> slice) {
+		Vector<SliceEntry> keyList = new Vector<SliceEntry>();
+		Iterator<String> i1 = slice.keySet().iterator();
 		while( i1.hasNext() ) {
-			String month = i1.next();
-			Iterator<String> i2 = cube.get(month).keySet().iterator();
+			String lemma = i1.next();
+			Iterator<String> i2 = slice.get(lemma).keySet().iterator();
 			while( i2.hasNext() ) {
-				String lemma = i2.next();
-				Iterator<String> i3 = cube.get(month).get(lemma).keySet().iterator();
-				while( i3.hasNext() ) {
-					String category = i3.next();
-					
-					// Adding the entries freq times
-					int freq = cube.get(month).get(lemma).get(category);
-					for( int k = 0; k < freq; k++ ) {
-						entries[i] = new DataCubeEntry(month, lemma, category, 
-								cube.get(month).get(lemma).get(category));
-						i++;
-					}
+				String category = i2.next();
+				keyList.add( new SliceEntry(lemma, category, slice.get(lemma).get(category) ) );
+			}
+		}
+		return keyList;
+	}
+
+
+
+
+	/**
+	 * <p>
+	 * Takes the required number of samples from the slice and returns the
+	 * samples (i.e. slices). This function uses the array loop 
+	 * </p>
+	 * @param slice		slice to sample
+	 * @param S			sample size
+	 * @param xMode		Is X Sampling Factor or Fixed value?
+	 * @param X			Sampling Factor or Fixed value
+	 * @return			an array of samples
+	 */
+	public HashMap<String, HashMap<String, Integer>>[] resample( 
+			HashMap<String,	HashMap<String, Integer>> slice, 
+			int S, 
+			int xMode, 
+			double X) {
+		//- 1. Setting the variables
+		int N = numberOfTokens( slice );
+		int B = numberOfSamples(N, S, xMode, X);
+		
+		// Initialize array of samples with null
+		HashMap<String, HashMap<String, Integer>>[] samples 
+			= (HashMap<String, HashMap<String, Integer>>[])new HashMap[B];
+		for( int i = 0; i < B; i++ )
+			samples[i] = null;
+		
+		// System.out.println("B = "+ B);
+		
+		/*
+		 * If the number of samples is larger than the number of available elements
+		 * in the slice, we need to return an array of empty slices. 
+		 */
+		if( elementsInSlice( slice ) < S )
+			return samples;
+		
+		
+		//- 2. running through the slice constructing a keylist
+		SliceEntry[] entries = createSliceEntryArray(slice, N);
+		
+		
+		//- 3. Creating the samples
+		for (int i = 0; i < B; i++ )
+			samples[i] = sampleSlice(N, S, entries);
+		
+		return samples;
+	}
+
+
+
+
+	/**
+	 * <p>
+	 * Creates an array of slice entries from the given slice, containing the
+	 * given number of tokens. A token is in the array as many times as its
+	 * frequency. For example, if a token occurs 5 times, there will be five
+	 * (consecutive) bins of the array filled with this token.
+	 * </p>
+	 * @param slice	slice to create array from
+	 * @param N		number of tokens in the slice
+	 * @return		array of (repeated) slice entries
+	 */
+	private SliceEntry[] createSliceEntryArray(
+			HashMap<String, HashMap<String, Integer>> slice, int N) {
+		// Creating room for the entries
+		SliceEntry[] entries = new SliceEntry[N];
+		
+		// Running through the slice
+		Iterator<String> i1 = slice.keySet().iterator();
+		int i = 0;
+		while( i1.hasNext() ) {
+			String lemma = i1.next();
+			
+			Iterator<String> i2 = slice.get(lemma).keySet().iterator();
+			while( i2.hasNext() ) {
+				String category = i2.next();
+				
+				// Adding the token as many times as its frequency
+				int freq = slice.get(lemma).get(category);
+				for( int j = 0; j < freq; j++ ) {
+					entries[i] = new SliceEntry(lemma, category, freq);
+					i++;
 				}
 			}
 		}
+		
 		return entries;
 	}
 	
 	
-	/**
-	 * Computes the number of samples taken
-	 * @param S		size of samples
-	 * @param xMode	sampling mode (sampling factor or fixed value)
-	 * @param X		Sampling factor or Fixed value
-	 * @param N		number of tokens in the datacube
-	 * @return
-	 */
-	protected int numberOfSamples(int S, int xMode, double X, int N) {
-		int B = 2;
-		if( xMode == 0 )
-			B = (int)Math.ceil(N*X/S);
-		else
-			B = (int)Math.ceil(X);
-		
-		// at least two samples have to be taken
-		if( B < 2 )
-			B = 2;
-		return B;
-	}
-	
-	
-	
-	//==========================================================================
-	//== Number of tokens in a cube or slice.
-	//==========================================================================
-	/**
-	 * The number of tokens available in the corpus. Size of the corpus.
-	 * @return	size of the corpus
-	 * @see test.msp.DataCubeTest#maxSampleSizeResampleCumulate()
-	 */
-	public int numberOfTokens() {
-		int r = 0;
-		
-		if( cube != null ) {
-			Iterator<String> i1 = cube.keySet().iterator();
-			while( i1.hasNext() ) {
-				String month = i1.next();
-				Iterator<String> i2 = cube.get(month).keySet().iterator();
-				while( i2.hasNext() ) {
-					String lemma = i2.next();
-					Iterator<String> i3 = cube.get(month).get(lemma).keySet().iterator();
-					while( i3.hasNext() ) {
-						String category = i3.next();
-						r += cube.get(month).get(lemma).get(category);
-					}
-				}
-			}
-		}
-		
-		return r;
-	}
 	
 	/**
-	 * The number of tokens available in the given slice.
-	 * @param slice the slice
-	 * @return	size of the slice
+	 * <p>
+	 * Creates a single sample of given size.
+	 * </p>
+	 * @param N			number of tokens in slice
+	 * @param S			sample size
+	 * @param entries	slice entries of the slice
+	 * @return	a sample of size S
 	 */
-	public int numberOfTokens( HashMap<String, HashMap<String, Integer>> slice ) {
-		int r = 0;
+	protected HashMap<String, HashMap<String, Integer>> sampleSlice(
+			int N, int S, SliceEntry[] entries) {
+		// Creating room for the sample
+		HashMap<String, HashMap<String, Integer>> sample = 
+			new HashMap<String, HashMap<String,Integer>>();
 		
-		if( slice != null ) {
-			Iterator<String> i1 = slice.keySet().iterator();
-			while( i1.hasNext() ) {
-				String lemma = i1.next();
-				Iterator<String> i2 = slice.get(lemma).keySet().iterator();
-				while( i2.hasNext() ) {
-					String category = i2.next();
-					r += slice.get(lemma).get(category);
-				}
-			}
-		}
+		int m = 0; // Already chosen tokens
+		for( int i = 0; i < N; i++ ) {
+			double chance = ((double)(S-m))/((double)(N-i));
 			
-		return r;
-	}
-	
-	/**
-	 * Returns the number of tokens in the asked for slice.
-	 * @param sliceName	name of the slice we want to interact with
-	 * @return			number of tokens in that slice (if it exists)
-	 */
-	public int numberOfTokens( String sliceName ) {
-		if( cube.containsKey(sliceName) )
-			return numberOfTokens(cube.get(sliceName));
-		return 0;
-	}
-	
-	/**
-	 * Number of lemmas in the cube.
-	 * @return	number of lemmas
-	 */
-	public int numberOfLemmas() {
-		return lemmas.size();
-	}
-	
-	/**
-	 * Number of lemmas in the asked for slice.
-	 * @param sliceName	name of the asked for slice
-	 * @return			number of lemmas in that slice
-	 */
-	public int numberOfLemmas( String sliceName ) {
-		if( cube.containsKey(sliceName) )
-			return cube.get(sliceName).size();
-		return 0;
-	}
-	
-	
-	
-	/**
-	 * B = N / S
-	 * @return	B
-	 */
-	public Integer defaultNumberOfTokens( int S ) {
-		double tokens = numberOfTokens();
-		double Brough = tokens / S;
-		return (int)Math.ceil(Brough);
-	}
-	
-	
-	
-	//==========================================================================
-	//== Calculating the maximum size of a sample
-	//==========================================================================
-	/**
-	 * Calculates the biggest value one can choose as sample size, when doing cumulate & resample
-	 * @return	maximum sample size
-	 * @see test.msp.DataCubeTest#maxSampleSizeCumulateResample()
-	 */
-	public int maxSampleSizeOneSpan() {
-		if( time.size() > 0 ) {
-			int min = numberOfTokens(cube.get(time.get(0)));
-			for( int i = 1; i < time.size(); i++ ) {
-				int x = numberOfTokens(cube.get(time.get(i)));
-				if( x < min )
-					min = x;
+			if( chance >= Math.random()) {
+				// Select token at position i!
+				String lemma = entries[i].getLemma();
+				String category = entries[i].getCategory();
+				
+				// Put token in sample
+				if( sample.get(lemma) == null )
+					sample.put(lemma, new HashMap<String, Integer>());
+				if( sample.get(lemma).get(category) == null )
+					sample.get(lemma).put(category, 1);
+				else {
+					int x = sample.get(lemma).get(category) + 1;
+					sample.get(lemma).remove(category);
+					sample.get(lemma).put(category, x);
+				}
+				
+				m++;
 			}
-			
-			min--;
-			return min;
 		}
-		return 1;
+		
+		return sample;
 	}
 	
-	/**
-	 * Calculates the biggest value one can choose as sample size, when doing resample & cumulate
-	 * @return	maximum sample size
-	 * @see test.msp.DataCubeTest#maxSampleSizeResampleCumulate()
-	 */
-	public int maxSampleSizeAllSpan() {
-		if( time.size() > 0 )
-			return numberOfTokens()-1;
-		return 1;
-	}
-	
-	
-	
+
+
 	//== Cumulate the datacube
 	/**
 	 * Cumulate the cube. Add everything from the previous months to all the next months. 
@@ -984,130 +1144,6 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	
 	//===========================================================================
-	// MEAN SIZE OF PARADIGM
-	//===========================================================================
-	//== Standard MSP
-	/**
-	 * Calculate the MSP value using variety and no weighting
-	 * @param month		MSP of this month
-	 */
-	public double mspVarietyUnweighted( String month ) throws ImpossibleCalculationException, NoDataException {
-		//		logger.debug("Calculating mspVarietyUnweighted");
-		if( cube.get(month) == null )
-			throw new NoDataException();
-		return mspVarietyUnweighted( cube.get(month) );
-	}
-	
-	/**
-	 * Calculate the MSP value using variety and no weighting
-	 * @param slice	Slice in which the MSP must be calculated
-	 */
-	public double mspVarietyUnweighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
-		//		logger.debug("Calculating mspVarietyUnweighted");
-		double x = (double)o( ".", ".", slice );
-		double y = (double)o( "*", ".", slice );
-		return x / y;
-	}
-	
-	/**
-	 * Calculate the MSP value using variety and weighting
-	 * @param month		MSP of this month
-	 * @return			Weighted Variety MSP for a given month
-	 * @throws ImpossibleCalculationException
-	 */
-	public double mspVarietyWeighted( String month ) throws ImpossibleCalculationException, NoDataException {
-		//		logger.debug("Calculating mspVarietyWeighted");
-		return mspVarietyWeighted( cube.get(month) );
-	}
-	
-	/**
-	 * Calculate the MSP value using variety and weighting
-	 * @param slice	slice of cube
-	 * @return		Weighted Variety MSP values for a given slice
-	 * @throws ImpossibleCalculationException
-	 */
-	public double mspVarietyWeighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
-		//		logger.debug("Calculating mspVarietyWeighted");
-		if( slice == null )
-			throw new NoDataException();
-		
-		double r = 0.0;
-		for( int i = 0; i < lemmas.size(); i++ )
-			r += f("*", lemmas.get(i), slice) * o(".", lemmas.get(i), slice);
-		return r;
-	}
-	
-	/**
-	 * Calculate the MSP value using entropy and no weighting
-	 * @param month		MSP of this month
-	 * @return			Unweighted Entropy MSP values of the given month
-	 * @throws ImpossibleCalculationException
-	 */
-	public double mspEntropyUnweighted( String month ) throws ImpossibleCalculationException, NoDataException {
-		//		logger.debug("Calculating mspEntropyUnweighted");
-		return mspEntropyUnweighted(cube.get(month));
-	}
-	
-	/**
-	 * Calculate the MSP value using entropy and no weighting
-	 * @param slice	the values
-	 * @return		Weighted Entropy MSP values
-	 * @throws ImpossibleCalculationException
-	 */
-	public double mspEntropyUnweighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
-		//		logger.debug("Calculating mspEntropyUnweighted");
-		if( slice == null )
-			throw new NoDataException();
-		
-		double r = 0.0;
-		for( int i = 0; i < lemmas.size(); i++ ) {
-			if( slice.containsKey(lemmas.get(i)) ) {
-				double hc = hc(".", lemmas.get(i), slice);
-				r += perplexity(hc);
-			}
-		}
-		double o = o("*", ".", slice);
-		r /= o;
-		
-		return r;
-	}
-	
-	
-	/**
-	 * Calculate the MSP value using entropy and weighting
-	 * @param month		MSP of this month
-	 * @return			Weighted Entropy of a given month
-	 * @throws ImpossibleCalculationException
-	 */
-	public double mspEntropyWeighted( String month ) throws ImpossibleCalculationException, NoDataException {
-		//		logger.debug("Calculating mspEntropyWeighted");
-		return mspEntropyWeighted( cube.get(month) );
-	}
-	
-	/**
-	 * Calculate the MSP value using entropy and weighting
-	 * @param slice	the values
-	 * @return		Weighted Entropy of a given slice
-	 * @throws ImpossibleCalculationException
-	 */
-	public double mspEntropyWeighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
-		//		logger.debug("Calculating mspEntropyWeighted");
-		if( slice == null )
-			throw new NoDataException();
-		
-		double r = 0.0;
-		for( int i = 0; i < lemmas.size(); i++ )
-			r += f("*", lemmas.get(i), slice) * perplexity(hc(".", lemmas.get(i), slice));
-		return r;
-	}
-	
-	
-	
-	
-	
-	
-	
-	//===========================================================================
 	// MEAN SIZE OF PARADIGM: User Interface
 	//===========================================================================
 	/**
@@ -1125,13 +1161,17 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		for( int i = 0; i < time.size(); i++ ) {
 			try {
 				if( !weighting && !entropy )
-					result[i] = new MSPSpan(mspVarietyUnweighted(time.get(i)), time.get(i));
+					result[i] = 
+						new MSPSpan(mspVarietyUnweighted(time.get(i)), time.get(i));
 				else if( weighting && !entropy )
-					result[i] = new MSPSpan(mspVarietyWeighted(time.get(i)), time.get(i));
+					result[i] = 
+						new MSPSpan(mspVarietyWeighted(time.get(i)), time.get(i));
 				else if( !weighting && entropy )
-					result[i] = new MSPSpan(mspEntropyUnweighted(time.get(i)), time.get(i));
+					result[i] = 
+						new MSPSpan(mspEntropyUnweighted(time.get(i)), time.get(i));
 				else if( weighting && entropy )
-					result[i] = new MSPSpan(mspEntropyWeighted(time.get(i)), time.get(i));
+					result[i] = 
+						new MSPSpan(mspEntropyWeighted(time.get(i)), time.get(i));
 			} catch( NoDataException e ) {
 				logger.error("No data? This should not be happening!");
 				result[i] = new MSPSpan(0.0, time.get(i));
@@ -1143,43 +1183,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		
 		return new MSPResult(result, null);
 	}
-	
-	/**
-	 * Cumulate then calculate the MSP values
-	 * @param weighting	use weighting?
-	 * @param entropy	entropy or variety?
-	 * @return			the results
-	 * @throws ImpossibleCalculationException
-	 */
-	public MSPResult cumulateMSP( boolean weighting, boolean entropy ) throws ImpossibleCalculationException {
-		DataCube c = cumulate();
-		c.addProgressListener(this);
-		return c.MSP(weighting, entropy);
-	}
-	
-	
-	
-	//== Normalized MSP
-	/**
-	 * Cumulation & Resampling
-	 * @param weighted				use the weighted variant (false = unweighted, true = weighted)
-	 * @param entropy				which base to use? (false = variety, true = entropy)
-	 * @param subSampleMode			how to subsample?
-	 * @param subSampleSize			size of the subsamples
-	 * @param numberOfSamplesMode	how to adjust the number of subsamples?
-	 * @param numberOfSamples		how many subsamples?
-	 */
-	public MSPResult cumulateResampleMSP( boolean weighted, boolean entropy, int subSampleMode, int subSampleSize, 
-			int numberOfSamplesMode, double numberOfSamples ) throws ImpossibleCalculationException {
-		//- Cumulate
-		DataCube c = cumulate();
-		c.addProgressListener(this);
-		
-		//- Calculate the MSP values using resampling
-		return c.resampleMSP(weighted, entropy, subSampleMode, subSampleSize, numberOfSamplesMode, numberOfSamples);
-	}
-	
-	
+
+
+
+
 	/**
 	 * Calculate the MSP values of each month using resampling. Resampling can either be MSP(S)
 	 * or "All Span" resampling.
@@ -1191,119 +1198,151 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param numberOfSamples		how many subsamples?
 	 * @throws ImpossibleCalculationException	if something goes wrong in the calculation
 	 */
-	public MSPResult resampleMSP(boolean weighting, boolean entropy, int subSampleMode, int subSampleSize,
-			int numberOfSamplesMode, double numberOfSamples ) throws ImpossibleCalculationException {
+	public MSPResult resampleMSP(boolean weighting, 
+									boolean entropy, 
+									int subSampleMode, 
+									int subSampleSize,
+									int numberOfSamplesMode, 
+									double numberOfSamples ) 
+			throws ImpossibleCalculationException {
 		//- Making space for the result and the samples
 		MSPSpan[] result = new MSPSpan[time.size()];
 		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(time.size());
 		
 		
 		// depending on the subsampling method: "one span" or "all span"
-		if( subSampleMode == 0 ) {
+		if( subSampleMode == ONE_SPAN ) {
 			//- Calculate resampled MSP: MSP(S)
 			for( int i = 0; i < time.size(); i++ ) {
 				// for each slice
 				//	resample the current slice
 				//	calculate the msp for each sample
 				//	calculate the average and standard deviation
-				
 				String span = time.get(i);
-				HashMap<String, HashMap<String, Integer>>[] samples = resample( cube.get(span), 
-						subSampleSize, numberOfSamplesMode, numberOfSamples );
 				
-				// calculate the values
-				double[] msps = new double[samples.length];
-				sampleMSPs.add( new ArrayList<Double>(samples.length) );
-				if( !weighting && !entropy ) {
-					// unweighted variety
-					for( int j = 0; j < samples.length; j++ )
-						try {
-							if( samples[j] == null )
-								msps[j] = 0;
-							else
-								msps[j] = mspVarietyUnweighted(samples[j]);
-							sampleMSPs.get(i).add( msps[j] );
-						} catch( NoDataException e ) {
-							logger.error("No data? This should not be happening!");
-							msps[j] = 0.0;
-						}
+				// Compute the number of samples
+				int N = numberOfTokens( cube.get(span) );
+				int B = numberOfSamples(
+							N, 
+							subSampleSize, 
+							subSampleMode, 
+							numberOfSamples);
+				
+				// Make room in sampleMSPs
+				sampleMSPs.add( new ArrayList<Double>(B) );
+				
+				if( N < subSampleSize ) {
+					// Oversampling: we need to take more tokens from the 
+					// sample then there are tokens to take!!
+					// 1. Fill sampleMSPs with empty lists
+					for( int j = 0; j < B; j++ )
+						sampleMSPs.get(i).add(new Double(0.0));
+					
+					// 2. Fill results with neutral MSPSpan
+					result[i] = new MSPSpan(1, 0, span);
+				} else {
+					// Entries
+					SliceEntry[] entries = 
+						createSliceEntryArray(cube.get(span), N);
+					
+					// calculate the values
+					double[] msps = new double[B];
+					
+					if( !weighting && !entropy ) {
+						// unweighted variety
+						for( int j = 0; j < B; j++ )
+							try {
+								msps[j] = mspVarietyUnweighted(sampleSlice(
+												N, subSampleSize, entries));
+								sampleMSPs.get(i).add( msps[j] );
+							} catch( NoDataException e ) {
+								logger.error("No data? This should not be happening!");
+								msps[j] = 0.0;
+							}
+					}
+					else if( weighting && !entropy ) {
+						// weighted variety
+						for( int j = 0; j < B; j++ )
+							try {
+								msps[j] = mspVarietyWeighted(sampleSlice(
+												N, subSampleSize, entries));
+								sampleMSPs.get(i).add( msps[j] );
+							} catch( NoDataException e ) {
+								logger.error("No data? This should not be happening!");
+								msps[j] = 0.0;
+							}
+					}
+					else if( !weighting && entropy ) {
+						// unweighted entropy
+						for( int j = 0; j < B; j++ )
+							try {
+								msps[j] = mspEntropyUnweighted(sampleSlice(
+												N, subSampleSize, entries));
+								sampleMSPs.get(i).add( msps[j] );
+							} catch( NoDataException e ) {
+								logger.error("No data? This should not be happening!");
+								msps[j] = 0.0;
+							}
+					}
+					else if( weighting && entropy ) {
+						// weighted entropy
+						for( int j = 0; j < B; j++ )
+							try {
+								msps[j] = mspEntropyWeighted(sampleSlice(
+												N, subSampleSize, entries));
+								sampleMSPs.get(i).add( msps[j] );
+							} catch( NoDataException e ) {
+								logger.error("No data? This should not be happening!");
+								msps[j] = 0.0;
+							}
+					}
+					
+					// calculate the average
+					double average = 0.0;
+					for( int j = 0; j < B; j++ )
+						average += msps[j];
+					average /= B;
+					
+					// calculate the standard deviation
+					double variance = 0.0;
+					for( int j = 0; j < B; j++ )
+						variance = Math.pow(msps[j] - average, 2);
+					variance /= B;
+					double stddev = Math.sqrt(variance);
+					
+					result[i] = new MSPSpan(average, stddev, span);
+					
+					// making progress
+					notifyProgressListeners( (((double)i+1)/time.size())*100 );
 				}
-				else if( weighting && !entropy ) {
-					// weighted variety
-					for( int j = 0; j < samples.length; j++ )
-						try {
-							if( samples[j] == null )
-								msps[j] = 0;
-							else
-								msps[j] = mspVarietyWeighted(samples[j]);
-							sampleMSPs.get(i).add( msps[j] );
-						} catch( NoDataException e ) {
-							logger.error("No data? This should not be happening!");
-							msps[j] = 0.0;
-						}
-				}
-				else if( !weighting && entropy ) {
-					// unweighted entropy
-					for( int j = 0; j < samples.length; j++ )
-						try {
-							if( samples[j] == null )
-								msps[j] = 0;
-							else
-								msps[j] = mspEntropyUnweighted(samples[j]);
-							sampleMSPs.get(i).add( msps[j] );
-						} catch( NoDataException e ) {
-							logger.error("No data? This should not be happening!");
-							msps[j] = 0.0;
-						}
-				}
-				else if( weighting && entropy ) {
-					// weighted entropy
-					for( int j = 0; j < samples.length; j++ )
-						try {
-							if( samples[j] == null )
-								msps[j] = 0;
-							else
-								msps[j] = mspEntropyWeighted(samples[j]);
-							sampleMSPs.get(i).add( msps[j] );
-						} catch( NoDataException e ) {
-							logger.error("No data? This should not be happening!");
-							msps[j] = 0.0;
-						}
-				}
-				
-				// calculate the average
-				double average = 0.0;
-				for( int j = 0; j < samples.length; j++ )
-					average += msps[j];
-				average /= samples.length;
-				
-				// calculate the standard deviation
-				double variance = 0.0;
-				for( int j = 0; j < samples.length; j++ )
-					variance = Math.pow(msps[j] - average, 2);
-				variance /= samples.length;
-				double stddev = Math.sqrt(variance);
-				
-				result[i] = new MSPSpan(average, stddev, span);
-				
-				// making progress
-				notifyProgressListeners( (((double)i+1)/time.size())*100 );
 			}
 		}
-		else if( subSampleMode == 1 ) {
+		else if( subSampleMode == ALL_SPAN ) {
 			//- Calculate the "All Span" resampling
-			DataCube[] samples = resample(subSampleSize, numberOfSamplesMode, numberOfSamples);
+			int N = numberOfTokens();
+			int B = numberOfSamples(N, 
+						subSampleSize, 
+						numberOfSamplesMode, 
+						numberOfSamples);
+			DataCubeEntry[] entries = createEntryArray(N);
+			
 			notifyProgressListeners(10);
 			
 			// Run through the samples, calculating the MSPs
-			MSPSpan[][] msps = new MSPSpan[samples.length][];
+			MSPSpan[][] msps = new MSPSpan[B][];
 			boolean overSampled = false;
-			for( int j = 0; j < samples.length; j++ )
-				if( samples[j] == null ) {
+			for( int j = 0; j < B; j++ ) {
+				if( N < subSampleSize ) {
+					// Need more tokens in the sample then there are tokens
+					// in the cube!!
 					msps[j] = null;
 					overSampled = true;
-				} else
-					msps[j] = samples[j].MSP(weighting, entropy).getResults();
+				} else {
+					// Take a sample
+					DataCube sample = sampleCube(subSampleSize, N, entries);
+					msps[j] = sample.MSP(weighting, entropy).getResults();
+				}
+			}
 			notifyProgressListeners(40);
 			
 			// Calculate the averages and standard deviations of each span
@@ -1316,7 +1355,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				
 				if( !overSampled ) {
 					// Sample bookkeeping
-					sampleMSPs.add( new ArrayList<Double>(samples.length) );
+					sampleMSPs.add( new ArrayList<Double>(B) );
 					for( int j = 0; j < msps.length; j++ ) {
 						boolean found = false;
 						for( int k = 0; !found && k < msps[j].length; k++ )
@@ -1332,7 +1371,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 					
 					// standard deviation
 					double variance = 0.0;
-					for( int j = 0; j < samples.length; j++ ) {
+					for( int j = 0; j < B; j++ ) {
 						boolean found = false;
 						for( int k = 0; !found && k < msps[j].length; k++ )
 							if( msps[j][k].getSpan().equals(span) ) {
@@ -1358,104 +1397,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		
 		return new MSPResult( result, sampleMSPs );
 	}
-	
-	/**
-	 * Make several samples of the given slice.
-	 * @param slice	the slice
-	 * @param S		number of tokens in the sample
-	 * @param xMode	0: B = N * X / S, 1: B = X
-	 * @param X		X-factor (resampling factor or fixed value)
-	 * @return		samples
-	 */
-	public HashMap<String, HashMap<String, Integer>>[] resample( HashMap<String, 
-			HashMap<String, Integer>> slice, int S, int xMode, double X) {
-		//- 1. Setting the variables
-		int N = numberOfTokens( slice );
-		int B = 1;
-		if( xMode == 0 )
-			B = (int)Math.ceil(N*X/S);
-		else
-			B = (int)Math.ceil(X);
-		HashMap<String, HashMap<String, Integer>>[] samples 
-			= (HashMap<String, HashMap<String, Integer>>[])new HashMap[B];
-		for( int i = 0; i < B; i++ )
-			samples[i] = null;
-		
-		// System.out.println("B = "+ B);
-		
-		//- 2. running through the slice constructing a keylist
-		Vector<SliceKey> keyList = new Vector<SliceKey>();
-		Iterator<String> i1 = slice.keySet().iterator();
-		while( i1.hasNext() ) {
-			String lemma = i1.next();
-			Iterator<String> i2 = slice.get(lemma).keySet().iterator();
-			while( i2.hasNext() ) {
-				String category = i2.next();
-				keyList.add( new SliceKey(lemma, category, slice.get(lemma).get(category) ) );
-			}
-		}
-		
-		/*
-		 * If the number of samples is larger than the number of available elements
-		 * in the slice, we need to return an array of empty slices. 
-		 */
-		if( elementsInSlice( slice ) < S )
-			return samples;
-		
-		
-		/*
-		 * Choosing a random number, browsing through the keylist, always decreasing the random
-		 * number until it hits the zero.
-		 */
-		for( int i = 0; i < B; i++ ) {
-			// for the new sample
-			HashMap<String, HashMap<String, Integer>> newSlice = new HashMap<String, HashMap<String, Integer>>();
-			
-			// take a copy of the infrastructure
-			int M = N;
-			Vector<SliceKey> keys = new Vector<SliceKey>(keyList.size());
-			for( int k = 0; k < keyList.size(); k++ ) {
-				SliceKey key = keyList.get(k);
-				keys.add(new SliceKey(key.getLemma(), key.getCategory(), key.getFrequency()));
-			}
-			
-			// choose a sample
-			for( int j = 0; j < S; j++ ) {
-				SliceKey chosen = null;
-				double random = Math.random()*M;
-				int head = 0;
-				while( random >= 0 ) {
-					chosen = keys.get(head++);
-					random -= chosen.getFrequency();
-				}
-				M--;
-				chosen.setFrequency(chosen.getFrequency()-1);
-				
-				// add
-				String lemma = chosen.getLemma();
-				String category = chosen.getCategory();
-				
-				if( !newSlice.containsKey(lemma) )
-					newSlice.put(lemma, new HashMap<String, Integer>());
-				if( !newSlice.get(lemma).containsKey(category) )
-					newSlice.get(lemma).put(category, 1);
-				else {
-					Integer x = newSlice.get(lemma).get(category);
-					Integer y = x + 1;
-					newSlice.get(lemma).remove(category);
-					newSlice.get(lemma).put(category, y);
-				}
-			}
-			
-			samples[i] = newSlice;
-		}
-		
-		
-		return samples;
-	}
-	
-	
-	
+
+
+
+
 	//== Resampled MSP
 	/**
 	 * Resampling & Accumulation
@@ -1588,13 +1533,133 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		
 		return new MSPResult( result, sampleMSPs );
 	}
-	
-	
-	
-	
+
+
+
+
 	//===========================================================================
-	// Getting the frequencies out
+	// MEAN SIZE OF PARADIGM
 	//===========================================================================
+	//== Standard MSP
+	/**
+	 * Calculate the MSP value using variety and no weighting
+	 * @param month		MSP of this month
+	 */
+	public double mspVarietyUnweighted( String month ) throws ImpossibleCalculationException, NoDataException {
+		//		logger.debug("Calculating mspVarietyUnweighted");
+		if( cube.get(month) == null )
+			throw new NoDataException();
+		return mspVarietyUnweighted( cube.get(month) );
+	}
+	
+	/**
+	 * Calculate the MSP value using variety and no weighting
+	 * @param slice	Slice in which the MSP must be calculated
+	 */
+	public double mspVarietyUnweighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
+		//		logger.debug("Calculating mspVarietyUnweighted");
+		double x = (double)o( ".", ".", slice );
+		double y = (double)o( "*", ".", slice );
+		return x / y;
+	}
+	
+	/**
+	 * Calculate the MSP value using variety and weighting
+	 * @param month		MSP of this month
+	 * @return			Weighted Variety MSP for a given month
+	 * @throws ImpossibleCalculationException
+	 */
+	public double mspVarietyWeighted( String month ) throws ImpossibleCalculationException, NoDataException {
+		//		logger.debug("Calculating mspVarietyWeighted");
+		return mspVarietyWeighted( cube.get(month) );
+	}
+	
+	/**
+	 * Calculate the MSP value using variety and weighting
+	 * @param slice	slice of cube
+	 * @return		Weighted Variety MSP values for a given slice
+	 * @throws ImpossibleCalculationException
+	 */
+	public double mspVarietyWeighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
+		//		logger.debug("Calculating mspVarietyWeighted");
+		if( slice == null )
+			throw new NoDataException();
+		
+		double r = 0.0;
+		for( int i = 0; i < lemmas.size(); i++ )
+			r += f("*", lemmas.get(i), slice) * o(".", lemmas.get(i), slice);
+		return r;
+	}
+	
+	/**
+	 * Calculate the MSP value using entropy and no weighting
+	 * @param month		MSP of this month
+	 * @return			Unweighted Entropy MSP values of the given month
+	 * @throws ImpossibleCalculationException
+	 */
+	public double mspEntropyUnweighted( String month ) throws ImpossibleCalculationException, NoDataException {
+		//		logger.debug("Calculating mspEntropyUnweighted");
+		return mspEntropyUnweighted(cube.get(month));
+	}
+	
+	/**
+	 * Calculate the MSP value using entropy and no weighting
+	 * @param slice	the values
+	 * @return		Weighted Entropy MSP values
+	 * @throws ImpossibleCalculationException
+	 */
+	public double mspEntropyUnweighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
+		//		logger.debug("Calculating mspEntropyUnweighted");
+		if( slice == null )
+			throw new NoDataException();
+		
+		double r = 0.0;
+		for( int i = 0; i < lemmas.size(); i++ ) {
+			if( slice.containsKey(lemmas.get(i)) ) {
+				double hc = hc(".", lemmas.get(i), slice);
+				r += perplexity(hc);
+			}
+		}
+		double o = o("*", ".", slice);
+		r /= o;
+		
+		return r;
+	}
+	
+	
+	/**
+	 * Calculate the MSP value using entropy and weighting
+	 * @param month		MSP of this month
+	 * @return			Weighted Entropy of a given month
+	 * @throws ImpossibleCalculationException
+	 */
+	public double mspEntropyWeighted( String month ) throws ImpossibleCalculationException, NoDataException {
+		//		logger.debug("Calculating mspEntropyWeighted");
+		return mspEntropyWeighted( cube.get(month) );
+	}
+	
+	/**
+	 * Calculate the MSP value using entropy and weighting
+	 * @param slice	the values
+	 * @return		Weighted Entropy of a given slice
+	 * @throws ImpossibleCalculationException
+	 */
+	public double mspEntropyWeighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
+		//		logger.debug("Calculating mspEntropyWeighted");
+		if( slice == null )
+			throw new NoDataException();
+		
+		double r = 0.0;
+		for( int i = 0; i < lemmas.size(); i++ )
+			r += f("*", lemmas.get(i), slice) * perplexity(hc(".", lemmas.get(i), slice));
+		return r;
+	}
+	
+	
+	
+	
+	
+	
 	
 	//== n: absolute frequency
 	/**
@@ -1973,6 +2038,157 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	
 	
+	//==========================================================================
+	//== Number of tokens in a cube or slice.
+	//==========================================================================
+	/**
+	 * The number of tokens available in the corpus. Size of the corpus.
+	 * @return	size of the corpus
+	 * @see test.msp.DataCubeTest#maxSampleSizeResampleCumulate()
+	 */
+	public int numberOfTokens() {
+		int r = 0;
+		
+		if( cube != null ) {
+			Iterator<String> i1 = cube.keySet().iterator();
+			while( i1.hasNext() ) {
+				String month = i1.next();
+				Iterator<String> i2 = cube.get(month).keySet().iterator();
+				while( i2.hasNext() ) {
+					String lemma = i2.next();
+					Iterator<String> i3 = cube.get(month).get(lemma).keySet().iterator();
+					while( i3.hasNext() ) {
+						String category = i3.next();
+						r += cube.get(month).get(lemma).get(category);
+					}
+				}
+			}
+		}
+		
+		return r;
+	}
+
+
+
+
+	/**
+	 * The number of tokens available in the given slice.
+	 * @param slice the slice
+	 * @return	size of the slice
+	 */
+	public int numberOfTokens( HashMap<String, HashMap<String, Integer>> slice ) {
+		int r = 0;
+		
+		if( slice != null ) {
+			Iterator<String> i1 = slice.keySet().iterator();
+			while( i1.hasNext() ) {
+				String lemma = i1.next();
+				Iterator<String> i2 = slice.get(lemma).keySet().iterator();
+				while( i2.hasNext() ) {
+					String category = i2.next();
+					r += slice.get(lemma).get(category);
+				}
+			}
+		}
+			
+		return r;
+	}
+
+
+
+
+	/**
+	 * Returns the number of tokens in the asked for slice.
+	 * @param sliceName	name of the slice we want to interact with
+	 * @return			number of tokens in that slice (if it exists)
+	 */
+	public int numberOfTokens( String sliceName ) {
+		if( cube.containsKey(sliceName) )
+			return numberOfTokens(cube.get(sliceName));
+		return 0;
+	}
+
+
+
+
+	/**
+	 * Number of lemmas in the cube.
+	 * @return	number of lemmas
+	 */
+	public int numberOfLemmas() {
+		return lemmas.size();
+	}
+
+
+
+
+	/**
+	 * Number of lemmas in the asked for slice.
+	 * @param sliceName	name of the asked for slice
+	 * @return			number of lemmas in that slice
+	 */
+	public int numberOfLemmas( String sliceName ) {
+		if( cube.containsKey(sliceName) )
+			return cube.get(sliceName).size();
+		return 0;
+	}
+
+
+
+
+	/**
+	 * B = N / S
+	 * @return	B
+	 */
+	public Integer defaultNumberOfTokens( int S ) {
+		double tokens = numberOfTokens();
+		double Brough = tokens / S;
+		return (int)Math.ceil(Brough);
+	}
+
+
+
+
+	//==========================================================================
+	//== Calculating the maximum size of a sample
+	//==========================================================================
+	/**
+	 * Calculates the biggest value one can choose as sample size, when doing cumulate & resample
+	 * @return	maximum sample size
+	 * @see test.msp.DataCubeTest#maxSampleSizeCumulateResample()
+	 */
+	public int maxSampleSizeOneSpan() {
+		if( time.size() > 0 ) {
+			int min = numberOfTokens(cube.get(time.get(0)));
+			for( int i = 1; i < time.size(); i++ ) {
+				int x = numberOfTokens(cube.get(time.get(i)));
+				if( x < min )
+					min = x;
+			}
+			
+			min--;
+			return min;
+		}
+		return 1;
+	}
+
+
+
+
+	/**
+	 * Calculates the biggest value one can choose as sample size, when doing resample & cumulate
+	 * @return	maximum sample size
+	 * @see test.msp.DataCubeTest#maxSampleSizeResampleCumulate()
+	 */
+	public int maxSampleSizeAllSpan() {
+		if( time.size() > 0 )
+			return numberOfTokens()-1;
+		return 1;
+	}
+
+
+
+
 	//===========================================================================
 	// Progressor
 	//===========================================================================

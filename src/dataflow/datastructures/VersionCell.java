@@ -75,8 +75,16 @@ public class VersionCell extends DefaultCell {
 	/**
 	 * Sets the value of this cell and triggers a flow. 
 	 */
-	public void setValue( boolean weighting, boolean entropy, int mode, int subSampleMode, int subSampleSize,
-			int numberOfSamplesMode, double numberOfSamples ) throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {
+	public void setValue( 	boolean weighting, 
+							boolean entropy, 
+							int mode, 
+							int subSampleMode, 
+							int subSampleSize,
+							int numberOfSamplesMode, 
+							double numberOfSamples ) 
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {
 		if( this.weighting != weighting ||
 				this.entropy != entropy ||
 				this.mode != mode ||

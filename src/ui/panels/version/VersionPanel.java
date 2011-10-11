@@ -112,20 +112,30 @@ public class VersionPanel extends Panel
 		JLabel sampleSize		= new JLabel("Subsample Size: ");
 		
 		// combobox content
-		String[] modeStrings = new String[]{"Basic", "Cumulate", "Resample", "Cumulate & Resample", "Resample & Cumulate"};
-		String[] numberOfSubSamplesStrings = new String[]{"Sampling Factor", "Fixed Value"};
+		String[] modeStrings = new String[]{"Basic", 
+											"Cumulate", 
+											"Resample", 
+											"Cumulate & Resample", 
+											"Resample & Cumulate"};
+		String[] numberOfSubSamplesStrings = new String[]{	"Sampling Factor", 
+															"Fixed Value"};
 		String[] sampleModeStrings = new String[]{"One Span", "All Spans"};
 		
 		// elements
 		try {
 			// setting the controllers
 			Defaults d = Defaults.instance();
-			weightC	 				= new JCheckBox();					weightC.setSelected(d.getBoolean("weighting"));
-			entropyC 				= new JCheckBox();					entropyC.setSelected(d.getBoolean("entropy"));
-			modeCB					= new JComboBox(modeStrings);		modeCB.setSelectedIndex(d.getInteger("mode"));
+			weightC	 				= new JCheckBox();					
+			weightC.setSelected(d.getBoolean("weighting"));
+			entropyC 				= new JCheckBox();					
+			entropyC.setSelected(d.getBoolean("entropy"));
+			modeCB					= new JComboBox(modeStrings);
+			modeCB.setSelectedIndex(d.getInteger("mode"));
 			subSampleSizeText		= new JTextField(6);
-			subSampleModeCB			= new JComboBox(sampleModeStrings);	subSampleModeCB.setSelectedIndex(0);
-			numberOfSamplesModeCB	= new JComboBox(numberOfSubSamplesStrings);	numberOfSamplesModeCB.setSelectedIndex(0);
+			subSampleModeCB			= new JComboBox(sampleModeStrings);	
+			subSampleModeCB.setSelectedIndex(0);
+			numberOfSamplesModeCB	= new JComboBox(numberOfSubSamplesStrings);	
+			numberOfSamplesModeCB.setSelectedIndex(0);
 			numberOfSamplesText		= new JTextField(6);
 			
 			// Setting values

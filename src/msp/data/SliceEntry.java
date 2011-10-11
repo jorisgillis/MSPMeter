@@ -23,11 +23,11 @@
 package msp.data;
 
 /**
- * Class which represent a lemma and a category (a word-form in a certain slice), 
- * together with its frequency count. 
+ * Class which represent a lemma and a category (a word-form in a certain 
+ * slice), together with its frequency count. 
  * @author Joris Gillis
  */
-public class SliceKey {
+public class SliceEntry {
 	
 	/** Lemma */
 	private String lemma;
@@ -38,12 +38,12 @@ public class SliceKey {
 	
 	
 	/**
-	 * Construct a new slicekey.
+	 * Construct a new slice-entry.
 	 * @param lemma		lemma
 	 * @param category	category
 	 * @param frequency	frequency
 	 */
-	public SliceKey( String lemma, String category, int frequency ) {
+	public SliceEntry( String lemma, String category, int frequency ) {
 		this.lemma = lemma;
 		this.category = category;
 		this.frequency = frequency;

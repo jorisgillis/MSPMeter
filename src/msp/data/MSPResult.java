@@ -25,10 +25,12 @@ package msp.data;
 import java.util.List;
 
 /**
+ * <p>
  * This object consists of a MSPSpan array representing the results of an
  * MSP calculation, and a sampleMSPs list of lists of doubles containing
  * the raw MSP values for the samples. If the MSP calculation uses no sampling
- * the sampleMSPs field will be null. 
+ * the sampleMSPs field will be null.
+ * </p> 
  * @author joris
  */
 public class MSPResult {

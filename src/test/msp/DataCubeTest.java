@@ -63,10 +63,17 @@ public class DataCubeTest {
 	 * @param results3		results for mspEntropyUnweighted
 	 * @param results4		results for mspEntropyWeighted
 	 */
-	public DataCubeTest( HashMap<String, HashMap<String, HashMap<String, Integer>>> cube,
-			Vector<String> time, Vector<String> lemmas, Vector<String> categories, 
-			Vector<Double> results1, Vector<Double> results2, Vector<Double> results3, Vector<Double> results4,
-			int numTokensRC, int numTokensCR ) {
+	public DataCubeTest( 
+			HashMap<String, HashMap<String, HashMap<String, Integer>>> cube,
+			Vector<String> time, 
+			Vector<String> lemmas, 
+			Vector<String> categories, 
+			Vector<Double> results1, 
+			Vector<Double> results2, 
+			Vector<Double> results3, 
+			Vector<Double> results4,
+			int numTokensRC, 
+			int numTokensCR ) {
 		this.time = time;
 		this.results1 = results1;
 		this.results2 = results2;

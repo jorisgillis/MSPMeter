@@ -92,9 +92,9 @@ public class LemmaEquivalencesTest {
 	@Test
 	public void invariance2() {
 		try {
-			MSPSpan[] cumulatedOriginal = dc.cumulateMSP(true, true).getResults();
+			MSPSpan[] cumulatedOriginal = dc.MSP(true, true).getResults();
 			dc.lemmaEquivalences(lemmaEquivalences);
-			MSPSpan[] cumulatedAfter = dc.cumulateMSP(true, true).getResults();
+			MSPSpan[] cumulatedAfter = dc.MSP(true, true).getResults();
 			
 			for( int i = 0; i < cumulatedOriginal.length; i++ )
 				assertEquals(cumulatedOriginal[i], cumulatedAfter[i]);

@@ -39,6 +39,14 @@ import dataflow.Grid;
  */
 public class ResultsCell extends DefaultCell {
 	
+	/* Different modes of computation */
+	public final int MODE_BASIC 			= 0;
+	public final int MODE_CUMULATE			= 1;
+	public final int MODE_RESAMPLE			= 2;
+	public final int MODE_CUMULATE_RESAMPLE	= 3;
+	public final int MODE_RESAMPLE_CUMULATE	= 4;
+	
+	
 	/* Results of the calculation */
 	private MSPSpan[] results = null;
 	private List<List<Double>> samples = null;
@@ -99,21 +107,21 @@ public class ResultsCell extends DefaultCell {
 			MSPResult pair = null;
 			
 			switch( mode ) {
-			case 0:
+			case MODE_BASIC:
 				pair = workingDC.MSP( weighting, entropy );
 				break;
-			case 1:
+			case MODE_CUMULATE:
 				pair = cumulatedDC.MSP( weighting, entropy );
 				break;
-			case 2:
+			case MODE_RESAMPLE:
 				pair = workingDC.resampleMSP( weighting, entropy, 
 						subSampleMode, subSampleSize, numberOfSamplesMode, numberOfSamples );
 				break;
-			case 3:
+			case MODE_CUMULATE_RESAMPLE:
 				pair = cumulatedDC.resampleMSP( weighting, entropy, 
 						subSampleMode, subSampleSize, numberOfSamplesMode, numberOfSamples );
 				break;
-			case 4:
+			case MODE_RESAMPLE_CUMULATE:
 				pair = workingDC.resampleCumulateMSP( weighting, entropy, 
 						subSampleSize, numberOfSamplesMode, numberOfSamples );
 				break;
