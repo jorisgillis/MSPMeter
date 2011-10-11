@@ -35,6 +35,7 @@ import msp.data.ImpossibleCalculationException;
 
 import org.apache.log4j.Logger;
 
+import ui.MSPMeterWindow;
 import ui.results.ProgressController;
 import dataflow.datastructures.Cell;
 
@@ -44,6 +45,9 @@ import dataflow.datastructures.Cell;
  * @author Joris Gillis
  */
 public class Grid implements ProgressProvider {
+	
+	/** The main window. */
+	protected MSPMeterWindow mainWindow;
 	
 	/** The collection of cells. */
 	protected HashMap<String, Cell> cells = new HashMap<String, Cell>();
@@ -99,6 +103,14 @@ public class Grid implements ProgressProvider {
 		if( instance == null )
 			instance = new Grid();
 		return instance;
+	}
+	
+	/**
+	 * Sets up communication between the main window and the grid.
+	 * @param window	main window
+	 */
+	public void setMSPMeterWindow(MSPMeterWindow window) {
+		this.mainWindow = window;
 	}
 	
 	
@@ -442,7 +454,15 @@ public class Grid implements ProgressProvider {
 		 * @see java.lang.Thread#run()
 		 */
 		public void run() {
-			flowing();
+			try {
+				flowing();
+			} catch( OutOfMemoryError e ) {
+				mainWindow.showWarning("MSPMeter went out of memory!\nExiting!");
+				System.exit(-1);
+			} catch( Exception e ) {
+				mainWindow.showWarning(e);
+				System.exit(-1);
+			}
 		}
 		
 		/**

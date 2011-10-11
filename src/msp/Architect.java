@@ -55,9 +55,10 @@ public class Architect {
 		Grid grid = Grid.instance();
 		
 		//- Setting up the GUI
-		new MSPMeterWindow();
+		MSPMeterWindow window = new MSPMeterWindow();
 		ResultsWindow resultsWindow = new ResultsWindow();
 		grid.addProgressController(resultsWindow);
+		grid.setMSPMeterWindow(window);
 		
 		//- Adding the (internal) cells
 		OriginalDataCubeCell originalDC = new OriginalDataCubeCell();
