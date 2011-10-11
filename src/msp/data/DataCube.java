@@ -492,7 +492,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param xMode	sampling mode: X ? 0: B = N * X / S, 1: B = X
 	 * @param X		X-factor (sampling factor or fixed value)
 	 */
-	public DataCube[] resample( int S, int xMode, double X ) {
+	public DataCube[] resampleAlternate( int S, int xMode, double X ) {
 		// determine B
 		int N = numberOfTokens();					// Number of Tokens
 		int B = numberOfSamples(S, xMode, X, N);	// Number of Samples
@@ -643,7 +643,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param X		Sampling factor or Fixed Value
 	 * @return
 	 */
-	public DataCube[] resampleAlternate( int S, int xMode, double X ) {
+	public DataCube[] resample( int S, int xMode, double X ) {
 		// The numbers
 		int N = numberOfTokens();
 		int B = numberOfSamples(S, xMode, X, N);
@@ -674,8 +674,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			
 			int m = 0;	// Chosen
 			for( int i = 0; i < N && m < S; i++) {
-				double chance = (S-m)/(N-i);
-				if (chance <= Math.random()) {
+				double chance = ((double)(S-m))/(N-i);
+				if (chance >= Math.random()) {
 					String month = entries[i].getMonth();
 					String lemma = entries[i].getLemma();
 					String category = entries[i].getCategory();
