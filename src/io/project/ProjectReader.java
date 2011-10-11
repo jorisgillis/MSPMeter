@@ -60,6 +60,7 @@ public class ProjectReader implements ContentHandler {
 	protected Vector<FileRow> files;
 	protected FileRow currentFR;
 	protected String fileName = "";
+	protected String annotation = "";
 	
 	protected String firstSeparator;
 	protected String secondSeparator;
@@ -179,7 +180,7 @@ public class ProjectReader implements ContentHandler {
 			else if( sFilesOrder )
 				currentFR.setOrder(Integer.parseInt(data));
 			else if( sFilesAnnotation )
-				currentFR.setDataSet(data);
+				annotation += data;
 		} else if( sLinestructures ) {
 			if( sFirstSeparator )
 				firstSeparator += data.replaceAll("\\\\", "");
@@ -250,9 +251,11 @@ public class ProjectReader implements ContentHandler {
 			} else if( name.equals("order") )
 				sFilesOrder = false;
 			else if( name.equals("annotation") ) {
+				currentFR.setDataSet(annotation);
 				sFilesAnnotation = false;
 				files.add(currentFR);
 				currentFR = null;
+				annotation = "";
 			}
 			else if( name.equals("files") )
 				sFiles = false;
