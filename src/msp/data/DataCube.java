@@ -1213,185 +1213,225 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		// depending on the subsampling method: "one span" or "all span"
 		if( subSampleMode == ONE_SPAN ) {
 			//- Calculate resampled MSP: MSP(S)
-			for( int i = 0; i < time.size(); i++ ) {
-				String span = time.get(i);
-				
-				// Compute the number of samples
-				int N = numberOfTokens( cube.get(span) );
-				int B = numberOfSamples(
-							N, 
-							subSampleSize, 
-							numberOfSamplesMode, 
-							numberOfSamples);
-				
-				// Make room in sampleMSPs
-				sampleMSPs.add( new ArrayList<Double>(B) );
-				
-				if( N < subSampleSize ) {
-					// Oversampling: we need to take more tokens from the 
-					// sample then there are tokens to take!!
-					// 1. Fill sampleMSPs with empty lists
-					for( int j = 0; j < B; j++ )
-						sampleMSPs.get(i).add(new Double(0.0));
-					
-					// 2. Fill results with neutral MSPSpan
-					result[i] = new MSPSpan(1, 0, span);
-				} else {
-					// Entries
-					SliceEntry[] entries = 
-						createSliceEntryArray(cube.get(span), N);
-					
-					// calculate the values
-					double[] msps = new double[B];
-					
-					if( !weighting && !entropy ) {
-						// unweighted variety
-						for( int j = 0; j < B; j++ )
-							try {
-								msps[j] = mspVarietyUnweighted(sampleSlice(
-												N, subSampleSize, entries));
-								sampleMSPs.get(i).add( msps[j] );
-							} catch( NoDataException e ) {
-								logger.error("No data? This should not be happening!");
-								msps[j] = 0.0;
-							}
-					}
-					else if( weighting && !entropy ) {
-						// weighted variety
-						for( int j = 0; j < B; j++ )
-							try {
-								msps[j] = mspVarietyWeighted(sampleSlice(
-												N, subSampleSize, entries));
-								sampleMSPs.get(i).add( msps[j] );
-							} catch( NoDataException e ) {
-								logger.error("No data? This should not be happening!");
-								msps[j] = 0.0;
-							}
-					}
-					else if( !weighting && entropy ) {
-						// unweighted entropy
-						for( int j = 0; j < B; j++ )
-							try {
-								msps[j] = mspEntropyUnweighted(sampleSlice(
-												N, subSampleSize, entries));
-								sampleMSPs.get(i).add( msps[j] );
-							} catch( NoDataException e ) {
-								logger.error("No data? This should not be happening!");
-								msps[j] = 0.0;
-							}
-					}
-					else if( weighting && entropy ) {
-						// weighted entropy
-						for( int j = 0; j < B; j++ )
-							try {
-								msps[j] = mspEntropyWeighted(sampleSlice(
-												N, subSampleSize, entries));
-								sampleMSPs.get(i).add( msps[j] );
-							} catch( NoDataException e ) {
-								logger.error("No data? This should not be happening!");
-								msps[j] = 0.0;
-							}
-					}
-					
-					// calculate the average
-					double average = 0.0;
-					for( int j = 0; j < B; j++ )
-						average += msps[j];
-					average /= B;
-					
-					// calculate the standard deviation
-					double variance = 0.0;
-					for( int j = 0; j < B; j++ )
-						variance = Math.pow(msps[j] - average, 2);
-					variance /= B;
-					double stddev = Math.sqrt(variance);
-					
-					result[i] = new MSPSpan(average, stddev, span);
-					
-					// making progress
-					notifyProgressListeners( (((double)i+1)/time.size())*100 );
-				}
-			}
+			resampleMSPOneSpan(weighting, entropy, subSampleSize,
+					numberOfSamplesMode, numberOfSamples, result, sampleMSPs);
 		}
 		else if( subSampleMode == ALL_SPAN ) {
 			//- Calculate the "All Span" resampling
-			int N = numberOfTokens();
-			int B = numberOfSamples(N, 
-						subSampleSize, 
-						numberOfSamplesMode, 
-						numberOfSamples);
-			DataCubeEntry[] entries = createEntryArray(N);
-			
-			notifyProgressListeners(10);
-			
-			// Run through the samples, calculating the MSPs
-			MSPSpan[][] msps = new MSPSpan[B][];
-			boolean overSampled = false;
-			for( int j = 0; j < B; j++ ) {
-				if( N < subSampleSize ) {
-					// Need more tokens in the sample then there are tokens
-					// in the cube!!
-					msps[j] = null;
-					overSampled = true;
-				} else {
-					// Take a sample
-					DataCube sample = sampleCube(subSampleSize, N, entries);
-					msps[j] = sample.MSP(weighting, entropy).getResults();
-				}
-			}
-			notifyProgressListeners(40);
-			
-			// Calculate the averages and standard deviations of each span
-			sampleMSPs = new ArrayList<List<Double>>(time.size());
-			for( int i = 0; i < time.size(); i++ ) {
-				// averaging
-				String span = time.get(i);
-				double avg = 0.0, stddev = 0.0;
-				int count = 0;
-				
-				if( !overSampled ) {
-					// Sample bookkeeping
-					sampleMSPs.add( new ArrayList<Double>(B) );
-					for( int j = 0; j < msps.length; j++ ) {
-						boolean found = false;
-						for( int k = 0; !found && k < msps[j].length; k++ )
-							if( msps[j][k].getSpan().equals(span) ) {
-								avg += msps[j][k].getMSP();
-								sampleMSPs.get(i).add(msps[j][k].getMSP());
-								count++;
-								found = true;
-							}
-					}
-					if( count > 0 ) 
-						avg /= count;
-					
-					// standard deviation
-					double variance = 0.0;
-					for( int j = 0; j < B; j++ ) {
-						boolean found = false;
-						for( int k = 0; !found && k < msps[j].length; k++ )
-							if( msps[j][k].getSpan().equals(span) ) {
-								variance += Math.pow(msps[j][k].getMSP() - avg, 2);
-								found = true;
-							}
-					}
-					if( count > 0 )
-						variance /= count;
-					stddev = Math.sqrt(variance);
-				} else {
-					// Adding an empty list of samples
-					sampleMSPs.add( new ArrayList<Double>() );
-				}
-				
-				// adding to the results
-				result[i] = new MSPSpan(avg, stddev, span);
-				
-				// making progress
-				notifyProgressListeners( 40 + (((double)i+1)/time.size())*60 );
-			}
+			sampleMSPs = resampleMSPAllSpan(weighting, entropy, subSampleSize,
+					numberOfSamplesMode, numberOfSamples, result);
 		}
 		
 		return new MSPResult( result, sampleMSPs );
+	}
+	
+	/**
+	 * Computes the sampled MSP values for ONE SPAN sampling
+	 * @param weighting				weighting or not?
+	 * @param entropy				entropy or not?
+	 * @param subSampleSize			size of samples
+	 * @param numberOfSamplesMode	Sampling Factor or Fixed Value?
+	 * @param numberOfSamples		The Sampling Factor or Fixed Value
+	 * @param result				Results array
+	 * @param sampleMSPs			List of MSP values for all samples 
+	 * @throws ImpossibleCalculationException
+	 */
+	protected void resampleMSPOneSpan(boolean weighting, boolean entropy,
+			int subSampleSize, int numberOfSamplesMode, double numberOfSamples,
+			MSPSpan[] result, List<List<Double>> sampleMSPs)
+			throws ImpossibleCalculationException {
+		for( int i = 0; i < time.size(); i++ ) {
+			String span = time.get(i);
+			
+			// Compute the number of samples
+			int N = numberOfTokens( cube.get(span) );
+			int B = numberOfSamples(
+						N, 
+						subSampleSize, 
+						numberOfSamplesMode, 
+						numberOfSamples);
+			
+			// Make room in sampleMSPs
+			sampleMSPs.add( new ArrayList<Double>(B) );
+			
+			if( N < subSampleSize ) {
+				// Oversampling: we need to take more tokens from the 
+				// sample then there are tokens to take!!
+				// 1. Fill sampleMSPs with empty lists
+				for( int j = 0; j < B; j++ )
+					sampleMSPs.get(i).add(new Double(0.0));
+				
+				// 2. Fill results with neutral MSPSpan
+				result[i] = new MSPSpan(1, 0, span);
+			} else {
+				// Entries
+				SliceEntry[] entries = 
+					createSliceEntryArray(cube.get(span), N);
+				
+				// calculate the values
+				double[] msps = new double[B];
+				
+				if( !weighting && !entropy ) {
+					// unweighted variety
+					for( int j = 0; j < B; j++ )
+						try {
+							msps[j] = mspVarietyUnweighted(sampleSlice(
+											N, subSampleSize, entries));
+							sampleMSPs.get(i).add( msps[j] );
+						} catch( NoDataException e ) {
+							logger.error("No data? This should not be happening!");
+							msps[j] = 0.0;
+						}
+				}
+				else if( weighting && !entropy ) {
+					// weighted variety
+					for( int j = 0; j < B; j++ )
+						try {
+							msps[j] = mspVarietyWeighted(sampleSlice(
+											N, subSampleSize, entries));
+							sampleMSPs.get(i).add( msps[j] );
+						} catch( NoDataException e ) {
+							logger.error("No data? This should not be happening!");
+							msps[j] = 0.0;
+						}
+				}
+				else if( !weighting && entropy ) {
+					// unweighted entropy
+					for( int j = 0; j < B; j++ )
+						try {
+							msps[j] = mspEntropyUnweighted(sampleSlice(
+											N, subSampleSize, entries));
+							sampleMSPs.get(i).add( msps[j] );
+						} catch( NoDataException e ) {
+							logger.error("No data? This should not be happening!");
+							msps[j] = 0.0;
+						}
+				}
+				else if( weighting && entropy ) {
+					// weighted entropy
+					for( int j = 0; j < B; j++ )
+						try {
+							msps[j] = mspEntropyWeighted(sampleSlice(
+											N, subSampleSize, entries));
+							sampleMSPs.get(i).add( msps[j] );
+						} catch( NoDataException e ) {
+							logger.error("No data? This should not be happening!");
+							msps[j] = 0.0;
+						}
+				}
+				
+				// calculate the average
+				double average = 0.0;
+				for( int j = 0; j < B; j++ )
+					average += msps[j];
+				average /= B;
+				
+				// calculate the standard deviation
+				double variance = 0.0;
+				for( int j = 0; j < B; j++ )
+					variance = Math.pow(msps[j] - average, 2);
+				variance /= B;
+				double stddev = Math.sqrt(variance);
+				
+				result[i] = new MSPSpan(average, stddev, span);
+				
+				// making progress
+				notifyProgressListeners( (((double)i+1)/time.size())*100 );
+			}
+		}
+	}
+	
+	/**
+	 * Calculates the sampled MSP for ALL SPAN sampling.
+	 * @param weighting				weighting or not
+	 * @param entropy				entropy or not
+	 * @param subSampleSize			size of samples
+	 * @param numberOfSamplesMode	Sampling Factor or Fixed Value?
+	 * @param numberOfSamples		The Sampling Factor or Fixed Value.
+	 * @param result				Result array
+	 * @return						List of MSP values for all samples
+	 * @throws ImpossibleCalculationException
+	 */
+	protected List<List<Double>> resampleMSPAllSpan(boolean weighting,
+			boolean entropy, int subSampleSize, int numberOfSamplesMode,
+			double numberOfSamples, MSPSpan[] result)
+			throws ImpossibleCalculationException {
+		List<List<Double>> sampleMSPs;
+		int N = numberOfTokens();
+		int B = numberOfSamples(N, 
+					subSampleSize, 
+					numberOfSamplesMode, 
+					numberOfSamples);
+		DataCubeEntry[] entries = createEntryArray(N);
+		
+		notifyProgressListeners(10);
+		
+		// Run through the samples, calculating the MSPs
+		MSPSpan[][] msps = new MSPSpan[B][];
+		boolean overSampled = false;
+		for( int j = 0; j < B; j++ ) {
+			if( N < subSampleSize ) {
+				// Need more tokens in the sample then there are tokens
+				// in the cube!!
+				msps[j] = null;
+				overSampled = true;
+			} else {
+				// Take a sample
+				DataCube sample = sampleCube(subSampleSize, N, entries);
+				msps[j] = sample.MSP(weighting, entropy).getResults();
+			}
+		}
+		notifyProgressListeners(40);
+		
+		// Calculate the averages and standard deviations of each span
+		sampleMSPs = new ArrayList<List<Double>>(time.size());
+		for( int i = 0; i < time.size(); i++ ) {
+			// averaging
+			String span = time.get(i);
+			double avg = 0.0, stddev = 0.0;
+			int count = 0;
+			
+			if( !overSampled ) {
+				// Sample bookkeeping
+				sampleMSPs.add( new ArrayList<Double>(B) );
+				for( int j = 0; j < msps.length; j++ ) {
+					boolean found = false;
+					for( int k = 0; !found && k < msps[j].length; k++ )
+						if( msps[j][k].getSpan().equals(span) ) {
+							avg += msps[j][k].getMSP();
+							sampleMSPs.get(i).add(msps[j][k].getMSP());
+							count++;
+							found = true;
+						}
+				}
+				if( count > 0 ) 
+					avg /= count;
+				
+				// standard deviation
+				double variance = 0.0;
+				for( int j = 0; j < B; j++ ) {
+					boolean found = false;
+					for( int k = 0; !found && k < msps[j].length; k++ )
+						if( msps[j][k].getSpan().equals(span) ) {
+							variance += Math.pow(msps[j][k].getMSP() - avg, 2);
+							found = true;
+						}
+				}
+				if( count > 0 )
+					variance /= count;
+				stddev = Math.sqrt(variance);
+			} else {
+				// Adding an empty list of samples
+				sampleMSPs.add( new ArrayList<Double>() );
+			}
+			
+			// adding to the results
+			result[i] = new MSPSpan(avg, stddev, span);
+			
+			// making progress
+			notifyProgressListeners( 40 + (((double)i+1)/time.size())*60 );
+		}
+		return sampleMSPs;
 	}
 
 
@@ -1428,10 +1468,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 //			HashMap<String, List<Double>> msps = 
 //				new HashMap<String, List<Double>>();
 			
-			// Initialize sampleMSPs & msps
-			for( int i = 0; i < time.size(); i++ ) {
+			// Initialize sampleMSPs
+			for( int i = 0; i < time.size(); i++ )
 				sampleMSPs.add(new ArrayList<Double>(B));
-			}
 			
 			for ( int k = 0; k < B; k++ ) {
 				// Taking a sample & Cumulate
