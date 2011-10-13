@@ -5,6 +5,17 @@
 \title{MSPMeter: Software Architecture}
 \author{Joris Gillis}
 
+
+
+\newcommand{\age}{\mathit{age}}
+\newcommand{\lemma}{\mathit{lemma}}
+\newcommand{\category}{\mathit{category}}
+
+\newcommand{\fc}{\mathit{fc}}
+\newcommand{\hc}{\mathit{hc}}
+\newcommand{\msp}{\mathit{msp}}
+\newcommand{\lemmas}{\mathit{lemmas}}
+
 \begin{document}
 
 \maketitle
@@ -129,11 +140,57 @@ Analogous to the Improved Sampling Factor Sampler, the Fixed Size Sampler needs 
 
 
 
+\section{Calculating MSP}
+
+There are four versions of MSP:
+\begin{enumerate}
+\item Unweighted Variety-based MSP
+\item Weighted Variety-based MSP
+\item Unweighted Entropy-based MSP
+\item Weighted Entropy-based MSP
+\end{enumerate}
+
+We now give a formal and operational definition of the four versions of MSP.
+
+
+\subsection{Auxiliaries}
+
+Therefore we introduce some auxiliary functions. First of all, we have the function $n(\category, \lemma, \age)$ mapping to the number of tokens matching the combination $(\category, \lemma, \age)$. Both $\lemma$ and $\category$ can be equal to ``.'', meaning ``all lemmas'' resp.\ ``all categories''. For example, $n(., \mathit{zijn}, 1;01)$ equals the number of categories for the lemma ``zijn'' (Dutch for ``to be'') at age 1;01. Secondly, we have the function $f(\category, \lemma, \age)$ mapping to the relative frequency of a $(\category, \lemma)$ pair at the requested $\age$. In this case $\lemma$ and $\category$ can equal ``*'', meaning, the relative frequency of all lemmas resp.\ categories at age $\age$. For example, $f(\mathit{1ps}, *, 1;01)$ is the relative frequency of the category ``first person singular'' viewed over all lemmas at age 1;01. The function $\fc(\category, \lemma, \age)$ equals the conditional relative frequency of $\category$ in $\lemma$ at age $\age$. In this case there are no special values. For example, $\fc(\mathit{1ps}, \mathit{zijn}, 1;01)$ returns the conditional relative frequency of the first person singular in the lemma ``zijn'' at the age of 1;01.
+
+All of these functions sum up the amount of tokens in at a certain age, under certain conditions specified by the values of $\lemma$ and $\category$. However, for the variety-based MSP version, we do not need to know how many tokens there are, we only need to know whether there are tokens. Therefore, we introduce the function $o(\category, \lemma, \age)$, returning 1 if there are tokens in the locations specified by $\lemma$ and $\category$. Both $\lemma$ and $\category$ can have special values ``.'' and ``*''. The dot (.) implies sum all combinations. For example, $o(., zijn, 1;01)$ returns the number of categories in the lemma ``zijn'' at age 1;01. On the other hand, $o(*, zijn, 1;01)$ returns 1 if a category exists, and 0 otherwise. We can also make combinations of the dots and stars: for example, $o(*, ., 1;01)$ returns the number of lemmas with at least one category, i.e., the number of lemmas at age 1;01. Calling $o(., *, 1;01)$ returns the number of different categories occurring at age 1;01. And calling $o(., ., 1;01)$ counts the number of (lemma, category)-pairs (i.e.\ tokens) at the age of 1;01.
+
+Likewise, for the entropy-based MSP versions we have some special functions. First of all, $h(\category, \lemma, \age)$ computing the entropy of a (lemma, category)-pair at a certain age. The entropy of a (lemma, category)-pair $(\lemma,\break \category)$ equals 
+$$- f(\category, \lemma, \age) \times \log( f(\category, \lemma, \age) )$$ 
+And there is also a conditional version of function $h$, called $\hc(\category, \lemma, \age)$, defined as:
+$$- \fc(\category, \lemma, \age) \times \log( \fc(\category, \lemma, \age) )$$
+
+
+\subsection{Definitions}
+
+Now that the auxiliary functions are in place, can define the four versions of MSP:
+\begin{enumerate}
+\item \emph{Unweighted Variety-based MSP}: 
+$$\msp_{v}(\age) := \frac{o(., ., \age)}{o(*, ., \age)}$$
+In other words, the number of (category, lemma)-pairs divided by the number of lemmas, and thus the average number of categories per lemma.
+
+\item \emph{Weighted Variety-based MSP}: 
+$$\msp_{v}^w(\age) := \sum_{\ell \in \lemmas} f(*, \ell, \age) \times o(., \ell, \age)$$
+For each lemma, we compute its relative frequency at age $\age$ with respect to all lemmas occurring at age $\age$. We multiply this number with the number of categories in the lemma. This value is summed up over all lemmas at age $\age$.
+
+\item \emph{Unweighted Entropy-based MSP}:
+$$\msp_e(\age) := \frac{\sum_{\ell \in \lemmas} 2^{\hc(., \ell, \age)}}{o(*, ., \age)}$$
+The categories of a lemma form a chance distribution. Of such a distribution, one can calculate the entropy. The more equally spread the chance are (over the categories), the higher the entropy. This version of MSP measures the average entropy over all lemmas at age $\age$.
+
+\item \emph{Weighted Entropy-based MSP}:
+$$\msp_e^w(\age) := \sum_{\ell \in \lemmas} f(*, \ell, \age) \times 2^{hc(., \ell, \age)}$$
+This version weights the entropies based on the relative frequency of a lemma at age $\age$.
+\end{enumerate}
+
 
 
 \section{Input/Output}
 
-MSPMeter operates on several different types of files. 
+MSPMeter operates on several different types of files. Therefore we introduce some auxiliary functions. 
 
 
 
