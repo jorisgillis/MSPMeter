@@ -127,7 +127,6 @@ public class DataCubeTestFrequency {
 	
 	
 	
-	
 	/**
 	 * Test the function f: scenario 1.
 	 */

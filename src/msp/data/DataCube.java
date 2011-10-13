@@ -70,8 +70,16 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * Possibly it is advantageous to redesign the cube as a hashmap for the time, 
 	 */
 
-	/** The Cube: implemented as a 3D hashmap */
+	/** 
+	 * The Cube: implemented as a 3D hashmap 
+	 */
 	protected HashMap<String, HashMap<String, HashMap<String, Integer>>> cube;
+	
+	/** 
+	 * Contains the number of counts in a slice. Used extensively for 
+	 * calculating the frequency of a lemma. 
+	 */
+	protected HashMap<String, Integer> sliceTokenCounts;
 	
 	// The axis markers
 	/** All the time elements present in the cube */
@@ -80,12 +88,6 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	protected Vector<String> lemmas = new Vector<String>();
 	/** All the categories present in the cube */
 	protected Vector<String> categories = new Vector<String>();
-	
-	// Sample size related
-	/** Maximal sample size when in mode 2 */
-	protected int maxSampleSizeCR = 1;
-	/** Maximal sample size when in mode 3 */
-	protected int maxSampleSizeRC = 1;
 	
 	private Vector<ProgressListener> progressListeners;
 	
@@ -104,8 +106,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * Constructor
 	 */
 	public DataCube() {
-		// Hashing
+		// Making room for the data
 		cube = new HashMap<String, HashMap<String,HashMap<String,Integer>>>(100);
+		sliceTokenCounts = new HashMap<String, Integer>(100);
 		
 		// The listeners
 		progressListeners = new Vector<ProgressListener>();
@@ -160,6 +163,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				
 				//- loop through the lines
 				String line = "";
+				int tokenCount = 0;
 				while( (line = r.readLine()) != null ) {
 					try {
 						Matcher mCorrectLine = pCorrectLine.matcher(line);
@@ -175,6 +179,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 							if( !mFreq.find(pos) )
 								throw new DataFaultException("Frequency");
 							int frequency =  Integer.parseInt(mFreq.group());
+							tokenCount += frequency;
 							pos = mFreq.end();
 							
 							// 3. Get the piece between the frequency and the lemma out
@@ -227,6 +232,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				}
 				// closing the reader
 				r.close();
+				
+				// Storing tokenCount
+				sliceTokenCounts.put(fr.getDataSet(), tokenCount);
 			}
 		} catch( Exception e ) {
 			logger.error("Fault while filling the cube: "+ e.getMessage());
@@ -477,6 +485,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				}
 			}
 		}
+		
 		return newCube;
 	}
 	
@@ -1089,9 +1098,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		DataCube dc = new DataCube();
 
 		// copying the axes
-		dc.categories = new Vector<String>(categories);
-		dc.lemmas = new Vector<String>(lemmas);
-		dc.time = new Vector<String>(time);
+		dc.setCategories(new Vector<String>(categories));
+		dc.setLemmas(new Vector<String>(lemmas));
+		dc.setTime(new Vector<String>(time));
 
 		/* run over all the months, lemmas and categories:
 		 * add the count x of the current (lemma, category) to all the months
@@ -1133,7 +1142,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				}
 		}
 		
-		dc.cube = newCube;
+		// Storing the new data in the new cube
+		dc.setCube(newCube);
 		
 		return dc;
 	}
@@ -1286,8 +1296,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 					// weighted variety
 					for( int j = 0; j < B; j++ )
 						try {
-							msps[j] = mspVarietyWeighted(sampleSlice(
-											N, subSampleSize, entries));
+							HashMap<String, HashMap<String, Integer>> sample =
+								sampleSlice(N, subSampleSize, entries);
+							msps[j] = mspVarietyWeighted(numberOfTokens(sample), 
+															sample);
 							sampleMSPs.get(i).add( msps[j] );
 						} catch( NoDataException e ) {
 							logger.error("No data? This should not be happening!");
@@ -1310,8 +1322,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 					// weighted entropy
 					for( int j = 0; j < B; j++ )
 						try {
-							msps[j] = mspEntropyWeighted(sampleSlice(
-											N, subSampleSize, entries));
+							HashMap<String, HashMap<String, Integer>> sample =
+								sampleSlice(N, subSampleSize, entries);
+							msps[j] = mspEntropyWeighted(numberOfTokens(sample), 
+															sample);
 							sampleMSPs.get(i).add( msps[j] );
 						} catch( NoDataException e ) {
 							logger.error("No data? This should not be happening!");
@@ -1603,16 +1617,18 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	public double mspVarietyWeighted( String month ) 
 	throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspVarietyWeighted");
-		return mspVarietyWeighted( cube.get(month) );
+		return mspVarietyWeighted( sliceTokenCounts.get(month), cube.get(month) );
 	}
 	
 	/**
 	 * Calculate the MSP value using variety and weighting
-	 * @param slice	slice of cube
+	 * @param tokenCount	number of tokens in the slice
+	 * @param slice			slice of cube
 	 * @return		Weighted Variety MSP values for a given slice
 	 * @throws ImpossibleCalculationException
 	 */
-	public double mspVarietyWeighted( HashMap<String, HashMap<String, Integer>> slice ) 
+	public double mspVarietyWeighted( int tokenCount, 
+			HashMap<String, HashMap<String, Integer>> slice ) 
 	throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspVarietyWeighted");
 		if( slice == null )
@@ -1620,7 +1636,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		
 		double r = 0.0;
 		for( int i = 0; i < lemmas.size(); i++ )
-			r += f("*", lemmas.get(i), slice) * o(".", lemmas.get(i), slice);
+			r += fSpeed("*", lemmas.get(i), slice, tokenCount) 
+					* o(".", lemmas.get(i), slice);
 		return r;
 	}
 	
@@ -1668,7 +1685,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	public double mspEntropyWeighted( String month ) throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspEntropyWeighted");
-		return mspEntropyWeighted( cube.get(month) );
+		return mspEntropyWeighted( sliceTokenCounts.get(month), cube.get(month) );
 	}
 	
 	/**
@@ -1677,14 +1694,17 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @return		Weighted Entropy of a given slice
 	 * @throws ImpossibleCalculationException
 	 */
-	public double mspEntropyWeighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
+	public double mspEntropyWeighted( int tokenCount,
+			HashMap<String, HashMap<String, Integer>> slice ) 
+	throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspEntropyWeighted");
 		if( slice == null )
 			throw new NoDataException();
 		
 		double r = 0.0;
 		for( int i = 0; i < lemmas.size(); i++ )
-			r += f("*", lemmas.get(i), slice) * perplexity(hc(".", lemmas.get(i), slice));
+			r += fSpeed("*", lemmas.get(i), slice, tokenCount) 
+					* perplexity(hc(".", lemmas.get(i), slice));
 		return r;
 	}
 	
@@ -1716,7 +1736,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param lemma		l or .
 	 * @param slice		the slice in which we are working
 	 */
-	public int n( String category, String lemma, 
+	protected int n( String category, String lemma, 
 			HashMap<String, HashMap<String, Integer>> slice ) 
 	throws ImpossibleCalculationException {
 		int r = 0;
@@ -1761,7 +1781,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * Relative frequency of category j, lemma l and month t
 	 * @param category	j or *
 	 * @param lemma		l or *
-	 * @param month		t or *
+	 * @param month		t
 	 * @return			frequency of the given category and lemma in the given month
 	 * @throws ImpossibleCalculationException
 	 */
@@ -1769,7 +1789,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		if( !time.contains(month) )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
 		
-		return f( category, lemma, cube.get(month) );
+		return fSpeed( category, lemma, cube.get(month), sliceTokenCounts.get(month) );
 	}
 	
 	
@@ -1781,7 +1801,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @return			frequency of the given category and lemma in the given slice
 	 * @throws ImpossibleCalculationException
 	 */
-	public double f( String category, String lemma, HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException {
+	protected double f( String category, String lemma, 
+			HashMap<String, HashMap<String, Integer>> slice ) 
+	throws ImpossibleCalculationException {
 		if( category.equals(".") || lemma.equals(".") )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at slice "+ slice);
 
@@ -1793,6 +1815,29 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		if( lemma.equals("*") ) nl = ".";
 		
 		return ((double)n(nc, nl, slice)) / n(".",".", slice);
+	}
+	
+	/**
+	 * Faster version of f, uses the sliceTokenCounts. This requires passing
+	 * both the age and the slice of the age. 
+	 * @param category	j or *
+	 * @param lemma		l or *
+	 * @param age		t
+	 * @param slice		the values
+	 * @return			frequency of the given category and lemma in the given slice
+	 * @throws ImpossibleCalculationException
+	 */
+	protected double fSpeed( String category, String lemma,  
+			HashMap<String, HashMap<String, Integer>> slice, int tokenCount ) 
+	throws ImpossibleCalculationException {
+		// arguments to pass to n
+		String nc = category;
+		String nl = lemma;
+		
+		if( category.equals("*") ) nc = ".";
+		if( lemma.equals("*") ) nl = ".";
+		
+		return ((double)n(nc, nl, slice)) / tokenCount;
 	}
 	
 	
@@ -1824,7 +1869,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @return			relative conditional frequency
 	 * @throws ImpossibleCalculationException
 	 */
-	public double fc( String category, String lemma, HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException {
+	protected double fc( String category, String lemma, HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException {
 		if( category.equals(".") || category.equals("*") ||
 				lemma.equals(".") || lemma.equals("*") )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at slice "+ slice );
@@ -2015,9 +2060,11 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		
 		// running along the axes
 		double r = 0.0;
+		int sliceTokenCount = numberOfTokens(slice);
 		for( int i = 0; i < c.size(); i++ )
 			for( int j = 0; j < l.size(); j++ ) {
-				double f = f( categories.get(i), lemmas.get(j), slice );
+				double f = fSpeed( categories.get(i), lemmas.get(j), 
+									slice, sliceTokenCount );
 				if( f < -0.0000000000001 || 0.000000000001 < f )
 					r += f * Math.log10(f) / log2;
 			}
@@ -2455,10 +2502,42 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	}
 	
 	
+	/**
+	 * Takes a copy of this DataCube.
+	 * @return	copy of this DataCube
+	 * @throws CloneNotSupportedException
+	 */
+	public DataCube copy() throws CloneNotSupportedException {
+		return (DataCube)this.clone();
+	}
+	
+	
+	
 	
 	//== TESTING ONLY
 	public void setCube( HashMap<String, HashMap<String, HashMap<String, Integer>>> cube ) {
+		// Storing data
 		this.cube = cube;
+		
+		// Computing sliceTokenCounts
+		Iterator<String> i1 = cube.keySet().iterator();
+		while( i1.hasNext() ) {
+			String age = i1.next();
+			HashMap<String, HashMap<String, Integer>> slice = cube.get(age);
+			int tokenCount = 0;
+			
+			Iterator<String> i2 = slice.keySet().iterator();
+			while( i2.hasNext() ) {
+				HashMap<String, Integer> categories = slice.get(i2.next());
+				
+				Iterator<String> i3 = categories.keySet().iterator();
+				while( i3.hasNext() )
+					tokenCount += categories.get(i3.next());
+			}
+			
+			// Storing tokenCount
+			sliceTokenCounts.put(age, tokenCount);
+		}
 	}
 
 	public void setTime( Vector<String> time ) {
@@ -2471,9 +2550,5 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 
 	public void setCategories( Vector<String> categories ) {
 		this.categories = categories;
-	}
-	
-	public DataCube copy() throws CloneNotSupportedException {
-		return (DataCube)this.clone();
 	}
 }
