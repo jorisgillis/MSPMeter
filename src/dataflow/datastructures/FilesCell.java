@@ -65,12 +65,18 @@ public class FilesCell extends DefaultCell {
 	 * (non-Javadoc)
 	 * @see dataflow.datastructures.Cell#setValue(java.lang.Object)
 	 */
-	public void setValue( Vector<FileRow> value ) throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {
+	public void setValue( Vector<FileRow> value ) 
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {
 		if( files == null || !equals(files, value) ) {
 			// effectively copy the Vector
 			files = new Vector<FileRow>();
 			for( int i = 0; i < value.size(); i++ )
-				files.add(new FileRow(value.get(i).getOrder(), value.get(i).getFile(), value.get(i).getDataSet()));
+				files.add(new FileRow(
+							value.get(i).getOrder(), 
+							value.get(i).getFile(), 
+							value.get(i).getDataSet()));
 		}
 	}
 	

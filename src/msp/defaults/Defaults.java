@@ -61,7 +61,7 @@ public class Defaults {
 		values.put("lemmasmissing", "missing_lemmas.txt");
 		
 		// TODO delete this one on release
-		values.put("working directory", "/Users/joris/unief/Onderzoek/Projecten/Linguistic/MSP/Data");
+		values.put("working directory", "/Users/joris/unief/Onderzoek/Projecten/Linguistic/MSP/software/MSPMeter");
 	}
 	
 	/**

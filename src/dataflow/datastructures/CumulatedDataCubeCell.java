@@ -54,7 +54,8 @@ public class CumulatedDataCubeCell extends DataCubeCell {
 		for( String cellName : children ) {
 			//- Incoming
 			if( cellName.equals("workingDC") )
-				this.workingDC = ((WorkingDataCubeCell)Grid.instance().getCell(cellName)).getCube();
+				this.workingDC = 
+					((WorkingDataCubeCell)Grid.instance().getCell(cellName)).getCube();
 			
 			//- Recalculate
 			if( workingDC != null )

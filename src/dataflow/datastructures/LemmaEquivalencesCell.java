@@ -52,7 +52,9 @@ public class LemmaEquivalencesCell extends DefaultCell {
 	 * @see dataflow.datastructures.Cell#recalculate(dataflow.datastructures.Cell)
 	 */
 	public void recalculate(Vector<String> children) 
-		throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {}
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {}
 	
 	/**
 	 * @return	lemmaEquivalences 
@@ -64,8 +66,12 @@ public class LemmaEquivalencesCell extends DefaultCell {
 	/**
 	 * Sets the value of this cell.
 	 */
-	public void setValue( HashMap<String, String> lemmaEquivalences ) throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {
-		if( this.lemmaEquivalences == null || !this.lemmaEquivalences.equals(lemmaEquivalences) )
+	public void setValue( HashMap<String, String> lemmaEquivalences ) 
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {
+		if( this.lemmaEquivalences == null || 
+				!this.lemmaEquivalences.equals(lemmaEquivalences) )
 			this.lemmaEquivalences = lemmaEquivalences;
 	}
 }

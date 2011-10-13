@@ -102,7 +102,7 @@ public class ResultsCell extends DefaultCell {
 		
 		if( workingDC != null && cumulatedDC != null && mode > -1 && 
 				subSampleMode > -1 && subSampleSize > -1 && 
-				numberOfSamplesMode > -1 && numberOfSamples > -0.9 ) {
+				numberOfSamplesMode > -1 && numberOfSamples > 0 ) {
 			// Temporary storage
 			MSPResult pair = null;
 			

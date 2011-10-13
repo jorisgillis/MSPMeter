@@ -45,5 +45,7 @@ public class CategoryFileCell extends StringCell {
 	 * @see dataflow.datastructures.Cell#recalculate(dataflow.datastructures.Cell)
 	 */
 	public void recalculate(Vector<String> children) 
-		throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {}
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {}
 }

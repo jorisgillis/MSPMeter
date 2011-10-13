@@ -155,25 +155,27 @@ public class SampleTableModel extends IteratingTableModel {
 	 * @param sampleMSPs	MSP values
 	 */
 	public void setValues( MSPSpan[] results, List<List<Double>> sampleMSPs ) {
-		//- 1. Processing the given information into the correct form
 		if( sampleMSPs != null ) {
-			if( results.length != sampleMSPs.size() )
-				logger.error("The length of results and sampleMSPs is different!!");
-			
-			rows = new ArrayList<TableModelRow>( sampleMSPs.size() );
-			for( int i = 0; i < sampleMSPs.size(); i++ ) {
-				String dataset = results[i].getSpan();
-				int sampleNR = 1;
+			//- 1. Processing the given information into the correct form
+			if( sampleMSPs != null ) {
+				if( results.length != sampleMSPs.size() )
+					logger.error("The length of results and sampleMSPs is different!!");
 				
-				for( Double sample : sampleMSPs.get(i) ) {
-					addRow( dataset, sampleNR, sample );
-					sampleNR++;
+				rows = new ArrayList<TableModelRow>( sampleMSPs.size() );
+				for( int i = 0; i < sampleMSPs.size(); i++ ) {
+					String dataset = results[i].getSpan();
+					int sampleNR = 1;
+					
+					for( Double sample : sampleMSPs.get(i) ) {
+						addRow( dataset, sampleNR, sample );
+						sampleNR++;
+					}
 				}
 			}
+			
+			//- 2. Notifying the interface that new values are available
+			fireTableDataChanged();
 		}
-		
-		//- 2. Notifying the interface that new values are available
-		fireTableDataChanged();
 	}
 	
 	/*

@@ -49,7 +49,9 @@ public class AllLemmasCell extends DefaultCell {
 	 * @see dataflow.datastructures.Cell#recalculate(dataflow.datastructures.Cell)
 	 */
 	public void recalculate(Vector<String> children) 
-		throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {}
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {}
 	
 	/**
 	 * Returns the value of this cell.
@@ -61,7 +63,10 @@ public class AllLemmasCell extends DefaultCell {
 	/**
 	 * Sets the value of this cell and triggers a flow of data.
 	 */
-	public void setValue( HashSet<String> allLemmas ) throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {
+	public void setValue( HashSet<String> allLemmas ) 
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {
 		if( this.allLemmas == null || !this.allLemmas.equals(allLemmas) )
 			this.allLemmas = allLemmas;
 	}

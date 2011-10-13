@@ -44,15 +44,17 @@ public class ResultTableModel extends IteratingTableModel {
 	 * @param results
 	 */
 	public void setResults( MSPSpan[] results ) {
-		// cleaning out the table
-		removeAll();
-		
-		// adding each span
-		for( MSPSpan span : results )
-			rows.add( new ResultTableModelRow( span ) );
-		
-		// letting the table know about the new values
-		fireTableDataChanged();
+		if( results != null ) {
+			// cleaning out the table
+			removeAll();
+			
+			// adding each span
+			for( MSPSpan span : results )
+				rows.add( new ResultTableModelRow( span ) );
+			
+			// letting the table know about the new values
+			fireTableDataChanged();
+		}
 	}
 	
 	/**

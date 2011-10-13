@@ -74,7 +74,6 @@ public class LemmadDataCubeCell extends DataCubeCell {
 			if( useInMSP && lemmaEquivalences != null )
 				cube = originalDC.lemmaEquivalences(lemmaEquivalences);
 			else
-				// TODO should we take a copy? Just to be sure there is no cross-talk?
 				cube = originalDC; 
 		}
 	}

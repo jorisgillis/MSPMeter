@@ -96,57 +96,59 @@ public class ResultChartPanel extends JPanel implements Cell {
 		results = ((ResultsCell)Grid.instance().getCell("results")).getValue();
 		logger.debug("Refresh the chart");
 		
-		// removing all the rows from the matrix
-		dataset.clear();
-		
-		// Minimum and Maximum
-		double minimum = Double.MAX_VALUE;
-		double maximum = 1;
-		
-		// averages
-		for( int i = 0; i < results.length; i++ )
-			if( results[i].getMSP() > 1 ) {
-				dataset.setValue(results[i].getMSP(), "msp", results[i].getSpan());
-				
-				if (results[i].getMSP() > maximum)
-					maximum = results[i].getMSP();
-				if (minimum > results[i].getMSP())
-					minimum = results[i].getMSP();
-			} else {
-				dataset.setValue(1.0, "msp", results[i].getSpan());
-				minimum = 1.0;
-			}
-		
-		// standard deviations (if present)
-		if( results.length > 1 && results[0].getStdDev() >= 0 ) {
-			for( int i = 0; i < results.length; i++ )
-				if( results[i].getMSP() + 2*results[i].getStdDev() > 1 ) {
-					double v = results[i].getMSP() + 2*results[i].getStdDev();
-					dataset.setValue(v, "upper", results[i].getSpan());
-					
-					if (v > maximum)
-						maximum = v;
-				} else
-					dataset.setValue(1.0, "upper", results[i].getSpan());
+		if ( results != null ) {
+			// removing all the rows from the matrix
+			dataset.clear();
 			
+			// Minimum and Maximum
+			double minimum = Double.MAX_VALUE;
+			double maximum = 1;
+			
+			// averages
 			for( int i = 0; i < results.length; i++ )
-				if( results[i].getMSP() - 2*results[i].getStdDev() > 1 ) {
-					double v = results[i].getMSP() - 2*results[i].getStdDev();
-					dataset.setValue(v, "lower", results[i].getSpan());
+				if( results[i].getMSP() > 1 ) {
+					dataset.setValue(results[i].getMSP(), "msp", results[i].getSpan());
 					
-					if (minimum > v)
-						minimum = v;
+					if (results[i].getMSP() > maximum)
+						maximum = results[i].getMSP();
+					if (minimum > results[i].getMSP())
+						minimum = results[i].getMSP();
 				} else {
-					dataset.setValue(1.0, "lower", results[i].getSpan());
+					dataset.setValue(1.0, "msp", results[i].getSpan());
 					minimum = 1.0;
 				}
+			
+			// standard deviations (if present)
+			if( results.length > 1 && results[0].getStdDev() >= 0 ) {
+				for( int i = 0; i < results.length; i++ )
+					if( results[i].getMSP() + 2*results[i].getStdDev() > 1 ) {
+						double v = results[i].getMSP() + 2*results[i].getStdDev();
+						dataset.setValue(v, "upper", results[i].getSpan());
+						
+						if (v > maximum)
+							maximum = v;
+					} else
+						dataset.setValue(1.0, "upper", results[i].getSpan());
+				
+				for( int i = 0; i < results.length; i++ )
+					if( results[i].getMSP() - 2*results[i].getStdDev() > 1 ) {
+						double v = results[i].getMSP() - 2*results[i].getStdDev();
+						dataset.setValue(v, "lower", results[i].getSpan());
+						
+						if (minimum > v)
+							minimum = v;
+					} else {
+						dataset.setValue(1.0, "lower", results[i].getSpan());
+						minimum = 1.0;
+					}
+			}
+			
+			// Add 5% of the range above and below
+			minimum = minimum - ((maximum - minimum) / 10);
+			maximum = maximum + ((maximum - minimum) / 10);
+			((CategoryPlot)chart.getPlot()).getRangeAxis().setLowerBound(minimum);
+			((CategoryPlot)chart.getPlot()).getRangeAxis().setUpperBound(maximum);
 		}
-		
-		// Add 5% of the range above and below
-		minimum = minimum - ((maximum - minimum) / 10);
-		maximum = maximum + ((maximum - minimum) / 10);
-		((CategoryPlot)chart.getPlot()).getRangeAxis().setLowerBound(minimum);
-		((CategoryPlot)chart.getPlot()).getRangeAxis().setUpperBound(maximum);
 	}
 	
 	/*

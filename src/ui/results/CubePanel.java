@@ -54,7 +54,7 @@ public class CubePanel extends JPanel {
 	 * @param title	name of the cube, will be displayed in the border
 	 */
 	public CubePanel( String title ) {
-		// superman
+		// super
 		super();
 		
 		// setting the border
@@ -119,21 +119,23 @@ public class CubePanel extends JPanel {
 	 * @param cube	the new cube
 	 */
 	public void refresh( DataCube cube ) {
-		// Size
-		size.setText(""+cube.numberOfTokens());
-		
-		// Lemmas
-		lemmas.setText(""+cube.getLemmas().size());
-		
-		// Datasets
-		time.setText(""+cube.getDataSets().size());
-		
-		// Table
-		model.removeAll();
-		Vector<String> dataSets = cube.getDataSets();
-		for( int i = 0; i < dataSets.size(); i++ ) {
-			String sliceName = dataSets.get(i);
-			model.addRow(sliceName, cube.numberOfTokens(sliceName), cube.numberOfLemmas(sliceName));
+		if( cube != null ) {
+			// Size
+			size.setText(""+cube.numberOfTokens());
+			
+			// Lemmas
+			lemmas.setText(""+cube.getLemmas().size());
+			
+			// Datasets
+			time.setText(""+cube.getDataSets().size());
+			
+			// Table
+			model.removeAll();
+			Vector<String> dataSets = cube.getDataSets();
+			for( int i = 0; i < dataSets.size(); i++ ) {
+				String sliceName = dataSets.get(i);
+				model.addRow(sliceName, cube.numberOfTokens(sliceName), cube.numberOfLemmas(sliceName));
+			}
 		}
 	}
 	

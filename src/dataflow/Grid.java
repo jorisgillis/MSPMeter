@@ -490,6 +490,7 @@ public class Grid implements ProgressProvider {
 						// TODO handling exceptions!
 						logger.error("Exception in calculation");
 						logger.error(e);
+						e.printStackTrace();
 						mainWindow.showWarning(e);
 					}
 				}
@@ -499,6 +500,7 @@ public class Grid implements ProgressProvider {
 				logger.info("Stopping calculations");
 			} catch( Exception e ) {
 				logger.error( e );
+				e.printStackTrace();
 				mainWindow.showWarning(e);
 			} finally {
 				logger.info("Releasing lock");

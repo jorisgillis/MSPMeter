@@ -58,7 +58,9 @@ public class OriginalDataCubeCell extends DataCubeCell {
 	 * @see dataflow.datastructures.Cell#recalculate(dataflow.datastructures.Cell)
 	 */
 	public void recalculate( Vector<String> children ) 
-		throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {
 		/*
 		 * 1. Check which cell has been changed.
 		 * 2. Store that data!

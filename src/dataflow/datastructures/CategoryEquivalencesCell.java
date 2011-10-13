@@ -49,13 +49,19 @@ public class CategoryEquivalencesCell extends DefaultCell {
 	 * @see dataflow.datastructures.Cell#recalculate(dataflow.datastructures.Cell)
 	 */
 	public void recalculate( Vector<String> children ) 
-		throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {}
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {}
 	
 	/**
 	 * Sets the value of this cell and triggers a data flow.
 	 */
-	public void setValue( HashMap<String, HashMap<String, String>> categoryEquivalences ) throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {
-		if( this.categoryEquivalences == null || !this.categoryEquivalences.equals(categoryEquivalences) )
+	public void setValue( HashMap<String, HashMap<String, String>> categoryEquivalences ) 
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {
+		if( this.categoryEquivalences == null || 
+				!this.categoryEquivalences.equals(categoryEquivalences) )
 			this.categoryEquivalences = categoryEquivalences;
 	}
 	
