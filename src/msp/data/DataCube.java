@@ -1183,10 +1183,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		
 		return new MSPResult(result, null);
 	}
-
-
-
-
+	
+	
+	
 	/**
 	 * Calculate the MSP values of each month using resampling. Resampling can either be MSP(S)
 	 * or "All Span" resampling.

@@ -526,10 +526,31 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 	public void save() {
 		if( projectFile == null ) {
 			// ask for file
-			File f = askForSaveFile();
+			FileNameExtensionFilter filter = 
+				new FileNameExtensionFilter("Project File", "xml");
+			String workingDirectory = null;
+			try {
+				workingDirectory = 
+					Defaults.instance().getString("working directory");
+			} catch (NoValueException e1) {
+				e1.printStackTrace();
+			}
+			File f = askForSaveFile(workingDirectory, filter);
 			if( f != null )
 				projectFile = f.getAbsolutePath();
-		} else
+			
+			try {
+				// Checking the proposed file
+				f = checkProjectFile(f);
+				projectFile = f.getAbsolutePath();
+			} catch( ValidationException e ) {
+				projectFile = null;
+			}
+		}
+		
+		// Saving the project!
+		if( projectFile != null )
+			// If there is a project file, save to that file!
 			saveProject(new File(projectFile));
 	}
 	
@@ -557,20 +578,7 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 		
 		try {
 			// Checking
-			// 1. No directory
-			if (f.isDirectory())
-				throw new ValidationException(
-						"Choosen file is a directory! Nothing saved.");
-			
-			// 2. Already exists?
-			if (f.exists())
-				if (!overwrite(f))
-					throw new ValidationException(
-							f.getName() +" NOT overwritten. Nothing saved.");
-			
-			// 3. If f does not end in ".xml"
-			if (!f.getName().endsWith(".xml"))
-				f = new File(f.getAbsolutePath() + ".xml");
+			f = checkProjectFile(f);
 			
 			// Saving
 			projectFile = f.getAbsolutePath();
@@ -580,10 +588,34 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 				StatusBar.getInstance().addStatus(e.getMessage());
 		}
 	}
+
+	/**
+	 * Checks whether the given file is correct for saving a project to.
+	 * @param f		project file to examine
+	 * @return		Possibly adjusted file path
+	 * @throws ValidationException
+	 */
+	protected File checkProjectFile(File f) throws ValidationException {
+		// 1. No directory
+		if (f.isDirectory())
+			throw new ValidationException(
+					"Choosen file is a directory! Nothing saved.");
+		
+		// 2. Already exists?
+		if (f.exists())
+			if (!overwrite(f))
+				throw new ValidationException(
+						f.getName() +" NOT overwritten. Nothing saved.");
+		
+		// 3. If f does not end in ".xml"
+		if (!f.getName().endsWith(".xml"))
+			f = new File(f.getAbsolutePath() + ".xml");
+		return f;
+	}
 	
 	/**
 	 * Saves the project to the given file.  
-	 * @param f
+	 * @param f		file to which we save
 	 */
 	private void saveProject(File f) {
 		if( f != null ) {
