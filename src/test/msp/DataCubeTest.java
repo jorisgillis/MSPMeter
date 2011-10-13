@@ -218,8 +218,8 @@ public class DataCubeTest {
 		
 		results11.add(new Double(1.5));
 		results12.add(new Double(1.6));
-		results13.add(new Double(1.45));
-		results14.add(new Double(1.53));
+		results13.add(new Double(1.444940787));
+		results14.add(new Double(1.533928945));
 		
 		int numTokensRC1 = 4;
 		int numTokensCR1 = 4;

@@ -1574,7 +1574,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * Calculate the MSP value using variety and no weighting
 	 * @param month		MSP of this month
 	 */
-	public double mspVarietyUnweighted( String month ) throws ImpossibleCalculationException, NoDataException {
+	public double mspVarietyUnweighted( String month ) 
+	throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspVarietyUnweighted");
 		if( cube.get(month) == null )
 			throw new NoDataException();
@@ -1585,7 +1586,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * Calculate the MSP value using variety and no weighting
 	 * @param slice	Slice in which the MSP must be calculated
 	 */
-	public double mspVarietyUnweighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
+	public double mspVarietyUnweighted( HashMap<String, HashMap<String, Integer>> slice ) 
+	throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspVarietyUnweighted");
 		double x = (double)o( ".", ".", slice );
 		double y = (double)o( "*", ".", slice );
@@ -1598,7 +1600,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @return			Weighted Variety MSP for a given month
 	 * @throws ImpossibleCalculationException
 	 */
-	public double mspVarietyWeighted( String month ) throws ImpossibleCalculationException, NoDataException {
+	public double mspVarietyWeighted( String month ) 
+	throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspVarietyWeighted");
 		return mspVarietyWeighted( cube.get(month) );
 	}
@@ -1609,7 +1612,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @return		Weighted Variety MSP values for a given slice
 	 * @throws ImpossibleCalculationException
 	 */
-	public double mspVarietyWeighted( HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException, NoDataException {
+	public double mspVarietyWeighted( HashMap<String, HashMap<String, Integer>> slice ) 
+	throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspVarietyWeighted");
 		if( slice == null )
 			throw new NoDataException();
@@ -1712,7 +1716,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param lemma		l or .
 	 * @param slice		the slice in which we are working
 	 */
-	public int n( String category, String lemma, HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException {
+	public int n( String category, String lemma, 
+			HashMap<String, HashMap<String, Integer>> slice ) 
+	throws ImpossibleCalculationException {
 		int r = 0;
 		
 		if( category.equals("*") || lemma.equals("*") )
@@ -1768,7 +1774,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	
 	/**
-	 * Relative frequency of category j, lemma l in the given slice
+	 * Relative frequency of category j, lemma l in the given slice.
 	 * @param category	j or *
 	 * @param lemma		l or *
 	 * @param slice		the values
@@ -1792,14 +1798,16 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 
 	/**
-	 * Relative conditional frequency of category j, lemma l and month t. Conditional on the lemma.
+	 * Relative conditional frequency of category j, lemma l and month t. 
+	 * Conditional on the lemma.
 	 * @param category	j
 	 * @param lemma		l
 	 * @param month		t
 	 * @return			relative conditional frequency
 	 * @throws ImpossibleCalculationException
 	 */
-	public double fc( String category, String lemma, String month ) throws ImpossibleCalculationException {
+	public double fc( String category, String lemma, String month ) 
+	throws ImpossibleCalculationException {
 		if( !time.contains(month) )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
 
@@ -1808,7 +1816,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	
 	/**
-	 * Relative conditional frequency of category j, lemma l and month t. Conditional on the lemma.
+	 * Relative conditional frequency of category j, lemma l and month t. 
+	 * Conditional on the lemma.
 	 * @param category	j
 	 * @param lemma		l
 	 * @param slice		the values
@@ -1826,7 +1835,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	//== o: Variety
 	/**
-	 * Variety or occurrence of category j, lemma l at month t. Can handle any combination of .'s *'s or values.
+	 * Variety or occurrence of category j, lemma l at month t. Can handle any 
+	 * combination of .'s *'s or values.
 	 * @param category	j or . or *
 	 * @param lemma		l or . or *
 	 * @param month		t or . or *
@@ -1840,7 +1850,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	}
 	
 	/**
-	 * Variety or occurrence of category j, lemma l at month t. Can handle any combination of .'s *'s or values.
+	 * Variety or occurrence of category j, lemma l at month t. Can handle any 
+	 * combination of .'s *'s or values.
 	 * @param category	j or . or *
 	 * @param lemma		l or . or *
 	 * @param slice		the values
@@ -1859,14 +1870,17 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	
 	/**
-	 * Occurrence of category j, lemma l at month t. Only accepts concrete values or *.
+	 * Occurrence of category j, lemma l at month t. Only accepts concrete 
+	 * values or *.
 	 * @param category	j or *
 	 * @param lemma		l or *
 	 * @param slice		the values
 	 * @return
 	 * @throws ImpossibleCalculationException
 	 */
-	private double oBasic( String category, String lemma, HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException {
+	private double oBasic( String category, String lemma, 
+			HashMap<String, HashMap<String, Integer>> slice ) 
+			throws ImpossibleCalculationException {
 		if( category.equals(".") || lemma.equals(".") )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at slice "+ slice );
 		
@@ -1915,7 +1929,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @return
 	 * @throws ImpossibleCalculationException
 	 */
-	private double oSum( String category, String lemma, HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException {
+	private double oSum( String category, String lemma, 
+			HashMap<String, HashMap<String, Integer>> slice ) 
+	throws ImpossibleCalculationException {
 		double r = 0.0;
 		
 		/*
@@ -1957,9 +1973,11 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param lemma		l or .
 	 * @param month		t or *
 	 */
-	public double h( String category, String lemma, String month ) throws ImpossibleCalculationException {
+	public double h( String category, String lemma, String month ) 
+		throws ImpossibleCalculationException {
 		if( !time.contains(month) )
-			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
+			throw new ImpossibleCalculationException( 
+					"("+ category +", "+ lemma +") at month "+ month );
 		
 		return h( category, lemma, cube.get(month) );
 	}
@@ -1970,9 +1988,12 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param lemma		l or .
 	 * @param slice		the values
 	 */
-	public double h( String category, String lemma, HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException {
+	public double h( String category, String lemma, HashMap<String, 
+			HashMap<String, Integer>> slice ) 
+			throws ImpossibleCalculationException {
 		if( category.equals("*") || lemma.equals("*") )
-			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at slice "+ slice );
+			throw new ImpossibleCalculationException( 
+					"("+ category +", "+ lemma +") at slice "+ slice );
 		
 		// Vectors implementing the axes
 		Vector<String> c;
@@ -1996,9 +2017,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		double r = 0.0;
 		for( int i = 0; i < c.size(); i++ )
 			for( int j = 0; j < l.size(); j++ ) {
-				double fc = f( categories.get(i), lemmas.get(j), slice );
-				if( fc < -0.0000000000001 || 0.000000000001 < fc )
-					r += fc * Math.log10(fc) / log2;
+				double f = f( categories.get(i), lemmas.get(j), slice );
+				if( f < -0.0000000000001 || 0.000000000001 < f )
+					r += f * Math.log10(f) / log2;
 			}
 		r = -r;
 		
@@ -2012,7 +2033,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param month		t or *
 	 * @return			conditional entropy
 	 */
-	public double hc( String category, String lemma, String month ) throws ImpossibleCalculationException {
+	public double hc( String category, String lemma, String month ) 
+	throws ImpossibleCalculationException {
 		if( !time.contains(month) )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
 
@@ -2026,7 +2048,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param slice		the values
 	 * @return			conditional entropy
 	 */
-	public double hc( String category, String lemma, HashMap<String, HashMap<String, Integer>> slice ) throws ImpossibleCalculationException {
+	public double hc( String category, String lemma, 
+			HashMap<String, HashMap<String, Integer>> slice ) 
+	throws ImpossibleCalculationException {
 		if( category.equals("*") || lemma.equals(".") || lemma.equals("*") )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at slice "+ slice );
 
