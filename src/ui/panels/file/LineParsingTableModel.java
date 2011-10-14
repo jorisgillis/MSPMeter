@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.swing.table.DefaultTableModel;
 
+
 /**
  * The model underlying the live line parsing table. 
  * @author Joris Gillis
@@ -51,7 +52,7 @@ public class LineParsingTableModel extends DefaultTableModel {
 	 */
 	@Override
 	public int getColumnCount() {
-		return 4;
+		return 5;
 	}
 	
 	/*
@@ -72,15 +73,18 @@ public class LineParsingTableModel extends DefaultTableModel {
 		String name = "";
 		switch(i) {
 		case 0:
-			name = "Filename";
+			name = "Dataset";
 			break;
 		case 1:
-			name = "Ante";
+			name = "Frequency";
 			break;
 		case 2:
-			name = "Lemma";
+			name = "Ante";
 			break;
 		case 3:
+			name = "Lemma";
+			break;
+		case 4:
 			name = "Category";
 			break;
 		}
@@ -118,12 +122,14 @@ public class LineParsingTableModel extends DefaultTableModel {
 			ParseRow pr = rows.get(row);
 			switch(col) {
 			case 0:
-				return pr.getFileName();
+				return pr.getDataSet();
 			case 1:
-				return pr.getAnte();
+				return pr.getFrequency();
 			case 2:
-				return pr.getLemma();
+				return pr.getAnte();
 			case 3:
+				return pr.getLemma();
+			case 4:
 				return pr.getCategory();
 			}
 		}
@@ -140,15 +146,18 @@ public class LineParsingTableModel extends DefaultTableModel {
 			ParseRow pr = rows.get(row);
 			switch(col) {
 			case 0:
-				pr.setFileName((String)value);
+				pr.setDataSet((String)value);
 				break;
 			case 1:
-				pr.setAnte((String)value);
+				pr.setFrequency((String)value);
 				break;
 			case 2:
-				pr.setLemma((String)value);
+				pr.setAnte((String)value);
 				break;
 			case 3:
+				pr.setLemma((String)value);
+				break;
+			case 4:
 				pr.setCategory((String)value);
 				break;
 			}
@@ -162,17 +171,19 @@ public class LineParsingTableModel extends DefaultTableModel {
 	 */
 	@Override
 	public void addRow(Object[] row) {
-		if( row != null && row.length == 4 &&
+		if( row != null && row.length == 5 &&
 				row[0] instanceof String &&
 				row[1] instanceof String && 
 				row[2] instanceof String &&
-				row[3] instanceof String) {
+				row[3] instanceof String &&
+				row[4] instanceof String ) {
 			// Make the row
 			ParseRow pr = new ParseRow();
-			pr.setFileName((String)row[0]);
-			pr.setAnte((String)row[1]);
-			pr.setLemma((String)row[2]);
-			pr.setCategory((String)row[3]);
+			pr.setDataSet((String)row[0]);
+			pr.setFrequency((String)row[1]);
+			pr.setAnte((String)row[2]);
+			pr.setLemma((String)row[3]);
+			pr.setCategory((String)row[4]);
 			rows.add(pr);
 			
 			// Sort the row
@@ -204,6 +215,6 @@ public class LineParsingTableModel extends DefaultTableModel {
 	 * @return		correct position indication?
 	 */
 	private boolean correctPosition(int row, int col) {
-		return 0 <= row && row < getRowCount() && 0 <= col && col < 4; 
+		return 0 <= row && row < getRowCount() && 0 <= col && col < 5; 
 	}
 }

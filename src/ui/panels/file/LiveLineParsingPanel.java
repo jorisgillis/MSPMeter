@@ -22,7 +22,9 @@
 
 package ui.panels.file;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.LinkedList;
 import java.util.Vector;
 
 import javax.swing.JPanel;
@@ -31,13 +33,23 @@ import javax.swing.JTable;
 
 import msp.RestrictionViolation;
 import msp.data.DataFaultException;
+import msp.data.FrequencyFile;
+import msp.data.FrequencyLineParse;
 import msp.data.ImpossibleCalculationException;
+
+import org.apache.log4j.Logger;
+
+import dataflow.Grid;
 import dataflow.datastructures.Cell;
+import dataflow.datastructures.FilesCell;
+import dataflow.datastructures.FirstSeparatorCell;
+import dataflow.datastructures.SecondSeparatorCell;
 
 /**
  * A panel showing a table with the result of the line parsing.
  * @author Joris Gillis
  */
+@SuppressWarnings("serial")
 public class LiveLineParsingPanel extends JPanel implements Cell {
 	
 	/** The Table */
@@ -45,6 +57,15 @@ public class LiveLineParsingPanel extends JPanel implements Cell {
 	/** The Model */
 	protected LineParsingTableModel model;
 	
+	/** The input files */
+	protected Vector<FileRow> files;
+	/** The first separator separates the ante from the lemma */
+	protected String firstSeparator;
+	/** The second separator separates the lemma from the category */
+	protected String secondSeparator;
+	
+	// Logger
+	private static Logger logger = Logger.getLogger(LiveLineParsingPanel.class);
 	
 	/**
 	 * Constructor.
@@ -54,14 +75,19 @@ public class LiveLineParsingPanel extends JPanel implements Cell {
 		
 		table = new JTable();
 		table.setModel(model);
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); 
-		//table.setPreferredSize(new Dimension(380, 100));
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		table.setColumnSelectionAllowed(false);
+		table.setCellSelectionEnabled(false);
+		table.setRowSelectionAllowed(false);
 		tidyTable();
 		
 		// Adding the table to a scrollpane and adding the scrollpane to the
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setPreferredSize(new Dimension(550,230));
-		this.add(scrollPane);
+		
+		// Layouting
+		this.setLayout(new BorderLayout());
+		this.add(scrollPane, BorderLayout.CENTER);
 	}
 	
 	
@@ -72,8 +98,50 @@ public class LiveLineParsingPanel extends JPanel implements Cell {
 	@Override
 	public void recalculate(Vector<String> cells) throws DataFaultException,
 			ImpossibleCalculationException, RestrictionViolation {
-		// TODO Auto-generated method stub
+		// Get the new data
+		Grid grid = Grid.instance();
+		for( String cellName : cells ) {
+			if( cellName == "files" )
+				files = ((FilesCell)grid.getCell("files")).getValue();
+			else if( cellName == "firstSeparator" )
+				firstSeparator = 
+					((FirstSeparatorCell)grid.getCell("firstSeparator")).getValue();
+			else if( cellName == "secondSeparator" )
+				secondSeparator = 
+					((SecondSeparatorCell)grid.getCell("secondSeparator")).getValue();
+		}
 		
+		// Update the table
+		updateTable();
+	}
+	
+	/**
+	 * Updates the table with the values at hand.
+	 */
+	protected void updateTable() {
+		if( files != null && firstSeparator != null && secondSeparator != null ) {
+			try {
+				LinkedList<ParseRow> rows = new LinkedList<ParseRow>();
+				for( FileRow fr : files ) {
+					FrequencyFile fFile = new FrequencyFile(fr.getFile(), 
+															firstSeparator, 
+															secondSeparator);
+					
+					for( FrequencyLineParse parse : fFile ) {
+						ParseRow pr = new ParseRow();
+						pr.setDataSet(fr.getDataSet());
+						pr.setFrequency(parse.getFrequency());
+						pr.setAnte(parse.getAnte());
+						pr.setLemma(parse.getLemma());
+						pr.setCategory(parse.getCategory());
+						rows.add(pr);
+					}
+				}
+				model.setRows(rows);
+			} catch( DataFaultException e ) {
+				logger.error(e);
+			}
+		}
 	}
 	
 	/**
@@ -81,7 +149,7 @@ public class LiveLineParsingPanel extends JPanel implements Cell {
 	 * @return the name of this cell
 	 */
 	public String getName() {
-		return "LiveLineParsingCell";
+		return "LiveLineParsing";
 	}
 	
 	/**

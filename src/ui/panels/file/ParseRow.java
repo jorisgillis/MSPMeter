@@ -25,23 +25,25 @@ package ui.panels.file;
  * <p>
  * Represents a row in a LineParsing table. It consists of four parts:
  * <ol>
- * 	<li>The filename: from which the line originates</li>
+ * 	<li>The dataset: from which the line originates</li>
+ * 	<li>Frequency</li>
  * 	<li>An ante: the stuff that goes in front of the lemma.</li>
  * 	<li>The lemma</li>
  * 	<li>The category</li>
  * </ol>
  * </p>
- * @author joris
+ * @author Joris Gillis
  */
 public class ParseRow implements Comparable<ParseRow> {
 	
-	protected String fileName, ante, lemma, category;
+	protected String dataset, frequency, ante, lemma, category;
 	
 	/**
 	 * Constructs an empty ParseRow. 
 	 */
 	public ParseRow() {
-		fileName	= "";
+		dataset		= "";
+		frequency	= "";
 		ante		= "";
 		lemma		= "";
 		category	= "";
@@ -50,15 +52,29 @@ public class ParseRow implements Comparable<ParseRow> {
 	/**
 	 * @return the fileName
 	 */
-	public String getFileName() {
-		return fileName;
+	public String getDataSet() {
+		return dataset;
 	}
 
 	/**
-	 * @param fileName the fileName to set
+	 * @param dataset the dataset to set
 	 */
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
+	public void setDataSet(String dataset) {
+		this.dataset = dataset;
+	}
+	
+	/**
+	 * @return the frequency
+	 */
+	public String getFrequency() {
+		return frequency;
+	}
+
+	/**
+	 * @param frequency the frequency to set
+	 */
+	public void setFrequency(String frequency) {
+		this.frequency = frequency;
 	}
 
 	/**
@@ -114,8 +130,8 @@ public class ParseRow implements Comparable<ParseRow> {
 		/*
 		 * Sort on fileName, lemma, category.
 		 */
-		if( fileName.compareTo(r.fileName) != 0 )
-			return fileName.compareTo(r.fileName);
+		if( dataset.compareTo(r.dataset) != 0 )
+			return dataset.compareTo(r.dataset);
 		else if( lemma.compareTo(r.lemma) != 0 )
 			return lemma.compareTo(r.lemma);
 		else

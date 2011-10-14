@@ -79,6 +79,10 @@ public class Architect {
 		grid.setFlow("firstSeparator", originalDC.getName());
 		grid.setFlow("secondSeparator", originalDC.getName());
 		
+		grid.setFlow("files", "LiveLineParsing");
+		grid.setFlow("firstSeparator", "LiveLineParsing");
+		grid.setFlow("secondSeparator", "LiveLineParsing");
+		
 		grid.setFlow("lemmaEquivalences", lemmadDC.getName());
 		grid.setFlow("useInMSP", lemmadDC.getName());
 		grid.setFlow(originalDC.getName(), lemmadDC.getName());

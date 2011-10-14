@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -131,114 +132,55 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	public void fillCube( Vector<FileRow> files, String firstSeparator, String secondSeparator ) 
 		throws DataFaultException {
-		/*
-		 * For each line in each file:
-		 * 1. Remove leading and trailing whitespaces.
-		 * 2. Get the integer at the front: Frequency
-		 * 3. Get the largest sequence of non-first-separator tokens
-		 * 4. Get the largest sequence of non-second-separators tokens: Lemma
-		 * 5. The remainder of the line (if larger than 0): Category
-		 */
+		//- Setting up the cube and axises
+		cube = new HashMap<String, HashMap<String,HashMap<String,Integer>>>();
+		time = new Vector<String>();
+		lemmas = new Vector<String>();
+		categories = new Vector<String>();
 		
-		try {
-			//- Setting up the patterns
-			Pattern pCorrectLine = Pattern.compile(".*[0-9]+.*["+ firstSeparator +"].+" +
-													"(["+ secondSeparator +"].+)?");
-			Pattern pFreq = Pattern.compile("[0-9]+");
-			Pattern pFirst = Pattern.compile("[^"+ firstSeparator +"]*");
-			Pattern pSecond = Pattern.compile("[^"+ secondSeparator +"]+");
+		//- running through the list of files
+		for( int i = 0; i < files.size(); i++ ) {
+			FileRow fr = files.get(i);
 			
-			//- Setting up the cube and axises
-			cube = new HashMap<String, HashMap<String,HashMap<String,Integer>>>();
-			time = new Vector<String>();
-			lemmas = new Vector<String>();
-			categories = new Vector<String>();
+			FrequencyFile fFile = new FrequencyFile(fr.getFile(), 
+													firstSeparator, 
+													secondSeparator);
 			
-			//- running through the list of files
-			for( int i = 0; i < files.size(); i++ ) {
-				FileRow fr = files.get(i);
+			// Keep track of the tokenCount
+			int tokenCount = 0;
+			for( FrequencyLineParse parse : fFile ) {
+				int frequency = Integer.parseInt(parse.getFrequency());
+				String lemma = parse.getLemma();
+				String category = parse.getCategory();
+				tokenCount += frequency;
 				
-				// opening the reader
-				BufferedReader r = new BufferedReader(new FileReader(fr.getFile()));
-				
-				//- loop through the lines
-				String line = "";
-				int tokenCount = 0;
-				while( (line = r.readLine()) != null ) {
-					try {
-						Matcher mCorrectLine = pCorrectLine.matcher(line);
-						if( line.length() > 1 && mCorrectLine.matches() ) {
-							// remember the position
-							int pos = 0;
-							
-							// 1. removing leading and trailing whitespace
-							line = line.trim();
-							
-							// 2. get the integer out!
-							Matcher mFreq = pFreq.matcher(line);
-							if( !mFreq.find(pos) )
-								throw new DataFaultException("Frequency");
-							int frequency =  Integer.parseInt(mFreq.group());
-							tokenCount += frequency;
-							pos = mFreq.end();
-							
-							// 3. Get the piece between the frequency and the lemma out
-							Matcher mFirst = pFirst.matcher(line);
-							if( !mFirst.find(pos) )
-								throw new DataFaultException("Frequency -> Lemma");
-							pos = mFirst.end() + 1;
-							
-							// 4. Get the lemma out
-							Matcher mSecond = pSecond.matcher(line);
-							if( !mSecond.find(pos) )
-								throw new DataFaultException("Lemma");
-							String lemma = mSecond.group();
-							pos = mSecond.end() + 1;
-							
-							// 5. Get the category out
-							String category = "nil";
-							if( pos < line.length() )
-								category = line.substring(pos);
-							
-//							System.out.println(frequency +" "+ lemma +" "+ category);
-							
-							//- Entering it in the cube
-							if( !cube.containsKey(fr.getDataSet()) )
-								cube.put(fr.getDataSet(), new HashMap<String, HashMap<String,Integer>>());
-							if( !cube.get(fr.getDataSet()).containsKey(lemma) )
-								cube.get(fr.getDataSet()).put(lemma, new HashMap<String, Integer>());
-							if( !cube.get(fr.getDataSet()).get(lemma).containsKey(category) ) {
-								// install
-								cube.get(fr.getDataSet()).get(lemma).put(category, new Integer(frequency));
-							} else {
-								// update
-								Integer x = cube.get(fr.getDataSet()).get(lemma).get(category);
-								Integer y = x + frequency;
-								cube.get(fr.getDataSet()).get(lemma).remove(category);
-								cube.get(fr.getDataSet()).get(lemma).put(category, y);
-							}
-							
-							//- Entering it in the axis
-							if( !time.contains(fr.getDataSet()) )
-								time.add(fr.getDataSet());
-							if( !lemmas.contains(lemma) )
-								lemmas.add(lemma);
-							if( !categories.contains(category) )
-								categories.add(category);
-						}
-					} catch( DataFaultException e ) {
-						// a faulty line, just ignore!
-					} 
+				//- Entering it in the cube
+				if( !cube.containsKey(fr.getDataSet()) )
+					cube.put(fr.getDataSet(), new HashMap<String, HashMap<String,Integer>>());
+				if( !cube.get(fr.getDataSet()).containsKey(lemma) )
+					cube.get(fr.getDataSet()).put(lemma, new HashMap<String, Integer>());
+				if( !cube.get(fr.getDataSet()).get(lemma).containsKey(category) ) {
+					// install
+					cube.get(fr.getDataSet()).get(lemma).put(category, new Integer(frequency));
+				} else {
+					// update
+					Integer x = cube.get(fr.getDataSet()).get(lemma).get(category);
+					Integer y = x + frequency;
+					cube.get(fr.getDataSet()).get(lemma).remove(category);
+					cube.get(fr.getDataSet()).get(lemma).put(category, y);
 				}
-				// closing the reader
-				r.close();
 				
-				// Storing tokenCount
-				sliceTokenCounts.put(fr.getDataSet(), tokenCount);
+				//- Entering it in the axis
+				if( !time.contains(fr.getDataSet()) )
+					time.add(fr.getDataSet());
+				if( !lemmas.contains(lemma) )
+					lemmas.add(lemma);
+				if( !categories.contains(category) )
+					categories.add(category);
 			}
-		} catch( Exception e ) {
-			logger.error("Fault while filling the cube: "+ e.getMessage());
-			throw new DataFaultException(e.getMessage());
+			
+			// Storing tokenCount
+			sliceTokenCounts.put(fr.getDataSet(), tokenCount);
 		}
 	}
 	
@@ -521,7 +463,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		 * If we need to take more samples from the cube, than there are
 		 * elements in the cube, we need to return empty subCorpora. 
 		 */
-		if( numElements() < S )
+		if( numberOfTokens() < S )
 			return subCorpora;
 		
 		// Constructing the array of tokens
@@ -711,7 +653,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		 * If we need to take more samples from the cube, than there are
 		 * elements in the cube, we need to return empty subCorpora. 
 		 */
-		if( numElements() < S )
+		if( numberOfTokens() < S )
 			return subCorpora;
 		
 		
@@ -866,7 +808,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		 * If the number of samples is larger than the number of available elements
 		 * in the slice, we need to return an array of empty slices. 
 		 */
-		if( elementsInSlice( slice ) < S )
+		if( N < S )
 			return samples;
 		
 		
@@ -985,7 +927,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		 * If the number of samples is larger than the number of available elements
 		 * in the slice, we need to return an array of empty slices. 
 		 */
-		if( elementsInSlice( slice ) < S )
+		if( N < S )
 			return samples;
 		
 		
@@ -2367,47 +2309,6 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		return cats;
 	}
 	
-	/**
-	 * Returns the number of elements in this cube. 
-	 * @return	number of elements in this cube
-	 */
-	private int numElements() {
-		int count = 0;
-		
-		// running through the cube
-		for( String month : cube.keySet() )
-			for( String lemma : cube.get(month).keySet() )
-				for( String category : cube.get(month).get(lemma).keySet() )
-					count += cube.get(month).get(lemma).get(category);
-		
-		return count;
-	}
-	
-	/**
-	 * Returns the number of elements in a slice. 
-	 * @param slice	the slice
-	 * @return		the number of elements in the slice
-	 */
-	private int elementsInSlice( HashMap<String, HashMap<String, Integer>> slice ) {
-		int count = 0;
-		
-		// Running through the slice
-		for( String lemma : slice.keySet() )
-			for( String category : slice.get(lemma).keySet() )
-				count += slice.get(lemma).get(category);
-		
-		return count;
-	}
-	
-	/**
-	 * Checks if the slice contains no elements. 
-	 * @param slice	the slice
-	 * @return		empty or not
-	 */
-	private boolean emptySlice( HashMap<String, HashMap<String, Integer>> slice ) {
-		return elementsInSlice( slice ) == 0;
-	}
-	
 	
 	//===========================================================================
 	// Object-related functionality
@@ -2452,6 +2353,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 
 		return s;
 	}
+	
+	
 	
 	/*
 	 * (non-Javadoc)
