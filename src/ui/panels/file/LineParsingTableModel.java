@@ -21,7 +21,9 @@
 
 package ui.panels.file;
 
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -29,14 +31,179 @@ import javax.swing.table.DefaultTableModel;
  * The model underlying the live line parsing table. 
  * @author Joris Gillis
  */
+@SuppressWarnings("serial")
 public class LineParsingTableModel extends DefaultTableModel {
 	
-	protected LinkedList<ParseRow> rows;
+	/** The rows of the table model. */
+	protected List<ParseRow> rows;
 	
-	
+	/**
+	 * Constructs a new, empty table model.
+	 */
 	public LineParsingTableModel() {
 		super();
 		rows = new LinkedList<ParseRow>();
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.table.DefaultTableModel#getColumnCount()
+	 */
+	@Override
+	public int getColumnCount() {
+		return 4;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
+	 */
+	@Override
+	public Class<?> getColumnClass(int i) {
+		return String.class;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.table.DefaultTableModel#getColumnName(int)
+	 */
+	@Override
+	public String getColumnName(int i) {
+		String name = "";
+		switch(i) {
+		case 0:
+			name = "Filename";
+			break;
+		case 1:
+			name = "Ante";
+			break;
+		case 2:
+			name = "Lemma";
+			break;
+		case 3:
+			name = "Category";
+			break;
+		}
+		return name;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.table.DefaultTableModel#isCellEditable(int, int)
+	 */
+	@Override
+	public boolean isCellEditable(int row, int col) {
+		return false;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.table.DefaultTableModel#getRowCount()
+	 */
+	@Override
+	public int getRowCount() {
+		if( rows != null )
+			return rows.size();
+		else
+			return 0;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.table.DefaultTableModel#getValueAt(int, int)
+	 */
+	@Override
+	public Object getValueAt(int row, int col) {
+		if( correctPosition(row, col) ) {
+			ParseRow pr = rows.get(row);
+			switch(col) {
+			case 0:
+				return pr.getFileName();
+			case 1:
+				return pr.getAnte();
+			case 2:
+				return pr.getLemma();
+			case 3:
+				return pr.getCategory();
+			}
+		}
+		return null;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.table.DefaultTableModel#setValueAt(java.lang.Object, int, int)
+	 */
+	@Override
+	public void setValueAt(Object value, int row, int col) {
+		if( correctPosition(row, col) ) {
+			ParseRow pr = rows.get(row);
+			switch(col) {
+			case 0:
+				pr.setFileName((String)value);
+				break;
+			case 1:
+				pr.setAnte((String)value);
+				break;
+			case 2:
+				pr.setLemma((String)value);
+				break;
+			case 3:
+				pr.setCategory((String)value);
+				break;
+			}
+			fireTableCellUpdated(row, col);
+		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.table.DefaultTableModel#addRow(java.lang.Object[])
+	 */
+	@Override
+	public void addRow(Object[] row) {
+		if( row != null && row.length == 4 &&
+				row[0] instanceof String &&
+				row[1] instanceof String && 
+				row[2] instanceof String &&
+				row[3] instanceof String) {
+			// Make the row
+			ParseRow pr = new ParseRow();
+			pr.setFileName((String)row[0]);
+			pr.setAnte((String)row[1]);
+			pr.setLemma((String)row[2]);
+			pr.setCategory((String)row[3]);
+			rows.add(pr);
+			
+			// Sort the row
+			Collections.sort(rows);// TODO can we do better? Sort at the end or something?
+			int index = rows.indexOf(pr);
+			
+			// Fire updates to the GUI
+			fireTableRowsUpdated(index, index);
+			fireTableRowsInserted(rows.size()-1, rows.size()-1);
+		}
+	}
+	
+	/**
+	 * Sets the table to a given list of rows.
+	 * @param rows	new content of the table
+	 */
+	public void setRows( List<ParseRow> rows ) {
+		this.rows = rows;
+		fireTableRowsInserted(0, rows.size()-1);
+	}
+	
+	
+	
+	/**
+	 * Decides whether a given combination of a row and column index forms
+	 * a correct position indication in this table. 
+	 * @param row	row index
+	 * @param col	column index
+	 * @return		correct position indication?
+	 */
+	private boolean correctPosition(int row, int col) {
+		return 0 <= row && row < getRowCount() && 0 <= col && col < 4; 
+	}
 }

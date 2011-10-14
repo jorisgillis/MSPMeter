@@ -50,6 +50,9 @@ public class LineParsingPanel extends Panel {
 	// The interface elements
 	protected JTextField firstSeparator;
 	protected JTextField secondSeparator;
+	protected LiveLineParsingPanel preview;
+	
+	// Internal use
 	protected String[] metaChars = new String[]{"\\","(","[","{","^","$","|","-","]","}",")","?","*","+","."};
 	
 	// The cells
@@ -112,6 +115,11 @@ public class LineParsingPanel extends Panel {
 		
 		// adding it to the panel
 		add( mainPanel, BorderLayout.NORTH );
+		
+		// Preview
+		preview = new LiveLineParsingPanel();
+		Grid.instance().addHotCell(preview);
+		add(preview, BorderLayout.CENTER);
 	}
 	
 	

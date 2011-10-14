@@ -22,6 +22,7 @@
 
 package ui.panels.file;
 
+import java.awt.Dimension;
 import java.util.Vector;
 
 import javax.swing.JPanel;
@@ -49,8 +50,17 @@ public class LiveLineParsingPanel extends JPanel implements Cell {
 	 * Constructor.
 	 */
 	public LiveLineParsingPanel() {
+		model = new LineParsingTableModel();
+		
 		table = new JTable();
+		table.setModel(model);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); 
+		//table.setPreferredSize(new Dimension(380, 100));
+		tidyTable();
+		
+		// Adding the table to a scrollpane and adding the scrollpane to the
 		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setPreferredSize(new Dimension(550,230));
 		this.add(scrollPane);
 	}
 	
@@ -72,5 +82,24 @@ public class LiveLineParsingPanel extends JPanel implements Cell {
 	 */
 	public String getName() {
 		return "LiveLineParsingCell";
+	}
+	
+	/**
+	 * 
+	 */
+	private void tidyTable() {
+		table.getColumnModel().getColumn(0).setPreferredWidth(150);
+		table.getColumnModel().getColumn(1).setPreferredWidth(100);
+		table.getColumnModel().getColumn(2).setPreferredWidth(80);
+		table.getColumnModel().getColumn(3).setPreferredWidth(80);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.swing.JComponent#getPreferredSize()
+	 */
+	@Override
+	public Dimension getPreferredSize() {
+		return new Dimension(200, 100);
 	}
 }

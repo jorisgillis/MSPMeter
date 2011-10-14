@@ -21,19 +21,104 @@
 
 package ui.panels.file;
 
+/**
+ * <p>
+ * Represents a row in a LineParsing table. It consists of four parts:
+ * <ol>
+ * 	<li>The filename: from which the line originates</li>
+ * 	<li>An ante: the stuff that goes in front of the lemma.</li>
+ * 	<li>The lemma</li>
+ * 	<li>The category</li>
+ * </ol>
+ * </p>
+ * @author joris
+ */
 public class ParseRow implements Comparable<ParseRow> {
 	
+	protected String fileName, ante, lemma, category;
+	
 	/**
-	 * Constructor
+	 * Constructs an empty ParseRow. 
 	 */
 	public ParseRow() {
-		
+		fileName	= "";
+		ante		= "";
+		lemma		= "";
+		category	= "";
 	}
 	
-	
+	/**
+	 * @return the fileName
+	 */
+	public String getFileName() {
+		return fileName;
+	}
+
+	/**
+	 * @param fileName the fileName to set
+	 */
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	/**
+	 * @return the ante
+	 */
+	public String getAnte() {
+		return ante;
+	}
+
+	/**
+	 * @param ante the ante to set
+	 */
+	public void setAnte(String ante) {
+		this.ante = ante;
+	}
+
+	/**
+	 * @return the lemma
+	 */
+	public String getLemma() {
+		return lemma;
+	}
+
+	/**
+	 * @param lemma the lemma to set
+	 */
+	public void setLemma(String lemma) {
+		this.lemma = lemma;
+	}
+
+	/**
+	 * @return the category
+	 */
+	public String getCategory() {
+		return category;
+	}
+
+	/**
+	 * @param category the category to set
+	 */
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
 	@Override
-	public int compareTo(ParseRow arg0) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int compareTo(ParseRow r) {
+		/*
+		 * Sort on fileName, lemma, category.
+		 */
+		if( fileName.compareTo(r.fileName) != 0 )
+			return fileName.compareTo(r.fileName);
+		else if( lemma.compareTo(r.lemma) != 0 )
+			return lemma.compareTo(r.lemma);
+		else
+			return category.compareTo(r.category);
 	}
 }
