@@ -66,6 +66,16 @@ public class FrequencyFile implements Iterable<FrequencyLineParse> {
 	 */
 	private void processFile( File file, String firstSeparator, 
 			String secondSeparator ) throws DataFaultException {
+		
+		if( file == null )
+			throw new DataFaultException("No file specified.");
+		if( firstSeparator == null || firstSeparator.length() == 0 )
+			throw new DataFaultException("No characters defined for the starting "+
+					"point of lemmas.");
+		if( secondSeparator == null || secondSeparator.length() == 0 )
+			throw new DataFaultException("No characters defined for the division "+
+					"of lemmas and categories.");
+		
 		/*
 		 * For each line in each file:
 		 * 1. Remove leading and trailing whitespaces.
