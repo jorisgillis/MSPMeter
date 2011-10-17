@@ -85,12 +85,14 @@ public class ProjectWriter {
 			// 1. Files: saving the list of all files
 			Vector<FileRow> files = ((FilesCell)grid.getCell("files")).getValue();
 			w.write("\t<files>"); w.newLine();
-			for( int i = 0; i < files.size(); i++ ) {
-				w.write("\t\t<file>"); w.newLine();
-					w.write("\t\t\t<filename>"+ files.get(i).getFile().getAbsolutePath() +"</filename>"); w.newLine();
-					w.write("\t\t\t<order>"+ files.get(i).getOrder() +"</order>"); w.newLine();
-					w.write("\t\t\t<annotation>"+ files.get(i).getDataSet() +"</annotation>"); w.newLine();
-				w.write("\t\t</file>"); w.newLine();
+			if( files != null ) {
+				for( int i = 0; i < files.size(); i++ ) {
+					w.write("\t\t<file>"); w.newLine();
+						w.write("\t\t\t<filename>"+ files.get(i).getFile().getAbsolutePath() +"</filename>"); w.newLine();
+						w.write("\t\t\t<order>"+ files.get(i).getOrder() +"</order>"); w.newLine();
+						w.write("\t\t\t<annotation>"+ files.get(i).getDataSet() +"</annotation>"); w.newLine();
+					w.write("\t\t</file>"); w.newLine();
+				}
 			}
 			w.write("\t</files>"); w.newLine();
 			

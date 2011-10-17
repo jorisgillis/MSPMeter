@@ -52,11 +52,14 @@ public class Grid implements ProgressProvider {
 	/** The collection of cells. */
 	protected HashMap<String, Cell> cells = new HashMap<String, Cell>();
 	/** The flows between the cells. */
-	protected HashMap<String, Vector<String>> flows = new HashMap<String, Vector<String>>();
+	protected HashMap<String, Vector<String>> flows = 
+		new HashMap<String, Vector<String>>();
 	/** Children of cells. */
-	protected HashMap<String, Vector<String>> children = new HashMap<String, Vector<String>>();
+	protected HashMap<String, Vector<String>> children = 
+		new HashMap<String, Vector<String>>();
 	/** Keeps track of the closure of the flows */
-	protected HashMap<String, Vector<String>> closure = new HashMap<String, Vector<String>>();
+	protected HashMap<String, Vector<String>> closure = 
+		new HashMap<String, Vector<String>>();
 	
 	/** The collection of cells that need to be updated instanteously if a new
 	 * value arrives to one of its predecessors. */
@@ -339,11 +342,11 @@ public class Grid implements ProgressProvider {
 		for( Cell c : changedCells )
 			logger.debug("\t"+ c.getName());
 		
-		// If the queues do not exist yet
-		if( cellQueue == null ) {
+		// Create queues
+		if( cellQueue == null )
 			cellQueue = new PriorityBlockingQueue<String>(25, new CellComparator());
+		if( hotCellQueue == null )
 			hotCellQueue = new PriorityBlockingQueue<String>(25, new CellComparator());
-		}
 		
 		//- 1. filling the queues
 		for( Cell cell : changedCells ) {
@@ -409,6 +412,12 @@ public class Grid implements ProgressProvider {
 	 * Starts scheduled recalculations. 
 	 */
 	public void recalculate() {
+		// Create queues
+		if( cellQueue == null )
+			cellQueue = new PriorityBlockingQueue<String>(25, new CellComparator());
+		if( hotCellQueue == null )
+			hotCellQueue = new PriorityBlockingQueue<String>(25, new CellComparator());
+		
 		CompleteCalculation thread = new CompleteCalculation();
 		thread.start();
 	}

@@ -38,6 +38,14 @@ public class FilesCell extends DefaultCell {
 	
 	private Vector<FileRow> files;
 	
+	/**
+	 * Constructs a new list of files.
+	 */
+	public FilesCell() {
+		files = new Vector<FileRow>();
+	}
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * @see dataflow.datastructures.Cell#getName()
