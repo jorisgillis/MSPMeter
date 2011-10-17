@@ -62,7 +62,10 @@ public class SubLemmasCell extends DefaultCell {
 	/**
 	 * Sets the value of this cell and triggers a flow of data.
 	 */
-	public void setValue( HashMap<String, Vector<String>> subLemmas ) throws DataFaultException, ImpossibleCalculationException, RestrictionViolation {
+	public void setValue( HashMap<String, Vector<String>> subLemmas ) 
+		throws DataFaultException, 
+				ImpossibleCalculationException, 
+				RestrictionViolation {
 		if( this.subLemmas == null || !this.subLemmas.equals(subLemmas) )
 			this.subLemmas = subLemmas;
 	}

@@ -23,23 +23,30 @@
 package ui.results;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 import msp.RestrictionViolation;
 import msp.data.MSPSpan;
 
 import org.apache.log4j.Logger;
-import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.data.general.DefaultKeyedValues2DDataset;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.chart.renderer.category.StatisticalBarRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.statistics.DefaultStatisticalCategoryDataset;
 
 import dataflow.Grid;
 import dataflow.datastructures.Cell;
@@ -50,12 +57,22 @@ import dataflow.datastructures.ResultsCell;
  * @author Joris Gillis
  */
 @SuppressWarnings("serial")
-public class ResultChartPanel extends JPanel implements Cell {
+public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 	
 	// UI
-	protected DefaultKeyedValues2DDataset dataset;
+	protected DefaultStatisticalCategoryDataset dataset;
+	protected DefaultCategoryDataset upper, lower;
 	protected ChartPanel panel;
 	protected JFreeChart chart;
+	
+	// Renderers
+	protected LineAndShapeRenderer lineRenderer0, lineRenderer1, lineRenderer2;
+	protected StatisticalBarRenderer barRenderer;
+	
+	// Colors
+	protected final Color lowerColor 	= new Color(0.8f, 0.2f, 0.2f);
+	protected final Color mspColor		= new Color(0.2f, 0.8f, 0.2f);
+	protected final Color upperColor	= new Color(0.2f, 0.2f, 0.8f);
 	
 	// Results
 	protected MSPSpan[] results;
@@ -66,25 +83,89 @@ public class ResultChartPanel extends JPanel implements Cell {
 	 * Construct new Result panel
 	 */
 	public ResultChartPanel() {
-		// the charting objects
-		dataset = new DefaultKeyedValues2DDataset();
-		chart = ChartFactory.createLineChart("MSPMeter", "Datasets", "MSP", dataset, PlotOrientation.VERTICAL, true, true, false);
+		// The charting objects
+		dataset = new DefaultStatisticalCategoryDataset();
+		upper = new DefaultCategoryDataset();
+		lower = new DefaultCategoryDataset();
+		
+		// The Renderers
+		lineRenderer0	= new LineAndShapeRenderer();
+		lineRenderer1	= new LineAndShapeRenderer();
+		lineRenderer2	= new LineAndShapeRenderer();
+		lineRenderer0.setSeriesPaint(0, lowerColor);
+		lineRenderer1.setSeriesPaint(0, mspColor);
+		lineRenderer2.setSeriesPaint(0, upperColor);
+		lineRenderer0.setSeriesShapesVisible(0, false);
+		lineRenderer1.setSeriesShapesVisible(0, false);
+		lineRenderer2.setSeriesShapesVisible(0, false);
+		
+		barRenderer		= new StatisticalBarRenderer();
+		barRenderer.setSeriesPaint(0, mspColor);
+		
+		// The Plot
+		CategoryPlot plot = new CategoryPlot();
+		plot.setDomainAxis(new CategoryAxis("Datasets"));
+		plot.setRangeAxis(new NumberAxis("MSP"));
+		plot.setRenderer(0, lineRenderer0);
+		plot.setRenderer(1, lineRenderer1);
+		plot.setRenderer(2, lineRenderer2);
+		plot.setDataset(0, lower);
+		plot.setDataset(1, dataset);
+		plot.setDataset(2, upper);
+		
+		// Adding the new plot
+		chart = new JFreeChart(plot);
 		panel = new ChartPanel(chart);
 		
-		// listening to changes
+		// Listening to changes
 		dataset.addChangeListener(chart.getPlot());
 		chart.getPlot().addChangeListener(chart);
 		chart.addChangeListener(panel);
 		
 		((CategoryPlot)chart.getPlot()).getRangeAxis().setAutoRange(true);
 		
+		// Choice panel: choicing between line and bar chart
+		JPanel choicePanel = createChoicePanel();
+		
 		// Doing the interface
 		setLayout(new BorderLayout());
+		add(choicePanel, BorderLayout.NORTH);
 		add(panel, BorderLayout.CENTER);
-		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Chart"));
+		setBorder(
+				BorderFactory.createTitledBorder(
+						BorderFactory.createEtchedBorder(), "Chart"));
 		
 		// size stuff
 		setPreferredSize(new Dimension(500, 400));
+	}
+
+
+	/**
+	 * Creates the choice panel, that is placed above the chart.
+	 * @return	the choice panel
+	 */
+	protected JPanel createChoicePanel() {
+		// The radiobuttons
+		JRadioButton line		= new JRadioButton("Line Chart", true);
+		JRadioButton bar		= new JRadioButton("Bar Chart", false);
+		
+		line.setActionCommand("line chart");
+		bar.setActionCommand("bar chart");
+		
+		line.addActionListener(this);
+		bar.addActionListener(this);
+		
+		// Let the radiobuttons form a group: i.e. only one can be selected.
+		ButtonGroup choiceGroup	= new ButtonGroup();
+		choiceGroup.add(line);
+		choiceGroup.add(bar);
+		
+		// Joining it all on the panel
+		JPanel choicePanel		= new JPanel();
+		choicePanel.add(line);
+		choicePanel.add(bar);
+		
+		return choicePanel;
 	}
 	
 	
@@ -107,14 +188,17 @@ public class ResultChartPanel extends JPanel implements Cell {
 			// averages
 			for( int i = 0; i < results.length; i++ )
 				if( results[i].getMSP() > 1 ) {
-					dataset.setValue(results[i].getMSP(), "msp", results[i].getSpan());
+					dataset.add(results[i].getMSP(), 
+								results[i].getStdDev(), 
+								"msp", 
+								results[i].getSpan());
 					
 					if (results[i].getMSP() > maximum)
 						maximum = results[i].getMSP();
 					if (minimum > results[i].getMSP())
 						minimum = results[i].getMSP();
 				} else {
-					dataset.setValue(1.0, "msp", results[i].getSpan());
+					dataset.add(1.0, 0.0, "msp", results[i].getSpan());
 					minimum = 1.0;
 				}
 			
@@ -123,22 +207,22 @@ public class ResultChartPanel extends JPanel implements Cell {
 				for( int i = 0; i < results.length; i++ )
 					if( results[i].getMSP() + 2*results[i].getStdDev() > 1 ) {
 						double v = results[i].getMSP() + 2*results[i].getStdDev();
-						dataset.setValue(v, "upper", results[i].getSpan());
+						upper.addValue(v, "upper", results[i].getSpan());
 						
 						if (v > maximum)
 							maximum = v;
 					} else
-						dataset.setValue(1.0, "upper", results[i].getSpan());
+						upper.addValue(1.0, "upper", results[i].getSpan());
 				
 				for( int i = 0; i < results.length; i++ )
 					if( results[i].getMSP() - 2*results[i].getStdDev() > 1 ) {
 						double v = results[i].getMSP() - 2*results[i].getStdDev();
-						dataset.setValue(v, "lower", results[i].getSpan());
+						lower.addValue(v, "lower", results[i].getSpan());
 						
 						if (minimum > v)
 							minimum = v;
 					} else {
-						dataset.setValue(1.0, "lower", results[i].getSpan());
+						lower.addValue(1.0, "lower", results[i].getSpan());
 						minimum = 1.0;
 					}
 			}
@@ -159,5 +243,32 @@ public class ResultChartPanel extends JPanel implements Cell {
 	public String getName() {
 		return "resultsChart";
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String command = ((JRadioButton)e.getSource()).getActionCommand();
+		CategoryPlot plot = (CategoryPlot)chart.getPlot(); 
+		
+		if( command.equals("line chart") || command.equals("bar chart") ) {
+			// Change the chart by a line chart
+			if( command.equals("line chart") ) {
+				plot.setRenderer(0, lineRenderer0);
+				plot.setRenderer(1, lineRenderer1);
+				plot.setRenderer(2, lineRenderer2);
+				plot.setDataset(0, lower);
+				plot.setDataset(1, dataset);
+				plot.setDataset(2, upper);
+			}
+			else if( command.equals("bar chart") ) {
+				plot.setRenderer(0, barRenderer);
+				plot.setDataset(0, dataset);
+				plot.setDataset(1, null);
+				plot.setDataset(2, null);
+			}
+		}
+	}
 }
