@@ -225,6 +225,12 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 						lower.addValue(1.0, "lower", results[i].getSpan());
 						minimum = 1.0;
 					}
+				
+				((CategoryPlot)chart.getPlot()).setDataset(0, lower);
+				((CategoryPlot)chart.getPlot()).setDataset(2, upper);
+			} else {
+				((CategoryPlot)chart.getPlot()).setDataset(0, null);
+				((CategoryPlot)chart.getPlot()).setDataset(2, null);
 			}
 			
 			// Add 5% of the range above and below
