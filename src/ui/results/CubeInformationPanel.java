@@ -22,6 +22,7 @@
 
 package ui.results;
 
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.Vector;
@@ -76,7 +77,8 @@ public class CubeInformationPanel extends JPanel implements Cell {
 		c.gridx = 1;
 		panel.add(cumulatedCubeInformation, c);
 		
-		add(panel);
+		this.setLayout(new BorderLayout());
+		add(panel, BorderLayout.CENTER);
 	}
 	
 	/**

@@ -22,6 +22,7 @@
 
 package ui.results;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Vector;
 
@@ -81,7 +82,8 @@ public class SampleInformationPanel extends JPanel implements Cell {
 		tidyUpTable();
 		
 		// adding it together
-		this.add(scrollPane);
+		this.setLayout(new BorderLayout());
+		this.add(scrollPane, BorderLayout.CENTER);
 	}
 	
 	/**

@@ -78,7 +78,8 @@ public class CubePanel extends JPanel {
 		//- Placing it on the panel
 		setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
-		c.gridwidth = 1;
+		c.gridwidth = 1; c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1; c.weighty = 1;
 		
 		c.gridx = 0; c.gridy = 0; c.anchor = GridBagConstraints.FIRST_LINE_END;
 		add(lSize, c);

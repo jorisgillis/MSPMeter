@@ -136,7 +136,7 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 						BorderFactory.createEtchedBorder(), "Chart"));
 		
 		// size stuff
-		setPreferredSize(new Dimension(500, 400));
+		//setPreferredSize(new Dimension(500, 400));
 	}
 
 
