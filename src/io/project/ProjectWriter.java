@@ -34,6 +34,7 @@ import dataflow.datastructures.CategoryFileCell;
 import dataflow.datastructures.FilesCell;
 import dataflow.datastructures.FirstSeparatorCell;
 import dataflow.datastructures.LemmaFileCell;
+import dataflow.datastructures.LogBaseCell;
 import dataflow.datastructures.SecondSeparatorCell;
 import dataflow.datastructures.UseInMSPCell;
 import dataflow.datastructures.VersionCell;
@@ -138,6 +139,7 @@ public class ProjectWriter {
 			
 			// 5. Version
 			VersionCell version = (VersionCell)grid.getCell("version");
+			LogBaseCell logBaseCell = (LogBaseCell)grid.getCell("logbase");
 			w.write("\t<version>"); w.newLine();
 			w.write("\t\t<weighting>"+ version.isWeighting() + "</weighting>"); w.newLine();
 			w.write("\t\t<entropy>" + version.isEntropy() + "</entropy>"); w.newLine();
@@ -146,6 +148,7 @@ public class ProjectWriter {
 			w.write("\t\t<subsamplesize>" + version.getSubSampleSize() + "</subsamplesize>"); w.newLine();
 			w.write("\t\t<numberofsamplesmode>" + version.getNumberOfSamplesMode() + "</numberofsamplesmode>"); w.newLine();
 			w.write("\t\t<numberofsamples>" + version.getNumberOfSamples() + "</numberofsamples>"); w.newLine();
+			w.write("\t\t<logbase>"+ logBaseCell.intValue() +"</logbase>"); w.newLine();
 			w.write("\t</version>"); w.newLine();
 			
 			//- closing of the project

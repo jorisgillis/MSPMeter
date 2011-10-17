@@ -51,6 +51,7 @@ import ui.panels.Panel;
 import dataflow.Grid;
 import dataflow.datastructures.Cell;
 import dataflow.datastructures.DataCubeCell;
+import dataflow.datastructures.LogBaseCell;
 import dataflow.datastructures.VersionCell;
 
 /**
@@ -71,7 +72,7 @@ public class VersionPanel extends Panel
 	//- Components
 	protected JCheckBox weightC, entropyC;
 	protected JComboBox modeCB, numberOfSamplesModeCB, subSampleModeCB;
-	protected JTextField subSampleSizeText, numberOfSamplesText;
+	protected JTextField subSampleSizeText, numberOfSamplesText, logBaseText;
 	
 	//- sample size related
 	protected int maxSampleSizeAllSpan = 1;
@@ -92,6 +93,7 @@ public class VersionPanel extends Panel
 	
 	//- Everywhere the same
 	protected static Logger logger = Logger.getLogger(VersionPanel.class);
+	protected LogBaseCell logBaseCell;
 	
 	/**
 	 * Construct a new VersionPanel
@@ -102,6 +104,9 @@ public class VersionPanel extends Panel
 		Grid.instance().addCell(versionCell);
 		Grid.instance().addHotCell(this);
 		
+		logBaseCell = new LogBaseCell();
+		Grid.instance().addCell(logBaseCell);
+		
 		//-- build interface
 		//- Components
 		JLabel weighting		= new JLabel("Weighting? ");
@@ -110,6 +115,7 @@ public class VersionPanel extends Panel
 		JLabel sampleMode		= new JLabel("Sample Mode: ");
 		JLabel subSampleMode	= new JLabel("Number of Samples: ");
 		JLabel sampleSize		= new JLabel("Subsample Size: ");
+		JLabel logBase			= new JLabel("Log Base");
 		
 		// combobox content
 		String[] modeStrings = new String[]{"Basic", 
@@ -137,10 +143,12 @@ public class VersionPanel extends Panel
 			numberOfSamplesModeCB	= new JComboBox(numberOfSubSamplesStrings);	
 			numberOfSamplesModeCB.setSelectedIndex(0);
 			numberOfSamplesText		= new JTextField(6);
+			logBaseText				= new JTextField(6);
 			
 			// Setting values
 			subSampleSizeText.setText("" + 1);
 			numberOfSamplesText.setText("" + 1);
+			logBaseText.setText(""+ Defaults.instance().getInteger("logBase"));
 			
 			// adding the listeners to guide the changes
 			modeCB.addItemListener(this);
@@ -205,6 +213,11 @@ public class VersionPanel extends Panel
 		c.gridx = 1;
 		mainPanel.add(subSampleSizeText, c);
 		
+		c.gridx = 0; c.gridy = 6;
+		mainPanel.add(logBase, c);
+		c.gridx = 1;
+		mainPanel.add(logBaseText, c);
+		
 		this.add(mainPanel);
 	}
 	
@@ -214,26 +227,34 @@ public class VersionPanel extends Panel
 	 * @see ui.panels.Panel#continu()
 	 */
 	public void apply() {
-		boolean weighting		= weightC.isSelected();
-		boolean entropy			= entropyC.isSelected();
-		int mode				= modeCB.getSelectedIndex();
-		int subSampleMode		= subSampleModeCB.getSelectedIndex();
-		int numberOfSamplesMode	= numberOfSamplesModeCB.getSelectedIndex();
-		int subSampleSize		= Integer.parseInt(subSampleSizeText.getText());
-		double numberOfSamples	= Double.parseDouble(numberOfSamplesText.getText());
-		
 		try {
-			versionCell.setValue(weighting, 
-									entropy, 
-									mode, 
-									subSampleMode, 
-									subSampleSize, 
-									numberOfSamplesMode, 
-									numberOfSamples);
-			Grid.instance().cellChanged( new Cell[]{versionCell} );
-			changed = false;
-		} catch( Exception e ) {
-			showWarning(e.getMessage());
+			boolean weighting		= weightC.isSelected();
+			boolean entropy			= entropyC.isSelected();
+			int mode				= modeCB.getSelectedIndex();
+			int subSampleMode		= subSampleModeCB.getSelectedIndex();
+			int numberOfSamplesMode	= numberOfSamplesModeCB.getSelectedIndex();
+			int subSampleSize		= Integer.parseInt(subSampleSizeText.getText());
+			double numberOfSamples	= Double.parseDouble(numberOfSamplesText.getText());
+			
+			try {
+				versionCell.setValue(weighting, 
+										entropy, 
+										mode, 
+										subSampleMode, 
+										subSampleSize, 
+										numberOfSamplesMode, 
+										numberOfSamples);
+				logBaseCell.setValue(Integer.parseInt(logBaseText.getText()));
+				Grid.instance().cellChanged( new Cell[]{versionCell,logBaseCell} );
+				changed = false;
+			} catch( NumberFormatException e ) {
+				showWarning("Log Base must be a number!");
+			} catch( Exception e ) {
+				showWarning(e.getMessage());
+			}
+		} catch( NumberFormatException e ) {
+			showWarning("\"Sample Size\" and \"Number of Samples\" must be " +
+					"numbers.");
 		}
 	}
 	
@@ -317,6 +338,14 @@ public class VersionPanel extends Panel
 	 */
 	public void setNumberOfSamples( double numberOfSamples ) {
 		numberOfSamplesText.setText(""+numberOfSamples);
+	}
+	
+	/**
+	 * Sets the log base to be used.
+	 * @param logBase	base of the logarithm
+	 */
+	public void setLogBase( int logBase ) {
+		logBaseText.setText(""+logBase); 
 	}
 	
 	

@@ -94,6 +94,7 @@ public class Architect {
 		
 		grid.setFlow(workingDC.getName(), cumulatedDC.getName());
 		
+		grid.setFlow("logBase", results.getName());
 		grid.setFlow("version", results.getName());
 		grid.setFlow(workingDC.getName(), results.getName());
 		grid.setFlow(cumulatedDC.getName(), results.getName());

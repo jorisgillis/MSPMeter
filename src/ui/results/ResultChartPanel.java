@@ -226,9 +226,11 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 						minimum = 1.0;
 					}
 				
+				// Set the lower and upper datasets
 				((CategoryPlot)chart.getPlot()).setDataset(0, lower);
 				((CategoryPlot)chart.getPlot()).setDataset(2, upper);
 			} else {
+				// Remove lower and upper datasets
 				((CategoryPlot)chart.getPlot()).setDataset(0, null);
 				((CategoryPlot)chart.getPlot()).setDataset(2, null);
 			}

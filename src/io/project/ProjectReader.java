@@ -76,6 +76,7 @@ public class ProjectReader implements ContentHandler {
 	protected int subSampleSize;
 	protected int numberOfSamplesMode;
 	protected double numberOfSamples;
+	protected int logBase;
 	
 	
 	//-- State variables: specifying in which element we are
@@ -102,6 +103,7 @@ public class ProjectReader implements ContentHandler {
 	protected boolean sVersionSubSampleSize;
 	protected boolean sVersionNumberOfSamplesMode;
 	protected boolean sVersionNumberOfSamples;
+	protected boolean sVersionLogBase;
 	
 	
 	//-- Panels
@@ -124,8 +126,9 @@ public class ProjectReader implements ContentHandler {
 	 * @param cep	category equivalences panel
 	 * @param vp	version panel
 	 */
-	public ProjectReader( FilePanel fp, LineParsingPanel lpp, LemmaEquivalencesPanel lep, 
-			CategoryEquivalencesPanel cep, VersionPanel vp ) {
+	public ProjectReader( FilePanel fp, LineParsingPanel lpp, 
+			LemmaEquivalencesPanel lep,	CategoryEquivalencesPanel cep, 
+			VersionPanel vp ) {
 		this.fp		= fp;
 		this.lpp	= lpp;
 		this.lep	= lep;
@@ -205,6 +208,8 @@ public class ProjectReader implements ContentHandler {
 				numberOfSamplesMode = Integer.parseInt(data);
 			else if( sVersionNumberOfSamples )
 				numberOfSamples = Double.parseDouble(data);
+			else if( sVersionLogBase )
+				logBase = Integer.parseInt(data);
 		}
 		
 	}
@@ -233,6 +238,7 @@ public class ProjectReader implements ContentHandler {
 		vp.setSubSampleSize(subSampleSize);
 		vp.setNumberOfSamplesMode(numberOfSamplesMode);
 		vp.setNumberOfSamples(numberOfSamples);
+		vp.setLogBase(logBase);
 		vp.apply();
 	}
 	
@@ -299,6 +305,8 @@ public class ProjectReader implements ContentHandler {
 				sVersionNumberOfSamplesMode = false;
 			else if( name.equals("numberofsamples") )
 				sVersionNumberOfSamples = false;
+			else if( name.equals("logbase") )
+				sVersionLogBase = false;
 			else if( name.equals("version") )
 				sVersion = false;
 		}
@@ -361,6 +369,8 @@ public class ProjectReader implements ContentHandler {
 				sVersionNumberOfSamplesMode = true;
 			else if( name.equals("numberofsamples") )
 				sVersionNumberOfSamples = true;
+			else if( name.equals("logbase") )
+				sVersionLogBase = true;
 		}
 	}
 	
@@ -379,10 +389,11 @@ public class ProjectReader implements ContentHandler {
 		lemmaEquivalencesFile		= null;
 		categoryEquivalencesFile	= null;
 		
-		weighting	= false;
-		entropy		= false;
-		mode 		= 0;
+		weighting		= false;
+		entropy			= false;
+		mode 			= 0;
 		subSampleSize	= 1;
+		logBase			= 2;
 		
 		// resetting the states
 		sFiles				= false;

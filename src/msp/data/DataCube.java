@@ -88,7 +88,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	private Vector<ProgressListener> progressListeners;
 	
 	//- Everywhere the same!
-	private static double log2 = Math.log10(2);
+	private double baseLog = Math.log10(2);
+	private int logBase = 2;
 	private static String newLine = System.getProperty("line.separator");
 	private static Logger logger = Logger.getLogger(DataCube.class);
 	
@@ -547,6 +548,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		c.setCategories(cs);
 		c.setLemmas(ls);
 		c.setTime(ts);
+		c.setLogBase(logBase);
 		
 		return c;
 	}
@@ -739,6 +741,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			subCorpora[i].setCategories(cs);
 			subCorpora[i].setLemmas(ls);
 			subCorpora[i].setTime(ts);
+			subCorpora[i].setLogBase(logBase);
 		}
 		
 		return subCorpora;
@@ -1038,6 +1041,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		dc.setCategories(new Vector<String>(categories));
 		dc.setLemmas(new Vector<String>(lemmas));
 		dc.setTime(new Vector<String>(time));
+		dc.setLogBase(logBase);
 
 		/* run over all the months, lemmas and categories:
 		 * add the count x of the current (lemma, category) to all the months
@@ -1554,6 +1558,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	public double mspVarietyWeighted( String month ) 
 	throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspVarietyWeighted");
+		if( !cube.containsKey(month) )
+			throw new NoDataException();
 		return mspVarietyWeighted( sliceTokenCounts.get(month), cube.get(month) );
 	}
 	
@@ -1586,6 +1592,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	public double mspEntropyUnweighted( String month ) throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspEntropyUnweighted");
+		if( !cube.containsKey(month) )
+			throw new NoDataException();
 		return mspEntropyUnweighted(cube.get(month));
 	}
 	
@@ -1622,6 +1630,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	public double mspEntropyWeighted( String month ) throws ImpossibleCalculationException, NoDataException {
 		//		logger.debug("Calculating mspEntropyWeighted");
+		if( !cube.containsKey(month) ) 
+			throw new NoDataException();
 		return mspEntropyWeighted( sliceTokenCounts.get(month), cube.get(month) );
 	}
 	
@@ -1659,7 +1669,6 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param month		t or .
 	 */
 	public int n( String category, String lemma, String month ) throws ImpossibleCalculationException {
-		// TODO speed optimization: keep the time vector and a time hashmap to quickly verify a month
 		if( !time.contains(month) )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
 		
@@ -2003,7 +2012,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				double f = fSpeed( categories.get(i), lemmas.get(j), 
 									slice, sliceTokenCount );
 				if( f < -0.0000000000001 || 0.000000000001 < f )
-					r += f * Math.log10(f) / log2;
+					r += f * Math.log10(f) / baseLog;
 			}
 		r = -r;
 		
@@ -2053,7 +2062,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		for( int i = 0; i < c.size(); i++ ) {
 			double fc = fc( c.get(i), lemma, slice );
 			if( fc < -0.000000001 || 0.000000001 < fc ) {
-				double log = Math.log10(fc) / log2;
+				double log = Math.log10(fc) / baseLog;
 				r += fc * log;
 			}
 		}
@@ -2410,9 +2419,21 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	}
 	
 	
+	/**
+	 * Sets the log base value.
+	 * @param logBase	log base value
+	 */
+	public void setLogBase(int logBase) {
+		this.logBase = logBase;
+		this.baseLog = Math.log(logBase);
+	}
 	
 	
-	//== TESTING ONLY
+	/**
+	 * Not to be used, merely here for internal and testing purposes. Sets
+	 * a given HashMap as the cube's data. 
+	 * @param cube	cube's data
+	 */
 	public void setCube( HashMap<String, HashMap<String, HashMap<String, Integer>>> cube ) {
 		// Storing data
 		this.cube = cube;
@@ -2437,15 +2458,21 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			sliceTokenCounts.put(age, tokenCount);
 		}
 	}
-
+	
+	/**
+	 * Not to be used, merely here for internal and testing purposes. Sets a
+	 * given Vector as the time axis.
+	 * @param time	time axis
+	 */
 	public void setTime( Vector<String> time ) {
+		// Storing
 		this.time = time;
 	}
-
+	
 	public void setLemmas( Vector<String> lemmas ) {
 		this.lemmas = lemmas;
 	}
-
+	
 	public void setCategories( Vector<String> categories ) {
 		this.categories = categories;
 	}

@@ -61,6 +61,7 @@ public class ResultsCell extends DefaultCell {
 	private int subSampleSize = -1;
 	private int numberOfSamplesMode = -1;
 	private double numberOfSamples = -1.0;
+	private int logBase = 2;
 	
 	/*
 	 * (non-Javadoc)
@@ -92,7 +93,8 @@ public class ResultsCell extends DefaultCell {
 				subSampleSize = cell.getSubSampleSize();
 				numberOfSamplesMode = cell.getNumberOfSamplesMode();
 				numberOfSamples = cell.getNumberOfSamples();
-			}
+			} else if( cellName.equals("logBase") )
+				logBase = ((LogBaseCell)grid.getCell(cellName)).intValue();
 		}
 		
 		//- Recalculate
@@ -105,6 +107,10 @@ public class ResultsCell extends DefaultCell {
 				numberOfSamplesMode > -1 && numberOfSamples > 0 ) {
 			// Temporary storage
 			MSPResult pair = null;
+			
+			// Setting the base
+			workingDC.setLogBase(logBase);
+			cumulatedDC.setLogBase(logBase);
 			
 			switch( mode ) {
 			case MODE_BASIC:

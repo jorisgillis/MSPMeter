@@ -52,6 +52,7 @@ public class Defaults {
 		values.put("entropy", new Boolean(false));
 		values.put("numberOfSamplesMode", new Integer(0));
 		values.put("numberOfSamples", new Double(1));
+		values.put("logBase", new Integer(2));
 		
 		// line parsing
 		values.put("firstSeparator", "|");
