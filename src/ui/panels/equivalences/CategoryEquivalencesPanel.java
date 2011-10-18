@@ -297,6 +297,7 @@ public class CategoryEquivalencesPanel extends EquivalencesPanel
 				// getting the file name
 				categoryFile = f.getAbsolutePath();
 				categoryFileCell.setValue(categoryFile);
+				fileLoadingPanel.updateFilePath(categoryFile);
 				
 				// send the datastructures to the correct function
 				CategoryWriter w = new CategoryWriter();

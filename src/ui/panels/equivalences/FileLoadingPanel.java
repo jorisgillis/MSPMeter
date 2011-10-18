@@ -88,6 +88,15 @@ public class FileLoadingPanel extends JPanel implements ActionListener {
 	}
 	
 	/**
+	 * Sets a different text in the load-file-field, without responding back
+	 * to the requestor. 
+	 * @param filePath	new file path
+	 */
+	public void updateFilePath( String filePath ) {
+		this.filePath.setText(filePath);
+	}
+	
+	/**
 	 * Sets the file path. Override of asking the user.
 	 * @param filePath	file path
 	 */

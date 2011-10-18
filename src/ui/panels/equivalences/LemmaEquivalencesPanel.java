@@ -301,6 +301,7 @@ public class LemmaEquivalencesPanel extends EquivalencesPanel
 				// getting the filename
 				lemmaFile = f.getAbsolutePath();
 				lemmaFileCell.setValue(lemmaFile);
+				fileLoadingPanel.updateFilePath(lemmaFile);
 				
 				// send the datastructures to the correct function
 				LemmaWriter w = new LemmaWriter();
