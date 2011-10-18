@@ -145,8 +145,20 @@ public class ProjectReader implements ContentHandler {
 		// Validation
 		boolean validated = false;
 		try {
-			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			Schema schema = schemaFactory.newSchema(new URL("http://www.clips.ua.ac.be/msp/project.xsd"));
+			SchemaFactory schemaFactory = 
+				SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			
+			// Option 1: search in jar
+			URL schemaURL = getClass().getClassLoader().getResource("project.xsd");
+			
+			if( schemaURL == null ) {
+				logger.error("Could not find project.xsd in JAR, looking for " +
+						"project.xsd at the CLIPS website.");
+				schemaURL = new URL("http://www.clips.ua.ac.be/msp/project.xsd");
+			}
+			
+			Schema schema = 
+				schemaFactory.newSchema(schemaURL);
 			Validator validator = schema.newValidator();
 			validator.validate(new SAXSource(new InputSource(new FileReader(fileName))), null);
 			validated = true;

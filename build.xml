@@ -16,6 +16,7 @@
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
     <mkdir dir="${build}"/>
+    <copy file="project.xsd" tofile="${build}/project.xsd" />
     <mkdir dir="${dist}"/>
   </target>
   
