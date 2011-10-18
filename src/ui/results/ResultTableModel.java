@@ -84,6 +84,10 @@ public class ResultTableModel extends IteratingTableModel {
 	 * @see javax.swing.table.TableModel#getColumnCount()
 	 */
 	public int getColumnCount() {
+		// Check whether a stddev is set.
+		if( getRowCount() > 0 )
+			if( ((Double)getValueAt(0, 2)).doubleValue() < 0 )
+				return columnNames.length - 1;
 		return columnNames.length;
 	}
 	

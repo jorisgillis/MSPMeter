@@ -29,7 +29,7 @@ import msp.data.MSPSpan;
 
 /**
  * Row of the ResultTableModel. 
- * @author joris
+ * @author Joris Gillis
  */
 public class ResultTableModelRow implements TableModelRow {
 	
@@ -60,7 +60,10 @@ public class ResultTableModelRow implements TableModelRow {
 	 * @see ui.results.TableModelRow#printDelimiting(java.lang.String)
 	 */
 	public String printDelimiting(String delimitor) {
-		return getSpan() + delimitor + getMSP() + delimitor + getStdDev();
+		if( getStdDev() != -1 )
+			return getSpan() + delimitor + getMSP() + delimitor + getStdDev();
+		else
+			return getSpan() + delimitor + getMSP();
 	}
 	
 	/*
@@ -68,14 +71,24 @@ public class ResultTableModelRow implements TableModelRow {
 	 * @see ui.results.TableModelRow#printExcell(int)
 	 */
 	public WritableCell[] printExcell(int rowIndex) {
-		WritableCell[] cells = new WritableCell[3];
-		rowIndex++;
-		
-		cells[0] = new Label(0, rowIndex, getSpan());
-		cells[1] = new Number(1, rowIndex, getMSP());
-		cells[2] = new Number(2, rowIndex, getStdDev());
-		
-		return cells;
+		if( getStdDev() != -1 ) {
+			WritableCell[] cells = new WritableCell[3];
+			rowIndex++;
+			
+			cells[0] = new Label(0, rowIndex, getSpan());
+			cells[1] = new Number(1, rowIndex, getMSP());
+			cells[2] = new Number(2, rowIndex, getStdDev());
+			
+			return cells;
+		} else {
+			WritableCell[] cells = new WritableCell[2];
+			rowIndex++;
+			
+			cells[0] = new Label(0, rowIndex, getSpan());
+			cells[1] = new Number(1, rowIndex, getMSP());
+			
+			return cells;
+		}
 	}
 	
 	/*
@@ -87,7 +100,8 @@ public class ResultTableModelRow implements TableModelRow {
 		
 		xml += "<dataset>"+ getSpan() + "</dataset>";
 		xml += "<msp>" + getMSP() + "</msp>";
-		xml += "<stddev>" + getStdDev() + "</stddev>";
+		if( getStdDev() != -1 )
+			xml += "<stddev>" + getStdDev() + "</stddev>";
 		
 		return xml;
 	}

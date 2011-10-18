@@ -29,7 +29,7 @@ import jxl.write.WritableCell;
 
 /**
  * A row in the SampleTableModel: (Dataset, Sample Number, MSP) 
- * @author joris
+ * @author Joris Gillis
  */
 public class SampleTableModelRow implements TableModelRow {
 	
