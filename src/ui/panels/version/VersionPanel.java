@@ -365,8 +365,13 @@ public class VersionPanel extends Panel
 			if( cellName.equals("workingDC") ) {
 				// getting the values out the cube
 				DataCube cube = ((DataCubeCell)grid.getCell("workingDC")).getCube();
-				maxSampleSizeOneSpan = cube.maxSampleSizeOneSpan();
-				maxSampleSizeAllSpan = cube.maxSampleSizeAllSpan();
+				if( cube != null ) {
+					maxSampleSizeOneSpan = cube.maxSampleSizeOneSpan();
+					maxSampleSizeAllSpan = cube.maxSampleSizeAllSpan();
+				}
+				
+				
+				
 //				int defaultNumberOfSamples = cube.defaultNumberOfTokens(
 //						Integer.parseInt(subSampleSizeText.getText()));
 				
@@ -389,8 +394,10 @@ public class VersionPanel extends Panel
 			} else if( cellName.equals("cumulatedDC") ) {
 				// getting the values out of the cube
 				DataCube cube = ((DataCubeCell)grid.getCell("cumulatedDC")).getCube();
-				maxSampleSizeOneSpanCumulated = cube.maxSampleSizeOneSpan();
-				maxSampleSizeAllSpanCumulated = cube.maxSampleSizeAllSpan();
+				if( cube != null ) {
+					maxSampleSizeOneSpanCumulated = cube.maxSampleSizeOneSpan();
+					maxSampleSizeAllSpanCumulated = cube.maxSampleSizeAllSpan();
+				}
 //				int defaultNumberOfSamplesCumulated = cube.defaultNumberOfTokens(
 //						Integer.parseInt(subSampleSizeText.getText()));
 				
