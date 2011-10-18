@@ -23,35 +23,38 @@
 package msp.data;
 
 /**
- * Couple of MSP and a month in which the MSP has been calculated.
+ * <p>
+ * Couple of MSP (standard deviation) and a dataset in which the MSP has been 
+ * calculated.
+ * </p>
  * @author Joris Gillis
  */
-public class MSPSpan {
+public class MSPTriple {
 	
 	private double msp = 0.0;
 	private double stddev = -1.0;
-	private String span;
+	private String dataset;
 	
 	/**
-	 * Construct a new (MSP, month) tuple.
-	 * @param msp	msp value
-	 * @param span	span
+	 * Construct a new (MSP, dataset) tuple.
+	 * @param msp		msp value
+	 * @param dataset	dataset
 	 */
-	public MSPSpan( double msp, String span ) {
+	public MSPTriple( double msp, String dataset ) {
 		this.msp = msp;
-		this.span = span;
+		this.dataset = dataset;
 	}
 	
 	/**
 	 * Construct a new (MSP, month, stddev) tuple.
 	 * @param msp		msp value
 	 * @param stddev	standard deviation
-	 * @param span		span
+	 * @param dataset	dataset
 	 */
-	public MSPSpan( double msp, double stddev, String span ) {
+	public MSPTriple( double msp, double stddev, String dataset ) {
 		this.msp = msp;
 		this.stddev = stddev;
-		this.span = span;
+		this.dataset = dataset;
 	}
 	
 	/**
@@ -74,8 +77,8 @@ public class MSPSpan {
 	 * Returns the month
 	 * @return	month
 	 */
-	public String getSpan() {
-		return span;
+	public String getDataset() {
+		return dataset;
 	}
 	
 	/*
@@ -83,7 +86,7 @@ public class MSPSpan {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "("+ span +"; "+ msp +"; "+ stddev +")";
+		return "("+ dataset +"; "+ msp +"; "+ stddev +")";
 	}
 	
 	/*
@@ -91,9 +94,9 @@ public class MSPSpan {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals( Object o ) {
-		if( o instanceof MSPSpan ) {
-			MSPSpan m = (MSPSpan)o;
-			return span.equals(m.span) && Math.abs(msp - m.msp) < 0.0001 && Math.abs(stddev - m.stddev) < 0.0001;
+		if( o instanceof MSPTriple ) {
+			MSPTriple m = (MSPTriple)o;
+			return dataset.equals(m.dataset) && Math.abs(msp - m.msp) < 0.0001 && Math.abs(stddev - m.stddev) < 0.0001;
 		}
 		return false;
 	}

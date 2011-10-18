@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -130,7 +131,7 @@ public class LemmaEquivalencesPanel extends EquivalencesPanel
 	protected boolean changed = false;
 	
 	/** Used to load lemma from files. */
-	protected Vector<String> lemmas = null;
+	protected List<String> lemmas = null;
 	
 	
 	// Everywhere the same

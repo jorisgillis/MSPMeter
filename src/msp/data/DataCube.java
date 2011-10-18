@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -79,11 +80,11 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	
 	// The axis markers
 	/** All the time elements present in the cube */
-	protected Vector<String> time = new Vector<String>();
+	protected List<String> datasets = new ArrayList<String>();
 	/** All the lemmas present in the cube */
-	protected Vector<String> lemmas = new Vector<String>();
+	protected List<String> lemmas = new ArrayList<String>();
 	/** All the categories present in the cube */
-	protected Vector<String> categories = new Vector<String>();
+	protected List<String> categories = new ArrayList<String>();
 	
 	private Vector<ProgressListener> progressListeners;
 	
@@ -130,7 +131,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		throws DataFaultException {
 		//- Setting up the cube and axises
 		cube = new HashMap<String, HashMap<String,HashMap<String,Integer>>>();
-		time = new Vector<String>();
+		datasets = new Vector<String>();
 		lemmas = new Vector<String>();
 		categories = new Vector<String>();
 		
@@ -167,8 +168,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				}
 				
 				//- Entering it in the axis
-				if( !time.contains(fr.getDataSet()) )
-					time.add(fr.getDataSet());
+				if( !datasets.contains(fr.getDataSet()) )
+					datasets.add(fr.getDataSet());
 				if( !lemmas.contains(lemma) )
 					lemmas.add(lemma);
 				if( !categories.contains(category) )
@@ -189,7 +190,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	public DataCube lemmaEquivalences( HashMap<String, String> lemmaEquivalences ) {
 		// axes
-		Vector<String> newTime = new Vector<String>(time);				// stays the same
+		Vector<String> newTime = new Vector<String>(datasets);				// stays the same
 		Vector<String> newLemmas = new Vector<String>(lemmas);			// start with the same, remove the sublemmas
 		Vector<String> newCategories = new Vector<String>(categories);	// stays the same
 		
@@ -246,7 +247,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		
 		// putting it all together
 		DataCube dc = new DataCube();
-		dc.time = newTime;
+		dc.datasets = newTime;
 		dc.lemmas = newLemmas;
 		dc.categories = newCategories;
 		dc.cube = newCube;
@@ -265,7 +266,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	public DataCube categoryEquivalences( HashMap<String, HashMap<String, String>> categoryEquivalences, 
 			boolean useInMSP, HashMap<String, String> lemmaEquivalences ) {
 		// axes
-		Vector<String> newTime = new Vector<String>(time);				// stays the same
+		Vector<String> newTime = new Vector<String>(datasets);				// stays the same
 		Vector<String> newLemmas = new Vector<String>(lemmas);			// stays the same
 		HashSet<String> usedCategories = new HashSet<String>();			// keeps track of all the categories that are being used
 		
@@ -351,7 +352,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			HashMap<String, HashMap<String,Vector<String>>> subCategories,
 			HashMap<String, HashSet<String>> allCategories ) {
 		// Running through the dataCube
-		Iterator<String> sIt = time.iterator();
+		Iterator<String> sIt = datasets.iterator();
 		while( sIt.hasNext() ) {
 			String span = sIt.next();
 			
@@ -401,8 +402,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		HashMap<String, HashMap<String, HashMap<String, Integer>>> newCube = 
 			new HashMap<String, HashMap<String,HashMap<String,Integer>>>();
 		
-		for( int i = 0; i < time.size(); i++ ) {
-			String month = time.get(i);
+		for( int i = 0; i < datasets.size(); i++ ) {
+			String month = datasets.get(i);
 			if( cube.get(month) != null ) {
 				if( newCube.get(month) == null )
 					newCube.put(month, new HashMap<String, HashMap<String, Integer>>());
@@ -538,9 +539,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		Vector<String> cs = new Vector<String>(usedCategories);
 		
 		// keep the time vector in order: add missing times
-		for( int i = 0; i < time.size(); i++ )
-			if( usedTime.contains(time.get(i)) )
-				ts.add(time.get(i));
+		for( int i = 0; i < datasets.size(); i++ )
+			if( usedTime.contains(datasets.get(i)) )
+				ts.add(datasets.get(i));
 		
 		// Storing the sample
 		DataCube c = new DataCube();
@@ -732,9 +733,9 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			Vector<String> cs = new Vector<String>(usedCategories);
 			
 			// keep the time vector in order: add missing times
-			for( int j = 0; j < time.size(); j++ )
-				if( usedTime.contains(time.get(j)) )
-					ts.add(time.get(j));
+			for( int j = 0; j < datasets.size(); j++ )
+				if( usedTime.contains(datasets.get(j)) )
+					ts.add(datasets.get(j));
 			
 			subCorpora[i] = new DataCube();
 			subCorpora[i].setCube(cubicle);
@@ -1040,7 +1041,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		// copying the axes
 		dc.setCategories(new Vector<String>(categories));
 		dc.setLemmas(new Vector<String>(lemmas));
-		dc.setTime(new Vector<String>(time));
+		dc.setTime(new Vector<String>(datasets));
 		dc.setLogBase(logBase);
 
 		/* run over all the months, lemmas and categories:
@@ -1051,8 +1052,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		 * 	Else a new entry is made and x is inserted */
 		
 		HashMap<String, HashMap<String, HashMap<String, Integer>>> newCube = new HashMap<String, HashMap<String, HashMap<String, Integer>>>();
-		for( int i = 0; i < time.size(); i++ ) {
-			HashMap<String, HashMap<String, Integer>> curLemmas = cube.get(time.get(i));
+		for( int i = 0; i < datasets.size(); i++ ) {
+			HashMap<String, HashMap<String, Integer>> curLemmas = cube.get(datasets.get(i));
 			if( curLemmas != null )
 				for( int j = 0; j < lemmas.size(); j++ ) {
 					HashMap<String, Integer> curCategories = curLemmas.get(lemmas.get(j));
@@ -1060,22 +1061,22 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 						for( int k = 0; k < categories.size(); k++ ) {
 							Integer x = curCategories.get(categories.get(k));
 							if( x != null )
-								for( int l = i; l < time.size(); l++ ) {
-									if( newCube.get(time.get(l)) != null &&
-											newCube.get(time.get(l)).get(lemmas.get(j)) != null &&
-											newCube.get(time.get(l)).get(lemmas.get(j)).get(categories.get(k)) != null ) {
+								for( int l = i; l < datasets.size(); l++ ) {
+									if( newCube.get(datasets.get(l)) != null &&
+											newCube.get(datasets.get(l)).get(lemmas.get(j)) != null &&
+											newCube.get(datasets.get(l)).get(lemmas.get(j)).get(categories.get(k)) != null ) {
 										// add up
-										Integer y = newCube.get(time.get(l)).get(lemmas.get(j)).get(categories.get(k));
+										Integer y = newCube.get(datasets.get(l)).get(lemmas.get(j)).get(categories.get(k));
 										Integer z = x + y;
-										newCube.get(time.get(l)).get(lemmas.get(j)).remove(categories.get(k));
-										newCube.get(time.get(l)).get(lemmas.get(j)).put(categories.get(k), z);
+										newCube.get(datasets.get(l)).get(lemmas.get(j)).remove(categories.get(k));
+										newCube.get(datasets.get(l)).get(lemmas.get(j)).put(categories.get(k), z);
 									} else {
 										// insert new one
-										if( newCube.get(time.get(l)) == null )
-											newCube.put(time.get(l), new HashMap<String, HashMap<String, Integer>>());
-										if( newCube.get(time.get(l)).get(lemmas.get(j)) == null )
-											newCube.get(time.get(l)).put(lemmas.get(j), new HashMap<String, Integer>());
-										newCube.get(time.get(l)).get(lemmas.get(j)).put(categories.get(k), x);
+										if( newCube.get(datasets.get(l)) == null )
+											newCube.put(datasets.get(l), new HashMap<String, HashMap<String, Integer>>());
+										if( newCube.get(datasets.get(l)).get(lemmas.get(j)) == null )
+											newCube.get(datasets.get(l)).put(lemmas.get(j), new HashMap<String, Integer>());
+										newCube.get(datasets.get(l)).get(lemmas.get(j)).put(categories.get(k), x);
 									}
 								}
 						}
@@ -1107,29 +1108,29 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	public MSPResult MSP( boolean weighting, boolean entropy ) 
 		throws ImpossibleCalculationException {
 		// basic case: just calculate the MSP of each month
-		MSPSpan[] result = new MSPSpan[time.size()];
+		MSPTriple[] result = new MSPTriple[datasets.size()];
 		
-		for( int i = 0; i < time.size(); i++ ) {
+		for( int i = 0; i < datasets.size(); i++ ) {
 			try {
 				if( !weighting && !entropy )
 					result[i] = 
-						new MSPSpan(mspVarietyUnweighted(time.get(i)), time.get(i));
+						new MSPTriple(mspVarietyUnweighted(datasets.get(i)), datasets.get(i));
 				else if( weighting && !entropy )
 					result[i] = 
-						new MSPSpan(mspVarietyWeighted(time.get(i)), time.get(i));
+						new MSPTriple(mspVarietyWeighted(datasets.get(i)), datasets.get(i));
 				else if( !weighting && entropy )
 					result[i] = 
-						new MSPSpan(mspEntropyUnweighted(time.get(i)), time.get(i));
+						new MSPTriple(mspEntropyUnweighted(datasets.get(i)), datasets.get(i));
 				else if( weighting && entropy )
 					result[i] = 
-						new MSPSpan(mspEntropyWeighted(time.get(i)), time.get(i));
+						new MSPTriple(mspEntropyWeighted(datasets.get(i)), datasets.get(i));
 			} catch( NoDataException e ) {
 				logger.error("No data? This should not be happening!");
-				result[i] = new MSPSpan(0.0, time.get(i));
+				result[i] = new MSPTriple(0.0, datasets.get(i));
 			}
 			
 			// notify the interested object about our progress
-			notifyProgressListeners((((double)i+1)/time.size())*100);
+			notifyProgressListeners((((double)i+1)/datasets.size())*100);
 		}
 		
 		return new MSPResult(result, null);
@@ -1156,8 +1157,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 									double numberOfSamples ) 
 			throws ImpossibleCalculationException {
 		//- Making space for the result and the samples
-		MSPSpan[] result = new MSPSpan[time.size()];
-		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(time.size());
+		MSPTriple[] result = new MSPTriple[datasets.size()];
+		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(datasets.size());
 		
 		
 		// depending on the subsampling method: "one span" or "all span"
@@ -1188,10 +1189,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	protected void resampleMSPOneSpan(boolean weighting, boolean entropy,
 			int subSampleSize, int numberOfSamplesMode, double numberOfSamples,
-			MSPSpan[] result, List<List<Double>> sampleMSPs)
+			MSPTriple[] result, List<List<Double>> sampleMSPs)
 			throws ImpossibleCalculationException {
-		for( int i = 0; i < time.size(); i++ ) {
-			String span = time.get(i);
+		for( int i = 0; i < datasets.size(); i++ ) {
+			String span = datasets.get(i);
 			
 			// Compute the number of samples
 			int N = numberOfTokens( cube.get(span) );
@@ -1212,7 +1213,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 					sampleMSPs.get(i).add(new Double(0.0));
 				
 				// 2. Fill results with neutral MSPSpan
-				result[i] = new MSPSpan(1, 0, span);
+				result[i] = new MSPTriple(1, 0, span);
 			} else {
 				// Entries
 				SliceEntry[] entries = 
@@ -1287,10 +1288,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				variance /= B;
 				double stddev = Math.sqrt(variance);
 				
-				result[i] = new MSPSpan(average, stddev, span);
+				result[i] = new MSPTriple(average, stddev, span);
 				
 				// making progress
-				notifyProgressListeners( (((double)i+1)/time.size())*100 );
+				notifyProgressListeners( (((double)i+1)/datasets.size())*100 );
 			}
 		}
 	}
@@ -1308,7 +1309,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	protected List<List<Double>> resampleMSPAllSpan(boolean weighting,
 			boolean entropy, int subSampleSize, int numberOfSamplesMode,
-			double numberOfSamples, MSPSpan[] result)
+			double numberOfSamples, MSPTriple[] result)
 			throws ImpossibleCalculationException {
 		List<List<Double>> sampleMSPs;
 		int N = numberOfTokens();
@@ -1321,7 +1322,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		notifyProgressListeners(10);
 		
 		// Run through the samples, calculating the MSPs
-		MSPSpan[][] msps = new MSPSpan[B][];
+		MSPTriple[][] msps = new MSPTriple[B][];
 		boolean overSampled = false;
 		for( int j = 0; j < B; j++ ) {
 			if( N < subSampleSize ) {
@@ -1338,10 +1339,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		notifyProgressListeners(40);
 		
 		// Calculate the averages and standard deviations of each span
-		sampleMSPs = new ArrayList<List<Double>>(time.size());
-		for( int i = 0; i < time.size(); i++ ) {
+		sampleMSPs = new ArrayList<List<Double>>(datasets.size());
+		for( int i = 0; i < datasets.size(); i++ ) {
 			// averaging
-			String span = time.get(i);
+			String span = datasets.get(i);
 			double avg = 0.0, stddev = 0.0;
 			int count = 0;
 			
@@ -1351,7 +1352,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				for( int j = 0; j < msps.length; j++ ) {
 					boolean found = false;
 					for( int k = 0; !found && k < msps[j].length; k++ )
-						if( msps[j][k].getSpan().equals(span) ) {
+						if( msps[j][k].getDataset().equals(span) ) {
 							avg += msps[j][k].getMSP();
 							sampleMSPs.get(i).add(msps[j][k].getMSP());
 							count++;
@@ -1366,7 +1367,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				for( int j = 0; j < B; j++ ) {
 					boolean found = false;
 					for( int k = 0; !found && k < msps[j].length; k++ )
-						if( msps[j][k].getSpan().equals(span) ) {
+						if( msps[j][k].getDataset().equals(span) ) {
 							variance += Math.pow(msps[j][k].getMSP() - avg, 2);
 							found = true;
 						}
@@ -1380,10 +1381,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			}
 			
 			// adding to the results
-			result[i] = new MSPSpan(avg, stddev, span);
+			result[i] = new MSPTriple(avg, stddev, span);
 			
 			// making progress
-			notifyProgressListeners( 40 + (((double)i+1)/time.size())*60 );
+			notifyProgressListeners( 40 + (((double)i+1)/datasets.size())*60 );
 		}
 		return sampleMSPs;
 	}
@@ -1404,8 +1405,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			int S, int numberOfSamplesMode, double numberOfSamples ) 
 			throws ImpossibleCalculationException {
 		// Output data structures
-		MSPSpan[] result = new MSPSpan[time.size()];
-		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(time.size());
+		MSPTriple[] result = new MSPTriple[datasets.size()];
+		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(datasets.size());
 		
 		// Checking for oversampling
 		int N = numberOfTokens();
@@ -1423,7 +1424,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 //				new HashMap<String, List<Double>>();
 			
 			// Initialize sampleMSPs
-			for( int i = 0; i < time.size(); i++ )
+			for( int i = 0; i < datasets.size(); i++ )
 				sampleMSPs.add(new ArrayList<Double>(B));
 			
 			for ( int k = 0; k < B; k++ ) {
@@ -1432,8 +1433,8 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				cube.cumulate();
 				
 				// calculate the MSPs
-				for( int i = 0; i < time.size(); i++ ) {
-					String month = time.get(i);
+				for( int i = 0; i < datasets.size(); i++ ) {
+					String month = datasets.get(i);
 					
 					double msp = -1;
 					if( !weighted && !entropy )
@@ -1475,7 +1476,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 					sampleMSPs.get(i).add(msp);
 					
 					// making progress
-					notifyProgressListeners( 20.0 + (((double)i+1)/time.size())*70 );
+					notifyProgressListeners( 20.0 + (((double)i+1)/datasets.size())*70 );
 				}
 			}
 			
@@ -1499,16 +1500,16 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				variance /= count;
 				double stddev = Math.sqrt(variance);
 				
-				result[i] = new MSPSpan( average, stddev, time.get(i) );
+				result[i] = new MSPTriple( average, stddev, datasets.get(i) );
 			}
 		} else {
 			// Oversampled: thus making empty result datastructures
 			// a. Result
 			for( int i = 0; i < result.length; i++ )
-				result[i] = new MSPSpan(0, 0, time.get(i));
+				result[i] = new MSPTriple(0, 0, datasets.get(i));
 			
 			// b. sampleMSPs
-			for( int i = 0; i < time.size(); i++ )
+			for( int i = 0; i < datasets.size(); i++ )
 				sampleMSPs.add(new ArrayList<Double>() );
 		}
 		
@@ -1669,7 +1670,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @param month		t or .
 	 */
 	public int n( String category, String lemma, String month ) throws ImpossibleCalculationException {
-		if( !time.contains(month) )
+		if( !datasets.contains(month) )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
 		
 		return n( category, lemma, cube.get(month) );
@@ -1691,21 +1692,21 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") in slice "+ slice );
 		
 		// Vectors contain all possible values
-		Vector<String> l;
-		Vector<String> c;
+		List<String> l;
+		List<String> c;
 
 		// Initialize the vectors
 		if( lemma.equals(".") )
-			l = new Vector<String>(slice.keySet());
+			l = new LinkedList<String>(slice.keySet());
 		else {
-			l = new Vector<String>();
+			l = new LinkedList<String>();
 			l.add(lemma);
 		}
 
 		if( category.equals(".") )
 			c = categories;
 		else {
-			c = new Vector<String>();
+			c = new LinkedList<String>();
 			c.add(category);
 		}
 
@@ -1732,7 +1733,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @throws ImpossibleCalculationException
 	 */
 	public double f( String category, String lemma, String month ) throws ImpossibleCalculationException {
-		if( !time.contains(month) )
+		if( !datasets.contains(month) )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
 		
 		return fSpeed( category, lemma, cube.get(month), sliceTokenCounts.get(month) );
@@ -1799,7 +1800,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	public double fc( String category, String lemma, String month ) 
 	throws ImpossibleCalculationException {
-		if( !time.contains(month) )
+		if( !datasets.contains(month) )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
 
 		return fc(category, lemma, cube.get(month));
@@ -1834,7 +1835,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @throws ImpossibleCalculationException
 	 */
 	public double o( String category, String lemma, String month ) throws ImpossibleCalculationException {
-		if( !time.contains(month) )
+		if( !datasets.contains(month) )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
 		
 		return o( category, lemma, cube.get(month) );
@@ -1879,21 +1880,21 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		 * If a * occurs, scan the whole axis.
 		 */
 		boolean found = false;
-		Vector<String> c;
-		Vector<String> l;
+		List<String> c;
+		List<String> l;
 		
 		// fixing the axes
 		if( category.equals("*") )
 			c = categories;
 		else {
-			c = new Vector<String>();
+			c = new ArrayList<String>(1);
 			c.add(category);
 		}
 		
 		if( lemma.equals("*") )
 			l = lemmas;
 		else {
-			l = new Vector<String>();
+			l = new ArrayList<String>(1);
 			l.add(lemma);
 		}
 		
@@ -1928,21 +1929,21 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		/*
 		 * If a . occurs, scan the whole axis.
 		 */
-		Vector<String> c;
-		Vector<String> l;
+		List<String> c;
+		List<String> l;
 		
 		// fixing the axes
 		if( category.equals(".") )
 			c = categories;
 		else {
-			c = new Vector<String>();
+			c = new ArrayList<String>(1);
 			c.add(category);
 		}
 		
 		if( lemma.equals(".") )
 			l = lemmas;
 		else {
-			l = new Vector<String>();
+			l = new ArrayList<String>(1);
 			l.add(lemma);
 		}
 		
@@ -1966,7 +1967,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	public double h( String category, String lemma, String month ) 
 		throws ImpossibleCalculationException {
-		if( !time.contains(month) )
+		if( !datasets.contains(month) )
 			throw new ImpossibleCalculationException( 
 					"("+ category +", "+ lemma +") at month "+ month );
 		
@@ -1987,20 +1988,20 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 					"("+ category +", "+ lemma +") at slice "+ slice );
 		
 		// Vectors implementing the axes
-		Vector<String> c;
-		Vector<String> l;
+		List<String> c;
+		List<String> l;
 		
 		if( category.equals(".") )
 			c = categories;
 		else {
-			c = new Vector<String>();
+			c = new ArrayList<String>(1);
 			c.add(category);
 		}
 		
 		if( lemma.equals(".") )
 			l = lemmas;
 		else {
-			l = new Vector<String>();
+			l = new ArrayList<String>(1);
 			l.add(lemma);
 		}
 		
@@ -2028,7 +2029,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	public double hc( String category, String lemma, String month ) 
 	throws ImpossibleCalculationException {
-		if( !time.contains(month) )
+		if( !datasets.contains(month) )
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at month "+ month );
 
 		return hc( category, lemma, cube.get(month) );
@@ -2048,12 +2049,12 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			throw new ImpossibleCalculationException( "("+ category +", "+ lemma +") at slice "+ slice );
 
 		// If a . occurs, specify the axis-values
-		Vector<String> c;
+		List<String> c;
 
 		if( category.equals(".") )
 			c = categories;
 		else {
-			c = new Vector<String>();
+			c = new ArrayList<String>(1);
 			c.add(category);
 		}
 
@@ -2204,10 +2205,10 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @see test.msp.DataCubeTest#maxSampleSizeCumulateResample()
 	 */
 	public int maxSampleSizeOneSpan() {
-		if( time.size() > 0 ) {
-			int min = numberOfTokens(cube.get(time.get(0)));
-			for( int i = 1; i < time.size(); i++ ) {
-				int x = numberOfTokens(cube.get(time.get(i)));
+		if( datasets.size() > 0 ) {
+			int min = numberOfTokens(cube.get(datasets.get(0)));
+			for( int i = 1; i < datasets.size(); i++ ) {
+				int x = numberOfTokens(cube.get(datasets.get(i)));
 				if( x < min )
 					min = x;
 			}
@@ -2227,7 +2228,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * @see test.msp.DataCubeTest#maxSampleSizeResampleCumulate()
 	 */
 	public int maxSampleSizeAllSpan() {
-		if( time.size() > 0 )
+		if( datasets.size() > 0 )
 			return numberOfTokens()-1;
 		return 1;
 	}
@@ -2280,15 +2281,15 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * Returns the list of datasets in the cube.
 	 * @return	list of datasets
 	 */
-	public Vector<String> getDataSets() {
-		return time;
+	public List<String> getDataSets() {
+		return datasets;
 	}
 	
 	/**
 	 * Returns the list of lemmas in the cube.
 	 * @return 	list of lemmas
 	 */
-	public Vector<String> getLemmas() {
+	public List<String> getLemmas() {
 		return lemmas;
 	}
 	
@@ -2300,11 +2301,11 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	public Collection<String> getCategories(String lemma) {
 		HashSet<String> cats = new HashSet<String>();
 		
-		for( int i = 0; i < time.size(); i++ ) {
-			if( cube.containsKey(time.get(i)) && cube.get(time.get(i)).containsKey(lemma) ) {
+		for( int i = 0; i < datasets.size(); i++ ) {
+			if( cube.containsKey(datasets.get(i)) && cube.get(datasets.get(i)).containsKey(lemma) ) {
 				// lemma available in the cube at time time.get(i)
 				// running through the available categories, adding them to the mix!
-				Iterator<String> it = cube.get(time.get(i)).get(lemma).keySet().iterator();
+				Iterator<String> it = cube.get(datasets.get(i)).get(lemma).keySet().iterator();
 				while( it.hasNext() )
 					cats.add(it.next());
 			}
@@ -2372,36 +2373,36 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 			DataCube dc = (DataCube)o;
 			
 			// compare the axes and the cube
-			equal = cube.equals(dc.cube) && equalVectors(categories, dc.categories)
-						&& equalVectors(lemmas, dc.lemmas) && equalVectors(time, dc.time);
+			equal = cube.equals(dc.cube) && equalLists(categories, dc.categories)
+						&& equalLists(lemmas, dc.lemmas) && equalLists(datasets, dc.datasets);
 		}
 		
 		return equal;
 	}
 	
 	/**
-	 * Checks if there is a one-to-one correspondence between the two vectors.
+	 * Checks if there is a one-to-one correspondence between the two lists.
 	 * Two elements match if they are equal.
-	 * @param v1	vector 1
-	 * @param v2	vector 2
+	 * @param l1	list 1
+	 * @param l2	list 2
 	 * @return		is there a one-to-one correspondence
 	 */
-	private boolean equalVectors( Vector<String> v1, Vector<String> v2 ) {
-		boolean equal = v1.size() == v2.size();
+	private boolean equalLists( List<String> l1, List<String> l2 ) {
+		boolean equal = l1.size() == l2.size();
 		
 		// v1 to v2
-		for( int i = 0; equal && i < v1.size(); i++ ) {
+		for( int i = 0; equal && i < l1.size(); i++ ) {
 			boolean found = false;
-			for( int j = 0; !found && j < v2.size(); j++ )
-				found = v1.get(i).equals(v2.get(j));
+			for( int j = 0; !found && j < l2.size(); j++ )
+				found = l1.get(i).equals(l2.get(j));
 			equal = found;
 		}
 		
 		// v2 to v1
-		for( int j = 0; j < v2.size(); j++ ) {
+		for( int j = 0; j < l2.size(); j++ ) {
 			boolean found = false;
-			for( int i = 0; !found && i < v1.size(); i++ )
-				found = v2.get(j).equals(v1.get(i));
+			for( int i = 0; !found && i < l1.size(); i++ )
+				found = l2.get(j).equals(l1.get(i));
 			equal = found;
 		}
 		
@@ -2464,16 +2465,18 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 * given Vector as the time axis.
 	 * @param time	time axis
 	 */
-	public void setTime( Vector<String> time ) {
+	public void setTime( List<String> time ) {
 		// Storing
-		this.time = time;
+		this.datasets = time;
 	}
 	
-	public void setLemmas( Vector<String> lemmas ) {
+	public void setLemmas( List<String> lemmas ) {
+		// Storing
 		this.lemmas = lemmas;
 	}
 	
-	public void setCategories( Vector<String> categories ) {
+	public void setCategories( List<String> categories ) {
+		// Storing
 		this.categories = categories;
 	}
 }

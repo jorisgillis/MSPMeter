@@ -25,7 +25,7 @@ package ui.results;
 import jxl.write.Label;
 import jxl.write.Number;
 import jxl.write.WritableCell;
-import msp.data.MSPSpan;
+import msp.data.MSPTriple;
 
 /**
  * Row of the ResultTableModel. 
@@ -33,18 +33,18 @@ import msp.data.MSPSpan;
  */
 public class ResultTableModelRow implements TableModelRow {
 	
-	protected MSPSpan value;
+	protected MSPTriple value;
 	
 	/**
 	 * Constructs new row. 
 	 * @param value	MSPSpan
 	 */
-	public ResultTableModelRow( MSPSpan value ) {
+	public ResultTableModelRow( MSPTriple value ) {
 		this.value = value;
 	}
 	
-	public String getSpan() {
-		return value.getSpan();
+	public String getDataset() {
+		return value.getDataset();
 	}
 	
 	public double getMSP() {
@@ -61,9 +61,9 @@ public class ResultTableModelRow implements TableModelRow {
 	 */
 	public String printDelimiting(String delimitor) {
 		if( getStdDev() != -1 )
-			return getSpan() + delimitor + getMSP() + delimitor + getStdDev();
+			return getDataset() + delimitor + getMSP() + delimitor + getStdDev();
 		else
-			return getSpan() + delimitor + getMSP();
+			return getDataset() + delimitor + getMSP();
 	}
 	
 	/*
@@ -75,7 +75,7 @@ public class ResultTableModelRow implements TableModelRow {
 			WritableCell[] cells = new WritableCell[3];
 			rowIndex++;
 			
-			cells[0] = new Label(0, rowIndex, getSpan());
+			cells[0] = new Label(0, rowIndex, getDataset());
 			cells[1] = new Number(1, rowIndex, getMSP());
 			cells[2] = new Number(2, rowIndex, getStdDev());
 			
@@ -84,7 +84,7 @@ public class ResultTableModelRow implements TableModelRow {
 			WritableCell[] cells = new WritableCell[2];
 			rowIndex++;
 			
-			cells[0] = new Label(0, rowIndex, getSpan());
+			cells[0] = new Label(0, rowIndex, getDataset());
 			cells[1] = new Number(1, rowIndex, getMSP());
 			
 			return cells;
@@ -98,7 +98,7 @@ public class ResultTableModelRow implements TableModelRow {
 	public String printXML() {
 		String xml = "";
 		
-		xml += "<dataset>"+ getSpan() + "</dataset>";
+		xml += "<dataset>"+ getDataset() + "</dataset>";
 		xml += "<msp>" + getMSP() + "</msp>";
 		if( getStdDev() != -1 )
 			xml += "<stddev>" + getStdDev() + "</stddev>";

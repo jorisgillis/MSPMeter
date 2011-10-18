@@ -35,7 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import msp.RestrictionViolation;
-import msp.data.MSPSpan;
+import msp.data.MSPTriple;
 
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartPanel;
@@ -75,7 +75,7 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 	protected final Color upperColor	= new Color(0.2f, 0.2f, 0.8f);
 	
 	// Results
-	protected MSPSpan[] results;
+	protected MSPTriple[] results;
 	
 	private Logger logger = Logger.getLogger(ResultChartPanel.class);
 	
@@ -194,12 +194,12 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 						dataset.add(results[i].getMSP(),
 									0,
 									"msp",
-									results[i].getSpan());
+									results[i].getDataset());
 					} else {
 						dataset.add(results[i].getMSP(), 
 									results[i].getStdDev(), 
 									"msp", 
-									results[i].getSpan());
+									results[i].getDataset());
 					}
 					
 					if (results[i].getMSP() > maximum)
@@ -207,7 +207,7 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 					if (minimum > results[i].getMSP())
 						minimum = results[i].getMSP();
 				} else {
-					dataset.add(1.0, 0.0, "msp", results[i].getSpan());
+					dataset.add(1.0, 0.0, "msp", results[i].getDataset());
 					minimum = 1.0;
 				}
 			
@@ -216,22 +216,22 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 				for( int i = 0; i < results.length; i++ )
 					if( results[i].getMSP() + 2*results[i].getStdDev() > 1 ) {
 						double v = results[i].getMSP() + 2*results[i].getStdDev();
-						upper.addValue(v, "upper", results[i].getSpan());
+						upper.addValue(v, "upper", results[i].getDataset());
 						
 						if (v > maximum)
 							maximum = v;
 					} else
-						upper.addValue(1.0, "upper", results[i].getSpan());
+						upper.addValue(1.0, "upper", results[i].getDataset());
 				
 				for( int i = 0; i < results.length; i++ )
 					if( results[i].getMSP() - 2*results[i].getStdDev() > 1 ) {
 						double v = results[i].getMSP() - 2*results[i].getStdDev();
-						lower.addValue(v, "lower", results[i].getSpan());
+						lower.addValue(v, "lower", results[i].getDataset());
 						
 						if (minimum > v)
 							minimum = v;
 					} else {
-						lower.addValue(1.0, "lower", results[i].getSpan());
+						lower.addValue(1.0, "lower", results[i].getDataset());
 						minimum = 1.0;
 					}
 				

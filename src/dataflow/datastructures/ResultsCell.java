@@ -30,7 +30,7 @@ import msp.data.DataCube;
 import msp.data.DataFaultException;
 import msp.data.ImpossibleCalculationException;
 import msp.data.MSPResult;
-import msp.data.MSPSpan;
+import msp.data.MSPTriple;
 import dataflow.Grid;
 
 /**
@@ -48,7 +48,7 @@ public class ResultsCell extends DefaultCell {
 	
 	
 	/* Results of the calculation */
-	private MSPSpan[] results = null;
+	private MSPTriple[] results = null;
 	private List<List<Double>> samples = null;
 	
 	/* Objects needed for the calculation */
@@ -156,7 +156,7 @@ public class ResultsCell extends DefaultCell {
 	/**
 	 * Gets the value of this cell. 
 	 */
-	public MSPSpan[] getValue() {
+	public MSPTriple[] getValue() {
 		return results;
 	}
 	

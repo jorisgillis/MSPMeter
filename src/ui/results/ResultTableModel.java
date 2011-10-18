@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import msp.data.MSPSpan;
+import msp.data.MSPTriple;
 
 /**
  * Model for showing the results of an MSP calculation in a table
@@ -43,13 +43,13 @@ public class ResultTableModel extends IteratingTableModel {
 	 * Set new results!
 	 * @param results
 	 */
-	public void setResults( MSPSpan[] results ) {
+	public void setResults( MSPTriple[] results ) {
 		if( results != null ) {
 			// cleaning out the table
 			removeAll();
 			
 			// adding each span
-			for( MSPSpan span : results )
+			for( MSPTriple span : results )
 				rows.add( new ResultTableModelRow( span ) );
 			
 			// letting the table know about the new values
@@ -108,7 +108,7 @@ public class ResultTableModel extends IteratingTableModel {
 			ResultTableModelRow row = (ResultTableModelRow)rows.get(rowIndex);
 			switch( columnIndex ) {
 			case 0:
-				return row.getSpan();
+				return row.getDataset();
 			case 1:
 				return row.getMSP();
 			case 2:

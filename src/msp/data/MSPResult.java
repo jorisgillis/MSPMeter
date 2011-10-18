@@ -26,16 +26,16 @@ import java.util.List;
 
 /**
  * <p>
- * This object consists of a MSPSpan array representing the results of an
+ * This object consists of a MSPTriple array representing the results of an
  * MSP calculation, and a sampleMSPs list of lists of doubles containing
  * the raw MSP values for the samples. If the MSP calculation uses no sampling
  * the sampleMSPs field will be null.
  * </p> 
- * @author joris
+ * @author Joris Gillis
  */
 public class MSPResult {
 	
-	private MSPSpan[] result;
+	private MSPTriple[] result;
 	private List<List<Double>> sampleMSPs;
 	
 	/**
@@ -43,7 +43,7 @@ public class MSPResult {
 	 * @param result		result of the computation
 	 * @param sampleMSPs	sample values used to derived result
 	 */
-	public MSPResult( MSPSpan[] result, List<List<Double>> sampleMSPs ) {
+	public MSPResult( MSPTriple[] result, List<List<Double>> sampleMSPs ) {
 		this.result = result;
 		this.sampleMSPs = sampleMSPs;
 	}
@@ -52,7 +52,7 @@ public class MSPResult {
 	 * Returns the result set of this pair. 
 	 * @return	result set
 	 */
-	public MSPSpan[] getResults() {
+	public MSPTriple[] getResults() {
 		return result;
 	}
 	

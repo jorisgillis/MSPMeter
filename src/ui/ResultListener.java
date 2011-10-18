@@ -22,7 +22,7 @@
 
 package ui;
 
-import msp.data.MSPSpan;
+import msp.data.MSPTriple;
 
 /**
  * The ones that are waiting for the results of the MSP calculations.
@@ -34,6 +34,6 @@ public interface ResultListener {
 	 * New results have been calculated!
 	 * @param results	new results
 	 */
-	public void newResults( MSPSpan[] results );
+	public void newResults( MSPTriple[] results );
 	
 }

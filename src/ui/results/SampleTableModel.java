@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import msp.data.MSPSpan;
+import msp.data.MSPTriple;
 
 import org.apache.log4j.Logger;
 
@@ -154,7 +154,7 @@ public class SampleTableModel extends IteratingTableModel {
 	 * @param results		results for the datasets
 	 * @param sampleMSPs	MSP values
 	 */
-	public void setValues( MSPSpan[] results, List<List<Double>> sampleMSPs ) {
+	public void setValues( MSPTriple[] results, List<List<Double>> sampleMSPs ) {
 		if( sampleMSPs != null ) {
 			//- 1. Processing the given information into the correct form
 			if( sampleMSPs != null ) {
@@ -163,7 +163,7 @@ public class SampleTableModel extends IteratingTableModel {
 				
 				rows = new ArrayList<TableModelRow>( sampleMSPs.size() );
 				for( int i = 0; i < sampleMSPs.size(); i++ ) {
-					String dataset = results[i].getSpan();
+					String dataset = results[i].getDataset();
 					int sampleNR = 1;
 					
 					for( Double sample : sampleMSPs.get(i) ) {

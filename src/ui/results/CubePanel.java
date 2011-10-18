@@ -25,7 +25,7 @@ package ui.results;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.Vector;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -132,7 +132,7 @@ public class CubePanel extends JPanel {
 			
 			// Table
 			model.removeAll();
-			Vector<String> dataSets = cube.getDataSets();
+			List<String> dataSets = cube.getDataSets();
 			for( int i = 0; i < dataSets.size(); i++ ) {
 				String sliceName = dataSets.get(i);
 				model.addRow(sliceName, cube.numberOfTokens(sliceName), cube.numberOfLemmas(sliceName));

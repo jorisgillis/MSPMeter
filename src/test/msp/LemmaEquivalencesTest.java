@@ -32,7 +32,7 @@ import java.util.Vector;
 
 import msp.data.DataCube;
 import msp.data.ImpossibleCalculationException;
-import msp.data.MSPSpan;
+import msp.data.MSPTriple;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -92,9 +92,9 @@ public class LemmaEquivalencesTest {
 	@Test
 	public void invariance2() {
 		try {
-			MSPSpan[] cumulatedOriginal = dc.MSP(true, true).getResults();
+			MSPTriple[] cumulatedOriginal = dc.MSP(true, true).getResults();
 			dc.lemmaEquivalences(lemmaEquivalences);
-			MSPSpan[] cumulatedAfter = dc.MSP(true, true).getResults();
+			MSPTriple[] cumulatedAfter = dc.MSP(true, true).getResults();
 			
 			for( int i = 0; i < cumulatedOriginal.length; i++ )
 				assertEquals(cumulatedOriginal[i], cumulatedAfter[i]);

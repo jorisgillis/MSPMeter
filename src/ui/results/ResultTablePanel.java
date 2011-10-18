@@ -32,7 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import msp.RestrictionViolation;
-import msp.data.MSPSpan;
+import msp.data.MSPTriple;
 
 import org.apache.log4j.Logger;
 
@@ -50,7 +50,7 @@ public class ResultTablePanel extends JPanel implements Cell {
 	
 	protected ResultChartPanel parent = null;
 	
-	protected MSPSpan[] results = null;
+	protected MSPTriple[] results = null;
 	
 	private JScrollPane scroller;
 	private JTable table;
@@ -93,7 +93,7 @@ public class ResultTablePanel extends JPanel implements Cell {
 	 * Returns the results that are displayed.
 	 * @return	the results
 	 */
-	public MSPSpan[] getResults() {
+	public MSPTriple[] getResults() {
 		return results;
 	}
 	
