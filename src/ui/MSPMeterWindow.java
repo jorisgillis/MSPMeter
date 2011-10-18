@@ -601,15 +601,15 @@ public class MSPMeterWindow extends Window implements ActionListener, ChangeList
 			throw new ValidationException(
 					"Choosen file is a directory! Nothing saved.");
 		
-		// 2. Already exists?
+		// 2. If f does not end in ".xml"
+		if (!f.getName().endsWith(".xml"))
+			f = new File(f.getAbsolutePath() + ".xml");
+		
+		// 3. Already exists?
 		if (f.exists())
 			if (!overwrite(f))
 				throw new ValidationException(
 						f.getName() +" NOT overwritten. Nothing saved.");
-		
-		// 3. If f does not end in ".xml"
-		if (!f.getName().endsWith(".xml"))
-			f = new File(f.getAbsolutePath() + ".xml");
 		return f;
 	}
 	
