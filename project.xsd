@@ -67,6 +67,7 @@
 		<xsd:element name="subsamplesize" type="xsd:integer" />
 		<xsd:element name="numberofsamplesmode" type="xsd:integer" />
 		<xsd:element name="numberofsamples" type="xsd:double" />
+		<xsd:element name="logbase" type="xsd:integer" />
 	</xsd:sequence>
 </xsd:complexType>
 
