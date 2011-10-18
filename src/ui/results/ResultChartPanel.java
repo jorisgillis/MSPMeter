@@ -102,7 +102,7 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 		barRenderer		= new StatisticalBarRenderer();
 		barRenderer.setSeriesPaint(0, mspColor);
 		
-		// The Plot
+		// The Plot: begin as a line plot
 		CategoryPlot plot = new CategoryPlot();
 		plot.setDomainAxis(new CategoryAxis("Datasets"));
 		plot.setRangeAxis(new NumberAxis("MSP"));
@@ -118,7 +118,7 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 		panel = new ChartPanel(chart);
 		
 		// Listening to changes
-		dataset.addChangeListener(chart.getPlot());
+		//dataset.addChangeListener(chart.getPlot());
 		chart.getPlot().addChangeListener(chart);
 		chart.addChangeListener(panel);
 		
@@ -180,6 +180,8 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 		if ( results != null ) {
 			// removing all the rows from the matrix
 			dataset.clear();
+			upper.clear();
+			lower.clear();
 			
 			// Minimum and Maximum
 			double minimum = Double.MAX_VALUE;
@@ -188,10 +190,17 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 			// averages
 			for( int i = 0; i < results.length; i++ )
 				if( results[i].getMSP() > 1 ) {
-					dataset.add(results[i].getMSP(), 
-								results[i].getStdDev(), 
-								"msp", 
-								results[i].getSpan());
+					if( results[i].getStdDev() < 0 ) {
+						dataset.add(results[i].getMSP(),
+									0,
+									"msp",
+									results[i].getSpan());
+					} else {
+						dataset.add(results[i].getMSP(), 
+									results[i].getStdDev(), 
+									"msp", 
+									results[i].getSpan());
+					}
 					
 					if (results[i].getMSP() > maximum)
 						maximum = results[i].getMSP();
@@ -202,7 +211,7 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 					minimum = 1.0;
 				}
 			
-			// standard deviations (if present)
+			// Upper and Lower (if standard deviation is present)
 			if( results.length > 1 && results[0].getStdDev() >= 0 ) {
 				for( int i = 0; i < results.length; i++ )
 					if( results[i].getMSP() + 2*results[i].getStdDev() > 1 ) {
@@ -235,9 +244,14 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 				((CategoryPlot)chart.getPlot()).setDataset(2, null);
 			}
 			
-			// Add 5% of the range above and below
-			minimum = minimum - ((maximum - minimum) / 10);
-			maximum = maximum + ((maximum - minimum) / 10);
+			// Add 10% of the range above and below
+			if( minimum == maximum ) {
+				minimum = minimum - minimum / 10;
+				maximum = maximum + maximum / 10;
+			} else {
+				minimum = minimum - ((maximum - minimum) / 10);
+				maximum = maximum + ((maximum - minimum) / 10);
+			}
 			((CategoryPlot)chart.getPlot()).getRangeAxis().setLowerBound(minimum);
 			((CategoryPlot)chart.getPlot()).getRangeAxis().setUpperBound(maximum);
 		}
@@ -267,15 +281,21 @@ public class ResultChartPanel extends JPanel implements Cell, ActionListener {
 				plot.setRenderer(0, lineRenderer0);
 				plot.setRenderer(1, lineRenderer1);
 				plot.setRenderer(2, lineRenderer2);
+				
 				plot.setDataset(0, lower);
 				plot.setDataset(1, dataset);
 				plot.setDataset(2, upper);
 			}
 			else if( command.equals("bar chart") ) {
-				plot.setRenderer(0, barRenderer);
-				plot.setDataset(0, dataset);
-				plot.setDataset(1, null);
+				plot.setRenderer(null);
+				plot.setRenderer(1, barRenderer);
+				plot.setRenderer(2, null);
+				
+				plot.setDataset(0, null);
+				plot.setDataset(1, dataset);
 				plot.setDataset(2, null);
+				
+				logger.debug("Number of datasets: "+ plot.getDatasetCount());
 			}
 		}
 	}

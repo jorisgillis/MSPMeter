@@ -139,7 +139,7 @@ public class ProjectWriter {
 			
 			// 5. Version
 			VersionCell version = (VersionCell)grid.getCell("version");
-			LogBaseCell logBaseCell = (LogBaseCell)grid.getCell("logbase");
+			LogBaseCell logBaseCell = (LogBaseCell)grid.getCell("logBase");
 			w.write("\t<version>"); w.newLine();
 			w.write("\t\t<weighting>"+ version.isWeighting() + "</weighting>"); w.newLine();
 			w.write("\t\t<entropy>" + version.isEntropy() + "</entropy>"); w.newLine();
