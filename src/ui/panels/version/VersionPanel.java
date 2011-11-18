@@ -60,14 +60,7 @@ import dataflow.datastructures.VersionCell;
  */
 @SuppressWarnings("serial")
 public class VersionPanel extends Panel 
-	implements ItemListener, Cell, ChangeListener, ActionListener {
-	
-	// TODO
-	/*
-	 * Geen controle meer uitoefenen op de sample grootte. Als de sample grootte groter is dan 
-	 * de grootte van een span, dan wordt er geen waarde berekent voor die span. 
-	 * Daarvoor gaan we een soort empty-span nodig hebben. 
-	 */
+	implements ItemListener, Cell, ChangeListener {
 	
 	//- Components
 	protected JCheckBox weightC, entropyC;
@@ -112,8 +105,8 @@ public class VersionPanel extends Panel
 		JLabel weighting		= new JLabel("Weighting? ");
 		JLabel entropy			= new JLabel("Entropy? ");
 		JLabel operationMode	= new JLabel("Operation Mode: ");
-		JLabel sampleMode		= new JLabel("Sample Mode: ");
-		JLabel subSampleMode	= new JLabel("Number of Samples: ");
+		JLabel sampleMode		= new JLabel("Sample Scope: ");
+		JLabel subSampleMode	= new JLabel("Sample Mode: ");
 		JLabel sampleSize		= new JLabel("Subsample Size: ");
 		JLabel logBase			= new JLabel("Log Base");
 		
@@ -125,7 +118,7 @@ public class VersionPanel extends Panel
 											"Resample & Cumulate"};
 		String[] numberOfSubSamplesStrings = new String[]{	"Sampling Factor", 
 															"Fixed Value"};
-		String[] sampleModeStrings = new String[]{"One Span", "All Spans"};
+		String[] sampleModeStrings = new String[]{"One Dataset", "All Datasets"};
 		
 		// elements
 		try {
@@ -152,14 +145,10 @@ public class VersionPanel extends Panel
 			
 			// adding the listeners to guide the changes
 			modeCB.addItemListener(this);
-			numberOfSamplesModeCB.addItemListener(this);
-			subSampleModeCB.addItemListener(this);
 			
 			// adding changelisteners to capture change
 			weightC.addChangeListener(this);
 			entropyC.addChangeListener(this);
-			subSampleSizeText.addActionListener(this);
-			numberOfSamplesText.addActionListener(this);
 			
 		} catch( Exception e ) {
 			logger.error("Defaults not loaded. "+ e.getMessage());
@@ -193,30 +182,30 @@ public class VersionPanel extends Panel
 		mainPanel.add(entropyC, c);
 		
 		c.gridx = 0; c.gridy = 2;
+		mainPanel.add(logBase, c);
+		c.gridx = 1;
+		mainPanel.add(logBaseText, c);
+		
+		c.gridx = 0; c.gridy = 3;
 		mainPanel.add(operationMode, c);
 		c.gridx = 1;
 		mainPanel.add(modeCB, c);
 		
-		c.gridx = 0; c.gridy = 3;
+		c.gridx = 0; c.gridy = 4;
 		mainPanel.add(sampleMode, c);
 		c.gridx = 1;
 		mainPanel.add(subSampleModeCB, c);
 		
 		
-		c.gridx = 0; c.gridy = 4;
+		c.gridx = 0; c.gridy = 5;
 		mainPanel.add(subSampleMode, c);
 		c.gridx = 1;
 		mainPanel.add(numberPanel, c);
 		
-		c.gridx = 0; c.gridy = 5;
+		c.gridx = 0; c.gridy = 6;
 		mainPanel.add(sampleSize, c);
 		c.gridx = 1;
 		mainPanel.add(subSampleSizeText, c);
-		
-		c.gridx = 0; c.gridy = 6;
-		mainPanel.add(logBase, c);
-		c.gridx = 1;
-		mainPanel.add(logBaseText, c);
 		
 		this.add(mainPanel);
 	}
@@ -445,64 +434,11 @@ public class VersionPanel extends Panel
 		
 		if( e.getSource().equals(modeCB) ) {
 			// if the order is changed
-			if( modeCB.getSelectedIndex() >= 2 ) {
+			if( modeCB.getSelectedIndex() >= 2 )
 				// enabling
 				enableSamplingControllers();
-				
-				// setting the maximum sizes of the subsamples size
-//				if( modeCB.getSelectedIndex() != 3 ) {
-//					if( subSampleModeCB.getSelectedIndex() == 0 )
-//						subSampleSizeText.setMaximum(maxSampleSizeOneSpan);
-//					else if( subSampleModeCB.getSelectedIndex() == 1 )
-//						subSampleSizeText.setMaximum(maxSampleSizeAllSpan);
-//				} else {
-//					if( subSampleModeCB.getSelectedIndex() == 0 )
-//						subSampleSizeText.setMaximum(maxSampleSizeOneSpanCumulated);
-//					else if( subSampleModeCB.getSelectedIndex() == 1 )
-//						subSampleSizeText.setMaximum(maxSampleSizeAllSpanCumulated);
-//				}
-				
-				// setting the defaults for the sampling factor
-//				if( numberOfSamplesModeCB.getSelectedIndex() == 0 ) {
-//					numberOfSamplesText.setScale(10);
-//					numberOfSamplesText.setDefault(10);
-//				} else {
-//					numberOfSamplesText.setScale(1);
-//					if( modeCB.getSelectedIndex() != 3 )
-//						numberOfSamplesText.setDefault(defaultNumberOfSamples);
-//					else
-//						numberOfSamplesText.setDefault(defaultNumberOfSamplesCumulated);
-//				}
-				
-			} else
+			else
 				disableSamplingControllers();
-		}
-		else if( e.getSource().equals(numberOfSamplesModeCB) ) {
-			// another number of subsamples is chosen
-//			if( numberOfSamplesModeCB.getSelectedIndex() == 0 ) {
-//				// factor: B = B x factor
-//				numberOfSamplesText.setScale(10.0);
-//				numberOfSamplesText.setDefault(10);
-//			} else if( numberOfSamplesModeCB.getSelectedIndex() == 1 ) {
-//				numberOfSamplesText.setScale(1.0);
-//				if( modeCB.getSelectedIndex() != 3 )
-//					numberOfSamplesText.setDefault(defaultNumberOfSamples);
-//				else
-//					numberOfSamplesText.setDefault(defaultNumberOfSamplesCumulated);
-//			}
-		}
-		else if( e.getSource().equals(subSampleModeCB) ) {
-			// if the sampling mode has been changed
-//			if( subSampleModeCB.getSelectedIndex() == 0 )
-//				if( modeCB.getSelectedIndex() != 3 )
-//					subSampleSizeText.setMaximum(maxSampleSizeOneSpan);
-//				else
-//					subSampleSizeText.setMaximum(maxSampleSizeOneSpanCumulated);
-//			else
-//				if( modeCB.getSelectedIndex() != 3 )
-//					subSampleSizeText.setMaximum(maxSampleSizeAllSpan);
-//				else
-//					subSampleSizeText.setMaximum(maxSampleSizeAllSpanCumulated);
 		}
 	}
 	
@@ -512,15 +448,5 @@ public class VersionPanel extends Panel
 	 */
 	public void stateChanged(ChangeEvent e) {
 		changed = true;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
-	public void actionPerformed(ActionEvent e) {
-		// An action on the samplesize and number of samples field has occurred
-		logger.info("Action Performed!");
-		logger.info( e.getActionCommand() );
 	}
 }
