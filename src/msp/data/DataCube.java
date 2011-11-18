@@ -190,7 +190,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 	 */
 	public DataCube lemmaEquivalences( HashMap<String, String> lemmaEquivalences ) {
 		// axes
-		Vector<String> newTime = new Vector<String>(datasets);				// stays the same
+		Vector<String> newDatasets = new Vector<String>(datasets);		// stays the same
 		Vector<String> newLemmas = new Vector<String>(lemmas);			// start with the same, remove the sublemmas
 		Vector<String> newCategories = new Vector<String>(categories);	// stays the same
 		
@@ -206,12 +206,12 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		// to the frequency of the generic lemma.
 		it = lemmaEquivalences.keySet().iterator();
 		while( it.hasNext() ) {
-			String subLemma = it.next();
-			String generic = lemmaEquivalences.get(subLemma);
+			String subLemma	= it.next();
+			String generic	= lemmaEquivalences.get(subLemma);
 			
-			// run through all the months
-			for( int i = 0; i < newTime.size(); i++ ) {
-				HashMap<String, HashMap<String, Integer>> timeMap = newCube.get(newTime.get(i));
+			// run through all the datasets
+			for( int i = 0; i < newDatasets.size(); i++ ) {
+				HashMap<String, HashMap<String, Integer>> timeMap = newCube.get(newDatasets.get(i));
 				if( timeMap.containsKey(subLemma) ) {
 					// 1. is the generic present?
 					if( !timeMap.containsKey(generic) ) {
@@ -224,7 +224,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 					while( cit.hasNext() ) {
 						String category = cit.next();
 						
-						// 1. Has the generic the category?
+						// 1. Does the generic contain the category?
 						HashMap<String, Integer> genericCats = timeMap.get(generic);
 						Integer subFreq = timeMap.get(subLemma).get(category);
 						if( !genericCats.containsKey(category) ) {
@@ -246,11 +246,11 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 		}
 		
 		// putting it all together
-		DataCube dc = new DataCube();
-		dc.datasets = newTime;
-		dc.lemmas = newLemmas;
-		dc.categories = newCategories;
-		dc.cube = newCube;
+		DataCube dc		= new DataCube();
+		dc.datasets 	= newDatasets;
+		dc.lemmas		= newLemmas;
+		dc.categories	= newCategories;
+		dc.cube			= newCube;
 		
 		return dc;
 	}
@@ -291,7 +291,7 @@ public class DataCube implements Progressor, ProgressListener, Cloneable {
 				// lemma used to look up category equivalences
 				String ceqLemma = lemma;
 				
-				// possible we have to replace the lemma with another lemma to do the lookups
+				// possibly we have to replace the lemma with another lemma to do the lookups
 				if( !useInMSP && lemmaEquivalences != null && lemmaEquivalences.containsKey(lemma) )
 					ceqLemma = lemmaEquivalences.get(lemma);
 				

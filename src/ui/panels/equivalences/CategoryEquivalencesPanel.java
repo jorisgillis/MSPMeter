@@ -142,7 +142,7 @@ public class CategoryEquivalencesPanel extends EquivalencesPanel
 		//- Cells
 		categoryEquivalencesCell = new CategoryEquivalencesCell();
 		categoryFileCell = new CategoryFileCell();
-
+		
 		Grid.instance().addCell(categoryEquivalencesCell);
 		Grid.instance().addCell(categoryFileCell); // TODO waarvoor nodig????
 		Grid.instance().addHotCell(this);
