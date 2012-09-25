@@ -42,7 +42,7 @@ public class DataCubeList {
 	 */
 	protected List<ProgressListener> progressListener;
 	//- Everywhere the same!
-	private static double log2 = Math.log10(2);
+	private double logBase = Math.log10(2);
 	private static String newLine = System.getProperty("line.separator");
 	private static Logger logger = Logger.getLogger(DataCubeList.class);
 
@@ -471,6 +471,14 @@ public class DataCubeList {
 						subCategories.get(lemma).put(cat, new Vector<String>());
 				}
 			}
+	}
+	
+	/**
+	 * Sets the new base of the logarithm to be used.
+	 * @param logBase	logarithm base
+	 */
+	public void setLogBase(int logBase) {
+		this.logBase = Math.log(logBase);
 	}
 
 	/**
@@ -931,27 +939,28 @@ public class DataCubeList {
 		// Storing the results
 		MSPSpan[] result = new MSPSpan[cube.size()];
 
-		if (!weighting && !entropy)
+		if (!weighting && !entropy) {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] =
 					new MSPSpan(mspVarietyUnweighted(cube.get(i)),
 								spanIndex.get(i).getSpan());
-		else if (weighting && !entropy)
+		} else if (weighting && !entropy) {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] =
 					new MSPSpan(mspVarietyWeighted(cube.get(i)),
 								spanIndex.get(i).getSpan());
-		else if (!weighting && entropy)
+		} else if (!weighting && entropy) {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] =
 					new MSPSpan(mspEntropyUnweighted(cube.get(i)),
 								spanIndex.get(i).getSpan());
-		else
+		} else {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] =
 					new MSPSpan(mspEntropyWeighted(cube.get(i)),
 								spanIndex.get(i).getSpan());
-
+		}
+		
 		return new MSPResult(result, null);
 	}
 
@@ -1340,7 +1349,7 @@ public class DataCubeList {
 		double entropy = 0;
 		for (Integer i : lemma) {
 			double freq = ((double)i) / tokensInLemma;
-			entropy += freq * (Math.log10(freq) / log2);
+			entropy += freq * (Math.log10(freq) / logBase);
 		}
 
 		return entropy * -1;

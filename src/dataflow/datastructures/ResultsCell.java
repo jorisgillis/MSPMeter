@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Vector;
 
 import msp.RestrictionViolation;
-import msp.data.DataCube;
+import msp.data.DataCubeList;
 import msp.data.DataFaultException;
 import msp.data.ImpossibleCalculationException;
 import msp.data.MSPResult;
@@ -52,8 +52,8 @@ public class ResultsCell extends DefaultCell {
 	private List<List<Double>> samples = null;
 	
 	/* Objects needed for the calculation */
-	private DataCube workingDC = null;
-	private DataCube cumulatedDC = null;
+	private DataCubeList workingDC = null;
+	private DataCubeList cumulatedDC = null;
 	private boolean weighting;
 	private boolean entropy;
 	private int mode = -1;
