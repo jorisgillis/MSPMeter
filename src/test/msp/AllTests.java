@@ -26,11 +26,16 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import test.msp.data.DataCubeListTest;
+
 @RunWith(Suite.class)
 @SuiteClasses({DataCubeTest.class,
 				DataCubeTestFrequency.class,
 				AccumulationAndResamplingTest.class,
 				CumulationAndResamplingTest.class,
 				LemmaEquivalencesTest.class,
-				CategoryEquivalencesTest.class})
+				CategoryEquivalencesTest.class,
+				test.msp.data.CategoryEquivalencesTest.class,
+				test.msp.data.LemmaEquivalencesListTest.class,
+				DataCubeListTest.class})
 public class AllTests {}
