@@ -1,4 +1,4 @@
-package test.msp.data;
+package test.msp;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author joris
  */
 @RunWith(Parameterized.class)
-public class CategoryEquivalencesTest {
+public class DCListCategoryEquivalencesTest {
 
 	private DataCubeList dc, result;
 	private boolean useInMSP;
@@ -34,7 +34,7 @@ public class CategoryEquivalencesTest {
 	 * @param equivalences	the equivalences
 	 * @param lemmaEquivalences lemma equivalences
 	 */
-	public CategoryEquivalencesTest(DataCubeList dc, DataCubeList result,
+	public DCListCategoryEquivalencesTest(DataCubeList dc, DataCubeList result,
 									boolean useInMSP,
 									HashMap<String, HashMap<String, String>> equivalences,
 									HashMap<String, String> lemmaEquivalences) {

@@ -1,4 +1,4 @@
-package test.msp.data;
+package test.msp;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import msp.data.SpanIndex;
  * Testing the sampling function from the DataCubeList class.
  * @author joris
  */
-public class SamplingTester {
+public class DCListSamplingTester {
 	
 	/*
 	 * Main
