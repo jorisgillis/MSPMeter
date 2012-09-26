@@ -44,7 +44,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Joris Gillis
  */
 @RunWith(Parameterized.class)
-public class LemmaEquivalencesTest {
+public class DCHashLemmaEquivalencesTest {
 	
 	private DataCubeHash dc;
 	private DataCubeHash result;
@@ -57,7 +57,7 @@ public class LemmaEquivalencesTest {
 	 * @param result	end
 	 * @param lemmaEquivalences	the equivalences
 	 */
-	public LemmaEquivalencesTest( DataCubeHash dc, DataCubeHash result, HashMap<String, String> lemmaEquivalences ) {
+	public DCHashLemmaEquivalencesTest( DataCubeHash dc, DataCubeHash result, HashMap<String, String> lemmaEquivalences ) {
 		this.dc = dc;
 		this.result = result;
 		this.lemmaEquivalences = lemmaEquivalences;

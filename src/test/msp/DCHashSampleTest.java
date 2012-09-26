@@ -33,13 +33,13 @@ import ui.panels.file.FileRow;
  * This class tests the speed of various sampling algorithms.
  * @author joris
  */
-public class SampleTest {
+public class DCHashSampleTest {
 	
 	/**
 	 * Start the test!
 	 */
 	public static void main(String[] args) {
-		new SampleTest();
+		new DCHashSampleTest();
 	}
 	
 	private DataCubeHash cube;
@@ -47,7 +47,7 @@ public class SampleTest {
 	/**
 	 * The constructor constructs some datacubes and runs the tests.
 	 */
-	public SampleTest() {
+	public DCHashSampleTest() {
 		// Construct the cube
 		constructCube();
 		

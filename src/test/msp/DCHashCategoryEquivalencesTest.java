@@ -36,7 +36,7 @@ import org.junit.runners.Parameterized.Parameters;
 import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
-public class CategoryEquivalencesTest {
+public class DCHashCategoryEquivalencesTest {
 	
 	private DataCubeHash dc;
 	private DataCubeHash result;
@@ -48,7 +48,7 @@ public class CategoryEquivalencesTest {
 	 * @param result				end
 	 * @param categoryEquivalences	equivalences
 	 */
-	public CategoryEquivalencesTest( DataCubeHash dc, DataCubeHash result, HashMap<String, HashMap<String, String>> categoryEquivalences ) {
+	public DCHashCategoryEquivalencesTest( DataCubeHash dc, DataCubeHash result, HashMap<String, HashMap<String, String>> categoryEquivalences ) {
 		this.dc = dc;
 		this.result = result;
 		this.categoryEquivalences = categoryEquivalences;

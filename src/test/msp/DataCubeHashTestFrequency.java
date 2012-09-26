@@ -41,7 +41,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Joris Gillis
  */
 @RunWith(Parameterized.class)
-public class DataCubeTestFrequency {
+public class DataCubeHashTestFrequency {
 	
 	private DataCubeHash dc;
 	private double n1, n2, n3, n4;
@@ -59,7 +59,7 @@ public class DataCubeTestFrequency {
 	 * @param n3	Solution to the third test of n
 	 * @param n4	Solution to the fourth test of n
 	 */
-	public DataCubeTestFrequency( DataCubeHash dc, 
+	public DataCubeHashTestFrequency( DataCubeHash dc, 
 			double n1, double n2, double n3, double n4,
 			double f1, double f2, double f3, double f4, double fc1,
 			double o1, double o2, double o3, double o4, double o5, double o6, double o7,

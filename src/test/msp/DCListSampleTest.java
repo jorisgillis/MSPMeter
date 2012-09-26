@@ -10,7 +10,7 @@ import msp.data.SpanIndex;
  * Testing the sampling function from the DataCubeList class.
  * @author joris
  */
-public class DCListSamplingTester {
+public class DCListSampleTest {
 	
 	/*
 	 * Main

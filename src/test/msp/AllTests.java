@@ -28,12 +28,12 @@ import org.junit.runners.Suite.SuiteClasses;
 
 
 @RunWith(Suite.class)
-@SuiteClasses({DataCubeTest.class,
-				DataCubeTestFrequency.class,
-				AccumulationAndResamplingTest.class,
-				CumulationAndResamplingTest.class,
-				LemmaEquivalencesTest.class,
-				CategoryEquivalencesTest.class,
+@SuiteClasses({DataCubeHashTest.class,
+				DataCubeHashTestFrequency.class,
+				DCHashAccumulationAndResamplingTest.class,
+				DCHashCumulationAndResamplingTest.class,
+				DCHashLemmaEquivalencesTest.class,
+				DCHashCategoryEquivalencesTest.class,
 				test.msp.DCListCategoryEquivalencesTest.class,
 				test.msp.DCListLemmaEquivalencesListTest.class,
 				DataCubeListTest.class})

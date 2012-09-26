@@ -41,7 +41,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Joris Gillis
  */
 @RunWith(Parameterized.class)
-public class DataCubeTest {
+public class DataCubeHashTest {
 	
 	private DataCubeHash dataCube;
 	private Vector<Double> results1;
@@ -63,7 +63,7 @@ public class DataCubeTest {
 	 * @param results3		results for mspEntropyUnweighted
 	 * @param results4		results for mspEntropyWeighted
 	 */
-	public DataCubeTest( 
+	public DataCubeHashTest( 
 			HashMap<String, HashMap<String, HashMap<String, Integer>>> cube,
 			Vector<String> time, 
 			Vector<String> lemmas, 

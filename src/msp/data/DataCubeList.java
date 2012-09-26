@@ -1467,7 +1467,7 @@ public class DataCubeList {
 	 * Calculates the biggest value one can choose as sample size, when doing
 	 * resampling.
 	 * @return	maximum sample size
-	 * @see test.msp.DataCubeTest#maxSampleSizeCumulateResample()
+	 * @see test.msp.DataCubeHashTest#maxSampleSizeCumulateResample()
 	 */
 	public int maxSampleSizeOneSpan() {
 		int maxSampleSize = 1;

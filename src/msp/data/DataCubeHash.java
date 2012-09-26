@@ -633,7 +633,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 	/**
 	 * The number of tokens available in the corpus. Size of the corpus.
 	 * @return	size of the corpus
-	 * @see test.msp.DataCubeTest#maxSampleSizeResampleCumulate()
+	 * @see test.msp.DataCubeHashTest#maxSampleSizeResampleCumulate()
 	 */
 	public int numberOfTokens() {
 		int r = 0;
@@ -724,7 +724,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 	 * Calculates the biggest value one can choose as sample size, when doing
 	 * cumulate & resample
 	 * @return	maximum sample size
-	 * @see test.msp.DataCubeTest#maxSampleSizeCumulateResample()
+	 * @see test.msp.DataCubeHashTest#maxSampleSizeCumulateResample()
 	 */
 	public int maxSampleSizeOneSpan() {
 		if (time.size() > 0) {
@@ -745,7 +745,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 	 * Calculates the biggest value one can choose as sample size, when doing
 	 * resample & cumulate
 	 * @return	maximum sample size
-	 * @see test.msp.DataCubeTest#maxSampleSizeResampleCumulate()
+	 * @see test.msp.DataCubeHashTest#maxSampleSizeResampleCumulate()
 	 */
 	public int maxSampleSizeAllSpan() {
 		if (time.size() > 0)

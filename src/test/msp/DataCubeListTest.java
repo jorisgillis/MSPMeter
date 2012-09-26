@@ -39,6 +39,7 @@ public class DataCubeListTest {
 	protected int numberOfTokens;
 	protected HashMap<String, Integer> numberOfLemmas;
 	protected DataCubeList cumulatedDC;
+	protected int subSampleSize;
 	
 
 	/**
@@ -51,6 +52,7 @@ public class DataCubeListTest {
 	 * @param weightedEntropy	results
 	 * @param numberOfTokens	number of tokens in the data
 	 * @param numberOfLemmas	number of lemmas in the data
+	 * @param subSampleSize		size of the sample
 	 */
 	public DataCubeListTest(List<List<List<Integer>>> cubicle,
 							List<SpanIndex> spanIndex,
@@ -60,7 +62,8 @@ public class DataCubeListTest {
 							List<Double> weightedEntropy,
 							int numberOfTokens,
 							HashMap<String, Integer> numberOfLemmas,
-							DataCubeList cumulatedDC) {
+							DataCubeList cumulatedDC,
+							int subSampleSize) {
 		// Storing the cube
 		cube = new DataCubeList();
 		cube.setCube(cubicle);
@@ -75,6 +78,7 @@ public class DataCubeListTest {
 		this.numberOfTokens		= numberOfTokens;
 		this.numberOfLemmas		= numberOfLemmas;
 		this.cumulatedDC		= cumulatedDC;
+		this.subSampleSize		= subSampleSize;
 	}
 
 	/**
@@ -180,6 +184,64 @@ public class DataCubeListTest {
 	}
 	
 	/**
+	 * Does resampling one span.
+	 */
+	@Test
+	public void resampleOneSpanTest() {
+		// Unweighted Variety
+		MSPTriple[] unweightedVariety = 
+				cube.resampleMSP(false, false, 0, subSampleSize, 0, 100).getResults();
+		for (int i = 0; i < unweightedVariety.length; i++)
+			if (unweightedVariety[i].getMSP() >= 1) {
+				double deviation = Math.max(0.0001, 
+						2.56*unweightedVariety[i].getStdDev());
+				Assert.assertEquals("Unweighted Variety "+ i, 
+						this.unweightedVariety.get(i), 
+						unweightedVariety[i].getMSP(), 
+						deviation);
+			}
+		
+		// Weighted Variety
+		MSPTriple[] weightedVariety = 
+				cube.resampleMSP(true, false, 0, subSampleSize, 0, 100).getResults();
+		for (int i = 0; i < weightedVariety.length; i++)
+			if (weightedVariety[i].getMSP() >= 1) {
+				double deviation = Math.max(0.0001, 
+						2.56*weightedVariety[i].getStdDev());
+				Assert.assertEquals("Weighted Variety "+ i, 
+						this.weightedVariety.get(i), 
+						weightedVariety[i].getMSP(), 
+						deviation);
+			}
+		
+		// Unweighted Variety
+		MSPTriple[] unweightedEntropy = 
+				cube.resampleMSP(false, true, 0, subSampleSize, 0, 100).getResults();
+		for (int i = 0; i < unweightedEntropy.length; i++)
+			if (unweightedEntropy[i].getMSP() >= 1) {
+				double deviation = Math.max(0.0001, 
+						2.56*unweightedEntropy[i].getStdDev());
+				Assert.assertEquals("Unweighted Entropy "+ i, 
+						this.unweightedEntropy.get(i), 
+						unweightedEntropy[i].getMSP(), 
+						deviation);
+			}
+		
+		// Unweighted Variety
+		MSPTriple[] weightedEntropy = 
+				cube.resampleMSP(true, true, 0, subSampleSize, 0, 100).getResults();
+		for (int i = 0; i < weightedEntropy.length; i++)
+			if (weightedEntropy[i].getMSP() >= 1) {
+				double deviation = Math.max(0.0001, 
+						2.56*weightedEntropy[i].getStdDev());
+				Assert.assertEquals("Weighted Entropy "+ i, 
+						this.weightedEntropy.get(i), 
+						weightedEntropy[i].getMSP(), 
+						deviation);
+			}
+	}
+	
+	/**
 	 * Setting up the test cases
 	 * @return	list of test cases
 	 */
@@ -243,6 +305,7 @@ public class DataCubeListTest {
 		int numberOfTokens = 5;
 		HashMap<String, Integer> numberOfLemmas = new HashMap<String, Integer>();
 		numberOfLemmas.put("0;01", 2);
+		int subSampleSize = 5;
 		
 		DataCubeList cumulatedDC = new DataCubeList();
 		cumulatedDC.setCube(cumCube);
@@ -252,7 +315,7 @@ public class DataCubeListTest {
 								unweightedVariety, weightedVariety, 
 								unweightedEntropy, weightedEntropy,
 								numberOfTokens, numberOfLemmas,
-								cumulatedDC});
+								cumulatedDC, subSampleSize});
 		
 		
 		//- 1.
@@ -330,11 +393,11 @@ public class DataCubeListTest {
 		cubicle.get(2).get(0).add(4);
 		
 		cubicle.get(2).get(1).add(1);
-		cubicle.get(2).get(1).add(5);
-		cubicle.get(2).get(1).add(5);
+		cubicle.get(2).get(1).add(2);
+		cubicle.get(2).get(1).add(2);
 		
 		cubicle.get(2).get(2).add(1);
-		cubicle.get(2).get(2).add(3);
+		cubicle.get(2).get(2).add(2);
 		
 		cumCube.get(0).get(0).add(3);
 		cumCube.get(0).get(1).add(2);
@@ -348,12 +411,12 @@ public class DataCubeListTest {
 		cumCube.get(2).get(0).add(1);
 		cumCube.get(2).get(0).add(3);
 		cumCube.get(2).get(0).add(2);
-		cumCube.get(2).get(1).add(9);
+		cumCube.get(2).get(1).add(6);
 		cumCube.get(2).get(1).add(4);
 		cumCube.get(2).get(1).add(1);
-		cumCube.get(2).get(1).add(5);
+		cumCube.get(2).get(1).add(2);
 		cumCube.get(2).get(2).add(1);
-		cumCube.get(2).get(2).add(3);
+		cumCube.get(2).get(2).add(2);
 		
 		
 		spanIndex.get(0).getLemma(0).addCategory("inf");
@@ -404,21 +467,22 @@ public class DataCubeListTest {
 		
 		weightedVariety.add(new Double(1));
 		weightedVariety.add(new Double(2));
-		weightedVariety.add(new Double((9.0/24.0)*3 + (11.0/24.0)*3 + (4.0/24.0)*2));
+		weightedVariety.add(new Double((9.0/17.0)*3 + (5.0/17.0)*3 + (3.0/17.0)*2));
 		
 		unweightedEntropy.add(new Double(1));
 		unweightedEntropy.add(new Double(1.82232346272282));
-		unweightedEntropy.add(new Double(2.3967460911004));
+		unweightedEntropy.add(new Double(2.55015765971245));
 		
 		weightedEntropy.add(new Double(1));
 		weightedEntropy.add(new Double(1.83583508514672));
-		weightedEntropy.add(new Double(2.54298218827021));
+		weightedEntropy.add(new Double(2.7075284596007));
 		
-		numberOfTokens = 39;
+		numberOfTokens = 32;
 		numberOfLemmas = new HashMap<String, Integer>();
 		numberOfLemmas.put("0;01", 2);
 		numberOfLemmas.put("0;02", 2);
 		numberOfLemmas.put("0;03", 3);
+		subSampleSize = 20;
 		
 		cumulatedDC = new DataCubeList();
 		cumulatedDC.setCube(cumCube);
@@ -428,7 +492,7 @@ public class DataCubeListTest {
 								unweightedVariety, weightedVariety,
 								unweightedEntropy, weightedEntropy,
 								numberOfTokens, numberOfLemmas,
-								cumulatedDC});
+								cumulatedDC, subSampleSize});
 		
 		return cases;
 	}

@@ -41,7 +41,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Joris Gillis
  */
 @RunWith(Parameterized.class)
-public class CumulationAndResamplingTest {
+public class DCHashCumulationAndResamplingTest {
 
 	/** The cube */
 	private DataCubeHash dataCube;
@@ -56,7 +56,7 @@ public class CumulationAndResamplingTest {
 	 * @param accumulated		accumulation of the provided datacube
 	 * @param numberOfTokens	number of tokens in the datacube
 	 */
-	public CumulationAndResamplingTest( DataCubeHash dataCube, DataCubeHash accumulated, int numberOfTokens ) {
+	public DCHashCumulationAndResamplingTest( DataCubeHash dataCube, DataCubeHash accumulated, int numberOfTokens ) {
 		this.dataCube = dataCube;
 		this.accumulated = accumulated;
 		this.numberOfTokens = numberOfTokens;
