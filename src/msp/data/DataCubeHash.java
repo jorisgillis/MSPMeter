@@ -964,25 +964,25 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 	public MSPResult MSP(boolean weighting, boolean entropy)
 		throws ImpossibleCalculationException {
 		// basic case: just calculate the MSP of each month
-		MSPSpan[] result = new MSPSpan[time.size()];
+		MSPTriple[] result = new MSPTriple[time.size()];
 
 		for (int i = 0; i < time.size(); i++) {
 			try {
 				if (!weighting && !entropy)
-					result[i] = new MSPSpan(mspVarietyUnweighted(time.get(i)),
+					result[i] = new MSPTriple(mspVarietyUnweighted(time.get(i)),
 											time.get(i));
 				else if (weighting && !entropy)
-					result[i] = new MSPSpan(mspVarietyWeighted(time.get(i)),
+					result[i] = new MSPTriple(mspVarietyWeighted(time.get(i)),
 											time.get(i));
 				else if (!weighting && entropy)
-					result[i] = new MSPSpan(mspEntropyUnweighted(time.get(i)),
+					result[i] = new MSPTriple(mspEntropyUnweighted(time.get(i)),
 											time.get(i));
 				else if (weighting && entropy)
-					result[i] = new MSPSpan(mspEntropyWeighted(time.get(i)),
+					result[i] = new MSPTriple(mspEntropyWeighted(time.get(i)),
 											time.get(i));
 			} catch (NoDataException e) {
 				logger.error("No data? This should not be happening!");
-				result[i] = new MSPSpan(0.0, time.get(i));
+				result[i] = new MSPTriple(0.0, time.get(i));
 			}
 
 			// notify the interested object about our progress
@@ -1049,7 +1049,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 								 int subSampleMode, int subSampleSize,
 								 int numberOfSamplesMode, double numberOfSamples) throws ImpossibleCalculationException {
 		//- Making space for the result and the samples
-		MSPSpan[] result = new MSPSpan[time.size()];
+		MSPTriple[] result = new MSPTriple[time.size()];
 		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(time.size());
 
 
@@ -1142,7 +1142,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 				variance /= samples.length;
 				double stddev = Math.sqrt(variance);
 
-				result[i] = new MSPSpan(average, stddev, span);
+				result[i] = new MSPTriple(average, stddev, span);
 
 				// making progress
 				notifyProgressListeners((((double)i + 1) / time.size()) * 100);
@@ -1154,7 +1154,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 			notifyProgressListeners(10);
 
 			// Run through the samples, calculating the MSPs
-			MSPSpan[][] msps = new MSPSpan[samples.length][];
+			MSPTriple[][] msps = new MSPTriple[samples.length][];
 			boolean overSampled = false;
 			for (int j = 0; j < samples.length; j++)
 				if (samples[j] == null) {
@@ -1178,7 +1178,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 					for (int j = 0; j < msps.length; j++) {
 						boolean found = false;
 						for (int k = 0; !found && k < msps[j].length; k++)
-							if (msps[j][k].getSpan().equals(span)) {
+							if (msps[j][k].getDataset().equals(span)) {
 								avg += msps[j][k].getMSP();
 								sampleMSPs.get(i).add(msps[j][k].getMSP());
 								count++;
@@ -1193,7 +1193,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 					for (int j = 0; j < samples.length; j++) {
 						boolean found = false;
 						for (int k = 0; !found && k < msps[j].length; k++)
-							if (msps[j][k].getSpan().equals(span)) {
+							if (msps[j][k].getDataset().equals(span)) {
 								variance += Math.pow(msps[j][k].getMSP() - avg,
 													 2);
 								found = true;
@@ -1207,7 +1207,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 					sampleMSPs.add(new ArrayList<Double>());
 
 				// adding to the results
-				result[i] = new MSPSpan(avg, stddev, span);
+				result[i] = new MSPTriple(avg, stddev, span);
 
 				// making progress
 				notifyProgressListeners(
@@ -1332,7 +1332,7 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 										 int S,
 										 int numberOfSamplesMode,
 										 double numberOfSamples) throws ImpossibleCalculationException {
-		MSPSpan[] result = new MSPSpan[cube.keySet().size()];
+		MSPTriple[] result = new MSPTriple[cube.keySet().size()];
 		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(time.size());
 
 		// Resample the corpus into several subcorpora
@@ -1432,13 +1432,13 @@ public class DataCubeHash implements Progressor, ProgressListener, Cloneable {
 				variance /= count;
 				double stddev = Math.sqrt(variance);
 
-				result[i] = new MSPSpan(average, stddev, time.get(i));
+				result[i] = new MSPTriple(average, stddev, time.get(i));
 			}
 		} else {
 			// Oversampled: thus making empty result datastructures
 			// a. Result
 			for (int i = 0; i < result.length; i++)
-				result[i] = new MSPSpan(0, 0, "" + (i + 1));
+				result[i] = new MSPTriple(0, 0, "" + (i + 1));
 
 			// b. sampleMSPs
 			for (int i = 0; i < time.size(); i++)

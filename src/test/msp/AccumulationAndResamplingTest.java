@@ -22,17 +22,19 @@
 
 package test.msp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 
-import msp.data.DataCube;
+import msp.data.DataCubeHash;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import static org.junit.Assert.*;
 
 /**
  * Test the accumulation of a DataCube.
@@ -42,9 +44,9 @@ import static org.junit.Assert.*;
 public class AccumulationAndResamplingTest {
 
 	/** The cube */
-	private DataCube dataCube;
+	private DataCubeHash dataCube;
 	/** The accumulation of the cube */
-	private DataCube accumulated;
+	private DataCubeHash accumulated;
 	/** Number of tokens in the DataCube dataCube */
 	private int numberOfTokens;
 
@@ -54,7 +56,7 @@ public class AccumulationAndResamplingTest {
 	 * @param accumulated		accumulation of the provided datacube
 	 * @param numberOfTokens	number of tokens in the datacube
 	 */
-	public AccumulationAndResamplingTest( DataCube dataCube, DataCube accumulated, int numberOfTokens ) {
+	public AccumulationAndResamplingTest( DataCubeHash dataCube, DataCubeHash accumulated, int numberOfTokens ) {
 		this.dataCube = dataCube;
 		this.accumulated = accumulated;
 		this.numberOfTokens = numberOfTokens;
@@ -82,7 +84,7 @@ public class AccumulationAndResamplingTest {
 	 */
 	@Test
 	public void resampleTest() {
-		DataCube[] resampled = dataCube.resample(6, 0, 1.0);
+		DataCubeHash[] resampled = dataCube.resample(6, 0, 1.0);
 		assertTrue(resampled != null);
 		
 		System.out.println(dataCube);
@@ -153,13 +155,13 @@ public class AccumulationAndResamplingTest {
 		accumulated1.get("0;02").get("be").put("inf", 2);
 		
 		// making DataCubes out of it
-		DataCube dc1 = new DataCube();
+		DataCubeHash dc1 = new DataCubeHash();
 		dc1.setCategories(c1);
 		dc1.setLemmas(l1);
 		dc1.setTime(t1);
 		dc1.setCube(cube1);
 		
-		DataCube ac1 = new DataCube();
+		DataCubeHash ac1 = new DataCubeHash();
 		ac1.setCategories(c1);
 		ac1.setLemmas(l1);
 		ac1.setTime(t1);

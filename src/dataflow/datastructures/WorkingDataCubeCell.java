@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import msp.RestrictionViolation;
-import msp.data.DataCube;
+import msp.data.DataCubeList;
 import msp.data.DataFaultException;
 import msp.data.ImpossibleCalculationException;
 import dataflow.Grid;
@@ -38,7 +38,7 @@ import dataflow.Grid;
 public class WorkingDataCubeCell extends DataCubeCell {
 	
 	private boolean useInMSP;
-	private DataCube lemmadDC = null;
+	private DataCubeList lemmadDC = null;
 	private HashMap<String, String> lemmaEquivalences = null;
 	private HashMap<String, HashMap<String, String>> categoryEquivalences = null;
 	

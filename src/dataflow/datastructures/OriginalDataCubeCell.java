@@ -24,13 +24,12 @@ package dataflow.datastructures;
 
 import java.util.Vector;
 
-import dataflow.Grid;
-
 import msp.RestrictionViolation;
-import msp.data.DataCube;
+import msp.data.DataCubeList;
 import msp.data.DataFaultException;
 import msp.data.ImpossibleCalculationException;
 import ui.panels.file.FileRow;
+import dataflow.Grid;
 
 /**
  * The original DataCube. The one derived directly from the files.
@@ -82,7 +81,7 @@ public class OriginalDataCubeCell extends DataCubeCell {
 		// Recalculate?
 		if( files != null && firstSeparator != null && secondSeparator != null ) {
 			// New DataCube
-			cube = new DataCube();
+			cube = new DataCubeList();
 			cube.fillCube(files, firstSeparator, secondSeparator);
 		}
 	}
@@ -92,12 +91,8 @@ public class OriginalDataCubeCell extends DataCubeCell {
 	 * @see dataflow.datastructures.DataCubeCell#getCube()
 	 */
 	@Override
-	public DataCube getCube() {
-		try {
-			return cube.copy();
-		} catch( CloneNotSupportedException e ) {
-		}
-		return null;
+	public DataCubeList getCube() {
+		return cube.copyCube();
 	}
 
 }

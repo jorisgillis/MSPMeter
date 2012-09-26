@@ -25,8 +25,6 @@ package ui.panels.version;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Vector;
@@ -40,7 +38,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import msp.RestrictionViolation;
-import msp.data.DataCube;
+import msp.data.DataCubeList;
 import msp.data.DataFaultException;
 import msp.data.ImpossibleCalculationException;
 import msp.defaults.Defaults;
@@ -353,7 +351,7 @@ public class VersionPanel extends Panel
 		for( String cellName : children ) {
 			if( cellName.equals("workingDC") ) {
 				// getting the values out the cube
-				DataCube cube = ((DataCubeCell)grid.getCell("workingDC")).getCube();
+				DataCubeList cube = ((DataCubeCell)grid.getCell("workingDC")).getCube();
 				if( cube != null ) {
 					maxSampleSizeOneSpan = cube.maxSampleSizeOneSpan();
 					maxSampleSizeAllSpan = cube.maxSampleSizeAllSpan();
@@ -382,7 +380,7 @@ public class VersionPanel extends Panel
 //				}
 			} else if( cellName.equals("cumulatedDC") ) {
 				// getting the values out of the cube
-				DataCube cube = ((DataCubeCell)grid.getCell("cumulatedDC")).getCube();
+				DataCubeList cube = ((DataCubeCell)grid.getCell("cumulatedDC")).getCube();
 				if( cube != null ) {
 					maxSampleSizeOneSpanCumulated = cube.maxSampleSizeOneSpan();
 					maxSampleSizeAllSpanCumulated = cube.maxSampleSizeAllSpan();

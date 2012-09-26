@@ -23,12 +23,11 @@ package dataflow.datastructures;
 
 import java.util.Vector;
 
-import dataflow.Grid;
-
 import msp.RestrictionViolation;
-import msp.data.DataCube;
+import msp.data.DataCubeList;
 import msp.data.DataFaultException;
 import msp.data.ImpossibleCalculationException;
+import dataflow.Grid;
 
 /**
  * Cell containing the cumulated datacube.
@@ -36,7 +35,7 @@ import msp.data.ImpossibleCalculationException;
  */
 public class CumulatedDataCubeCell extends DataCubeCell {
 	
-	private DataCube workingDC = null;
+	private DataCubeList workingDC = null;
 	
 	/*
 	 * (non-Javadoc)

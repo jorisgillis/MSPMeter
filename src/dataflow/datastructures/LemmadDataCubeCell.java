@@ -25,12 +25,11 @@ package dataflow.datastructures;
 import java.util.HashMap;
 import java.util.Vector;
 
-import dataflow.Grid;
-
 import msp.RestrictionViolation;
-import msp.data.DataCube;
+import msp.data.DataCubeList;
 import msp.data.DataFaultException;
 import msp.data.ImpossibleCalculationException;
+import dataflow.Grid;
 
 /**
  * The datacube derived from the original one, possible engaging lemma equivalences in the action
@@ -40,7 +39,7 @@ public class LemmadDataCubeCell extends DataCubeCell {
 	
 	private boolean useInMSP = true;
 	private HashMap<String, String> lemmaEquivalences = null;
-	private DataCube originalDC = null;
+	private DataCubeList originalDC = null;
 	
 	/*
 	 * (non-Javadoc)

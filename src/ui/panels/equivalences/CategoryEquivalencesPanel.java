@@ -52,7 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import msp.RestrictionViolation;
-import msp.data.DataCube;
+import msp.data.DataCubeList;
 import msp.data.DataFaultException;
 import msp.data.ImpossibleCalculationException;
 
@@ -98,7 +98,7 @@ public class CategoryEquivalencesPanel extends EquivalencesPanel
 	protected CategoryFileCell categoryFileCell;
 	
 	
-	protected DataCube dataCube = null;
+	protected DataCubeList dataCube = null;
 	protected HashMap<String, String> lemmaEquivalences = null;
 	protected HashMap<String, Vector<String>> subLemmas = null;
 	protected HashSet<String> allLemmas = null;

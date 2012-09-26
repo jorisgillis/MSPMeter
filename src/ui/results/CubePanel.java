@@ -33,7 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import msp.data.DataCube;
+import msp.data.DataCubeList;
 
 /**
  * Panel displaying all kinds of information about a DataCube.
@@ -119,7 +119,7 @@ public class CubePanel extends JPanel {
 	 * Introduces a new DataCube to the panel. All information will be updated.
 	 * @param cube	the new cube
 	 */
-	public void refresh( DataCube cube ) {
+	public void refresh( DataCubeList cube ) {
 		if( cube != null ) {
 			// Size
 			size.setText(""+cube.numberOfTokens());

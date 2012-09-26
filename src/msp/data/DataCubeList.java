@@ -937,27 +937,27 @@ public class DataCubeList {
 	 */
 	public MSPResult MSP(boolean weighting, boolean entropy) {
 		// Storing the results
-		MSPSpan[] result = new MSPSpan[cube.size()];
+		MSPTriple[] result = new MSPTriple[cube.size()];
 
 		if (!weighting && !entropy) {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] =
-					new MSPSpan(mspVarietyUnweighted(cube.get(i)),
+					new MSPTriple(mspVarietyUnweighted(cube.get(i)),
 								spanIndex.get(i).getSpan());
 		} else if (weighting && !entropy) {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] =
-					new MSPSpan(mspVarietyWeighted(cube.get(i)),
+					new MSPTriple(mspVarietyWeighted(cube.get(i)),
 								spanIndex.get(i).getSpan());
 		} else if (!weighting && entropy) {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] =
-					new MSPSpan(mspEntropyUnweighted(cube.get(i)),
+					new MSPTriple(mspEntropyUnweighted(cube.get(i)),
 								spanIndex.get(i).getSpan());
 		} else {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] =
-					new MSPSpan(mspEntropyWeighted(cube.get(i)),
+					new MSPTriple(mspEntropyWeighted(cube.get(i)),
 								spanIndex.get(i).getSpan());
 		}
 		
@@ -981,7 +981,7 @@ public class DataCubeList {
 								 int numberOfSamplesMode,
 								 double numberOfSamples) {
 		// Making space for the result and the samples
-		MSPSpan[] result = new MSPSpan[spanIndex.size()];
+		MSPTriple[] result = new MSPTriple[spanIndex.size()];
 		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(
 			spanIndex.size());
 
@@ -1041,7 +1041,7 @@ public class DataCubeList {
 					stddev = Math.sqrt(variance);
 				}
 
-				result[i] = new MSPSpan(average, stddev,
+				result[i] = new MSPTriple(average, stddev,
 										spanIndex.get(i).getSpan());
 			}
 		} else if (subSampleMode == 1) {
@@ -1057,7 +1057,7 @@ public class DataCubeList {
 			List<DataCubeKey> keys = constructKeyList();
 			
 			// Run through the samples, calculating the MSPs
-			MSPSpan[][] msps = new MSPSpan[B][];
+			MSPTriple[][] msps = new MSPTriple[B][];
 			boolean overSampled = N < subSampleSize;
 			
 			for (int j = 0; j < B; j++)
@@ -1090,7 +1090,7 @@ public class DataCubeList {
 					for (int j = 0; j < msps.length; j++) {
 						boolean found = false;
 						for (int k = 0; !found && k < msps[j].length; k++)
-							if (msps[j][k].getSpan().equals(span)) {
+							if (msps[j][k].getDataset().equals(span)) {
 								if (msps[j][k].getMSP() > 0) {
 									avg += msps[j][k].getMSP();
 									sampleMSPs.get(i).add(msps[j][k].getMSP());
@@ -1107,7 +1107,7 @@ public class DataCubeList {
 					for (int j = 0; j < B; j++) {
 						boolean found = false;
 						for (int k = 0; !found && k < msps[j].length; k++)
-							if (msps[j][k].getSpan().equals(span)) {
+							if (msps[j][k].getDataset().equals(span)) {
 								variance += Math.pow(msps[j][k].getMSP() - avg,
 													 2);
 								found = true;
@@ -1121,7 +1121,7 @@ public class DataCubeList {
 					sampleMSPs.add(new ArrayList<Double>());
 
 				// Adding to the results
-				result[i] = new MSPSpan(avg, stddev, span);
+				result[i] = new MSPTriple(avg, stddev, span);
 			}
 		}
 
@@ -1178,7 +1178,7 @@ public class DataCubeList {
 				numberOfSamples(S, N, numberOfSamplesMode, numberOfSamples);
 		
 		// Making room for the results and the sample values
-		MSPSpan[] result = new MSPSpan[cube.size()];
+		MSPTriple[] result = new MSPTriple[cube.size()];
 		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(cube.size());
 		for (int i = 0; i < cube.size(); i++)
 			sampleMSPs.add(new ArrayList<Double>());
@@ -1203,7 +1203,7 @@ public class DataCubeList {
 				sample.cumulate();
 				
 				// Compute MSP
-				MSPSpan[] values = sample.MSP(weighting, entropy).getResults();
+				MSPTriple[] values = sample.MSP(weighting, entropy).getResults();
 				
 				// Storing the MSP values
 				for (int j = 0; j < values.length; j++)
@@ -1238,13 +1238,13 @@ public class DataCubeList {
 					stddev = Math.sqrt(variance);
 				}
 				
-				result[i] = new MSPSpan(average, stddev, spanIndex.get(i).getSpan());
+				result[i] = new MSPTriple(average, stddev, spanIndex.get(i).getSpan());
 			}
 		} else {
 			// Oversampled: thus making empty result datastructures
 			// a. Results
 			for (int i = 0; i < B; i++)
-				result[i] = new MSPSpan(0, 0, "" + (i + 1));
+				result[i] = new MSPTriple(0, 0, "" + (i + 1));
 
 			// b. Sample values
 			for (int i = 0; i < B; i++)

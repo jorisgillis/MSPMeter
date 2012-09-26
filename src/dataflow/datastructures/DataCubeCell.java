@@ -21,7 +21,7 @@
 
 package dataflow.datastructures;
 
-import msp.data.DataCube;
+import msp.data.DataCubeList;
 
 /**
  * Infrastructure for a cell containing a DataCube.
@@ -30,13 +30,13 @@ import msp.data.DataCube;
 public abstract class DataCubeCell extends DefaultCell {
 	
 	/** The cube! */
-	protected DataCube cube = null;
+	protected DataCubeList cube = null;
 	
 	/**
 	 * Returns the cube contained in this cell.
 	 * @return	the cube
 	 */
-	public DataCube getCube() {
+	public DataCubeList getCube() {
 		return cube;
 	}
 }
