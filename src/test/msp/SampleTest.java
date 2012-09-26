@@ -25,7 +25,7 @@ package test.msp;
 import java.io.File;
 import java.util.Vector;
 
-import msp.data.DataCube;
+import msp.data.DataCubeHash;
 import msp.data.DataFaultException;
 import ui.panels.file.FileRow;
 
@@ -42,7 +42,7 @@ public class SampleTest {
 		new SampleTest();
 	}
 	
-	private DataCube cube;
+	private DataCubeHash cube;
 	
 	/**
 	 * The constructor constructs some datacubes and runs the tests.
@@ -129,7 +129,7 @@ public class SampleTest {
 		double start = System.nanoTime();
 		
 		// Sample!
-		cube.resampleAlternate(S, xMode, X);
+		cube.resample(S, xMode, X);
 		
 		// Stop the clock
 		double end = System.nanoTime();
@@ -141,7 +141,7 @@ public class SampleTest {
 	 * Constructs the cube, and fill it up with Brown's data.
 	 */
 	private void constructCube() {
-		cube = new DataCube();
+		cube = new DataCubeHash();
 		
 		Vector<FileRow> files = new Vector<FileRow>();
 		files.add(new FileRow(1, new File("../../Data/Brown/verbs/adam01.kwa.frq.cex"), "1"));

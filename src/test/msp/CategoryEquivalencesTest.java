@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 
-import msp.data.DataCube;
+import msp.data.DataCubeHash;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,8 +38,8 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class CategoryEquivalencesTest {
 	
-	private DataCube dc;
-	private DataCube result;
+	private DataCubeHash dc;
+	private DataCubeHash result;
 	private HashMap<String, HashMap<String, String>> categoryEquivalences;
 	
 	/**
@@ -48,7 +48,7 @@ public class CategoryEquivalencesTest {
 	 * @param result				end
 	 * @param categoryEquivalences	equivalences
 	 */
-	public CategoryEquivalencesTest( DataCube dc, DataCube result, HashMap<String, HashMap<String, String>> categoryEquivalences ) {
+	public CategoryEquivalencesTest( DataCubeHash dc, DataCubeHash result, HashMap<String, HashMap<String, String>> categoryEquivalences ) {
 		this.dc = dc;
 		this.result = result;
 		this.categoryEquivalences = categoryEquivalences;
@@ -153,13 +153,13 @@ public class CategoryEquivalencesTest {
 		
 		
 		// assembly
-		DataCube dc = new DataCube();
+		DataCubeHash dc = new DataCubeHash();
 		dc.setCategories(categories);
 		dc.setCube(cube);
 		dc.setLemmas(lemmas);
 		dc.setTime(time);
 		
-		DataCube result = new DataCube();
+		DataCubeHash result = new DataCubeHash();
 		result.setCategories(resultCategories);
 		result.setCube(resultCube);
 		result.setLemmas(lemmas);

@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 
-import msp.data.DataCube;
+import msp.data.DataCubeHash;
 import msp.data.ImpossibleCalculationException;
 import msp.data.MSPTriple;
 
@@ -46,8 +46,8 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class LemmaEquivalencesTest {
 	
-	private DataCube dc;
-	private DataCube result;
+	private DataCubeHash dc;
+	private DataCubeHash result;
 	private HashMap<String, String> lemmaEquivalences;
 	
 	
@@ -57,7 +57,7 @@ public class LemmaEquivalencesTest {
 	 * @param result	end
 	 * @param lemmaEquivalences	the equivalences
 	 */
-	public LemmaEquivalencesTest( DataCube dc, DataCube result, HashMap<String, String> lemmaEquivalences ) {
+	public LemmaEquivalencesTest( DataCubeHash dc, DataCubeHash result, HashMap<String, String> lemmaEquivalences ) {
 		this.dc = dc;
 		this.result = result;
 		this.lemmaEquivalences = lemmaEquivalences;
@@ -77,7 +77,7 @@ public class LemmaEquivalencesTest {
 	@Test
 	public void invariance1() {
 		try {
-			DataCube clone = dc.copy();
+			DataCubeHash clone = dc.copy();
 			dc.lemmaEquivalences(lemmaEquivalences);
 			assertTrue(clone.equals(dc));
 		} catch( Exception e ) {
@@ -179,13 +179,13 @@ public class LemmaEquivalencesTest {
 		resultCube.get("0;02").get("hebben").put("inf", new Integer(1));
 		
 		// assembling the cubes
-		DataCube dc = new DataCube();
+		DataCubeHash dc = new DataCubeHash();
 		dc.setCube(cube);
 		dc.setTime(time);
 		dc.setLemmas(lemmas);
 		dc.setCategories(categories);
 		
-		DataCube result = new DataCube();
+		DataCubeHash result = new DataCubeHash();
 		result.setCube(resultCube);
 		result.setTime(time);
 		result.setLemmas(resultLemmas);

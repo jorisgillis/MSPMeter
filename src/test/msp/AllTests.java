@@ -27,6 +27,10 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({DataCubeTest.class,DataCubeTestFrequency.class,CumulationAndResamplingTest.class,
-	LemmaEquivalencesTest.class,CategoryEquivalencesTest.class})
+@SuiteClasses({DataCubeTest.class,
+				DataCubeTestFrequency.class,
+				AccumulationAndResamplingTest.class,
+				CumulationAndResamplingTest.class,
+				LemmaEquivalencesTest.class,
+				CategoryEquivalencesTest.class})
 public class AllTests {}

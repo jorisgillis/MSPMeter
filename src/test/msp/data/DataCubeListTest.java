@@ -4,20 +4,22 @@
  */
 package test.msp.data;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.ArrayList;
 import java.util.List;
+
 import junit.framework.Assert;
 import msp.data.DataCubeList;
 import msp.data.LemmaIndex;
 import msp.data.MSPResult;
-import msp.data.MSPSpan;
+import msp.data.MSPTriple;
 import msp.data.SpanIndex;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
@@ -64,7 +66,7 @@ public class DataCubeListTest {
 	public void mspUnweightedVarietyTest() {
 		// Compute and get the values
 		MSPResult result = cube.MSP(false, false);
-		MSPSpan[] values = result.getResults();
+		MSPTriple[] values = result.getResults();
 		
 		// Compare
 		for (int i = 0; i < values.length; i++)
@@ -81,7 +83,7 @@ public class DataCubeListTest {
 	public void mspWeightedVarietyTest() {
 		// Compute and get the values
 		MSPResult result = cube.MSP(true, false);
-		MSPSpan[] values = result.getResults();
+		MSPTriple[] values = result.getResults();
 		
 		// Compare
 		for (int i = 0; i < values.length; i++)
@@ -98,7 +100,7 @@ public class DataCubeListTest {
 	public void mspUnweightedEntropyTest() {
 		// Compute and get the values
 		MSPResult result = cube.MSP(false, true);
-		MSPSpan[] values = result.getResults();
+		MSPTriple[] values = result.getResults();
 		
 		// Compare
 		for (int i = 0; i < values.length; i++)
@@ -115,7 +117,7 @@ public class DataCubeListTest {
 	public void mspWeightedEntropyTest() {
 		// Compute and get the values
 		MSPResult result = cube.MSP(true, true);
-		MSPSpan[] values = result.getResults();
+		MSPTriple[] values = result.getResults();
 		
 		// Compare
 		for (int i = 0; i < values.length; i++)

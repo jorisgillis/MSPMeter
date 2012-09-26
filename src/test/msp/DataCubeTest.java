@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 
-import msp.data.DataCube;
+import msp.data.DataCubeHash;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +43,7 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class DataCubeTest {
 	
-	private DataCube dataCube;
+	private DataCubeHash dataCube;
 	private Vector<Double> results1;
 	private Vector<Double> results2;
 	private Vector<Double> results3;
@@ -83,7 +83,7 @@ public class DataCubeTest {
 		this.numTokensRC = numTokensRC;
 		this.numTokensCR = numTokensCR;
 		
-		dataCube = new DataCube();
+		dataCube = new DataCubeHash();
 		dataCube.setCategories(categories);
 		dataCube.setCube(cube);
 		dataCube.setLemmas(lemmas);

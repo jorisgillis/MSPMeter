@@ -22,18 +22,19 @@
 
 package test.msp;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 
-import msp.data.DataCube;
+import msp.data.DataCubeHash;
 import msp.data.ImpossibleCalculationException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import static org.junit.Assert.*;
 
 /**
  * Test the n (absolute frequency) function.
@@ -42,7 +43,7 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public class DataCubeTestFrequency {
 	
-	private DataCube dc;
+	private DataCubeHash dc;
 	private double n1, n2, n3, n4;
 	private double f1, f2, f3, f4;
 	private double fc1;
@@ -58,7 +59,7 @@ public class DataCubeTestFrequency {
 	 * @param n3	Solution to the third test of n
 	 * @param n4	Solution to the fourth test of n
 	 */
-	public DataCubeTestFrequency( DataCube dc, 
+	public DataCubeTestFrequency( DataCubeHash dc, 
 			double n1, double n2, double n3, double n4,
 			double f1, double f2, double f3, double f4, double fc1,
 			double o1, double o2, double o3, double o4, double o5, double o6, double o7,
@@ -425,7 +426,7 @@ public class DataCubeTestFrequency {
 		Vector<Object[]> c = new Vector<Object[]>();
 		
 		// 1. 
-		DataCube dC1 = new DataCube();
+		DataCubeHash dC1 = new DataCubeHash();
 		
 		Vector<String> time = new Vector<String>();
 		Vector<String> lemmas = new Vector<String>();
