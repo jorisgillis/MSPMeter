@@ -87,10 +87,10 @@ public class DCHashAccumulationAndResamplingTest {
 		DataCubeHash[] resampled = dataCube.resample(6, 0, 1.0);
 		assertTrue(resampled != null);
 		
-		System.out.println(dataCube);
-		
-		for( int i = 0; i < resampled.length; i++ )
-			System.out.println(resampled[i]);
+//		System.out.println(dataCube);
+//		
+//		for( int i = 0; i < resampled.length; i++ )
+//			System.out.println(resampled[i]);
 	}
 	
 	
