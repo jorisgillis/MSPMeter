@@ -1230,10 +1230,10 @@ public class DataCubeList {
 				DataCubeList sample = sample(S, curKeys);
 				
 				// Cumulate
-				sample.cumulate();
+				DataCubeList cumulSample = sample.cumulate();
 				
 				// Compute MSP
-				MSPTriple[] values = sample.MSP(weighting, entropy)
+				MSPTriple[] values = cumulSample.MSP(weighting, entropy)
 						.getResults();
 				
 				// Storing the MSP values
