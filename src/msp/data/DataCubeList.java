@@ -41,10 +41,14 @@ public class DataCubeList {
 	 * List of objects listening to our progress.
 	 */
 	protected List<ProgressListener> progressListener;
+	
+	//- The base of the logarithm (and exponential).
+	private double logBase			= 2;
+	private double log10LogBase		= Math.log10(2);
+	
 	//- Everywhere the same!
-	private double logBase = Math.log10(2);
-	private static String newLine = System.getProperty("line.separator");
-	private static Logger logger = Logger.getLogger(DataCubeList.class);
+	private static String newLine 	= System.getProperty("line.separator");
+	private static Logger logger 	= Logger.getLogger(DataCubeList.class);
 
 	//==========================================================================
 	// Construction
@@ -475,10 +479,11 @@ public class DataCubeList {
 	
 	/**
 	 * Sets the new base of the logarithm to be used.
-	 * @param logBase	logarithm base
+	 * @param logBase	base of the logarithm
 	 */
 	public void setLogBase(int logBase) {
-		this.logBase = Math.log(logBase);
+		this.logBase		= logBase;
+		this.log10LogBase	= Math.log(logBase);
 	}
 
 	/**
@@ -1349,7 +1354,7 @@ public class DataCubeList {
 		double entropy = 0;
 		for (Integer i : lemma) {
 			double freq = ((double)i) / tokensInLemma;
-			entropy += freq * (Math.log10(freq) / logBase);
+			entropy += freq * (Math.log10(freq) / log10LogBase);
 		}
 
 		return entropy * -1;
