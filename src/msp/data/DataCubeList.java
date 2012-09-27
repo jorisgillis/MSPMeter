@@ -1309,7 +1309,7 @@ public class DataCubeList {
 		
 		if (span.size() > 0) {
 			for (List<Integer> lemma : span)
-				msp += Math.pow(2, lemmaEntropy(lemma));
+				msp += Math.pow(logBase, lemmaEntropy(lemma));
 
 			msp /= span.size();
 		}
@@ -1332,7 +1332,7 @@ public class DataCubeList {
 				double tokensInLemma = tokensInLemma(lemma);
 
 				// b. MSP
-				msp += tokensInLemma * Math.pow(2, lemmaEntropy(lemma));
+				msp += tokensInLemma * Math.pow(logBase, lemmaEntropy(lemma));
 			}
 
 			msp /= totalTokensInSpan(span);
