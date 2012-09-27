@@ -1170,8 +1170,6 @@ public class DataCubeList {
 						keys);
 				
 				// Draw sample
-				List<SpanIndex> sampleIndex = new ArrayList<SpanIndex>(
-						spanIndex);
 				DataCubeList sample = sample(subSampleSize, curKeys);
 				
 				// Compute MSP
@@ -1179,7 +1177,6 @@ public class DataCubeList {
 			}
 		
 		// Calculate the averages and standard deviations of each span
-		sampleMSPs = new ArrayList<List<Double>>(cube.size());
 		for (int i = 0; i < cube.size(); i++) {
 			// Averaging
 			String span = spanIndex.get(i).getSpan();
