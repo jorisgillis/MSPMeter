@@ -60,7 +60,7 @@ public class DataCubeList {
 	 * List of span indices, keeps track of the order in the spans, lemmas and
 	 * categories.
 	 */
-	protected List<SpanIndex>			spanIndex;
+	protected CubeIndex					cubeIndex;
 	/**
 	 * List of objects listening to our progress.
 	 */
@@ -82,7 +82,7 @@ public class DataCubeList {
 	 */
 	public DataCubeList() {
 		cube = new ArrayList<List<List<Integer>>>();
-		spanIndex = new LinkedList<SpanIndex>();
+		cubeIndex = new CubeIndex();
 		progressListener = new LinkedList<ProgressListener>();
 	}
 	
@@ -118,7 +118,7 @@ public class DataCubeList {
 			
 			// - Setting up the cube and axises
 			cube = new ArrayList<List<List<Integer>>>();
-			spanIndex = new ArrayList<SpanIndex>();
+			cubeIndex = new CubeIndex();
 			
 			// - running through the list of files
 			for (int i = 0; i < files.size(); i++) {
@@ -170,33 +170,33 @@ public class DataCubeList {
 							// - Entering it in the cube
 							// a. Span
 							String span = fr.getDataSet();
-							if (!containsSpan(span)) {
+							if (!cubeIndex.containsSpan(span)) {
 								// Adding span to index and cube
-								spanIndex.add(new SpanIndex(span));
+								cubeIndex.add(new SpanIndex(span));
 								cube.add(new ArrayList<List<Integer>>());
 							}
-							int spanPos = getSpanPosition(span);
+							int spanPos = cubeIndex.getSpanPosition(span);
 							
 							// b. Lemma
-							if (!spanIndex.get(spanPos).containsLemma(lemma)) {
-								spanIndex.get(spanPos).addLemmaIndex(
+							if (!cubeIndex.get(spanPos).containsLemma(lemma)) {
+								cubeIndex.get(spanPos).addLemmaIndex(
 										new LemmaIndex(lemma));
 								cube.get(spanPos).add(new ArrayList<Integer>());
 							}
-							int lemmaPos = spanIndex.get(spanPos)
+							int lemmaPos = cubeIndex.get(spanPos)
 									.getLemmaPosition(lemma);
 							
 							// c. Category
-							if (!spanIndex.get(spanPos).getLemma(lemmaPos)
+							if (!cubeIndex.get(spanPos).getLemma(lemmaPos)
 									.containsCategory(category)) {
 								// install
-								spanIndex.get(spanPos).getLemma(lemmaPos)
+								cubeIndex.get(spanPos).getLemma(lemmaPos)
 										.addCategory(category);
 								cube.get(spanPos).get(lemmaPos)
 										.add(new Integer(frequency));
 							} else {
 								// update
-								int categoryPos = spanIndex.get(spanPos)
+								int categoryPos = cubeIndex.get(spanPos)
 										.getLemma(lemmaPos)
 										.getCategoryPosition(category);
 								Integer x = cube.get(spanPos).get(lemmaPos)
@@ -222,72 +222,7 @@ public class DataCubeList {
 		}
 	}
 	
-	/**
-	 * Checks whether this cube has a certain span.
-	 * 
-	 * @param span span to search for
-	 * @return found?
-	 */
-	protected boolean containsSpan(String span) {
-		return containsSpan(span, spanIndex);
-	}
 	
-	/**
-	 * Checks whether the given span exists in the given index.
-	 * 
-	 * @param span the span
-	 * @param index the index
-	 * @return span in index?
-	 */
-	protected boolean containsSpan(String span, List<SpanIndex> index) {
-		for (SpanIndex si : index)
-			if (si.getSpan().equals(span))
-				return true;
-		return false;
-	}
-	
-	/**
-	 * Returns the position of the given span
-	 * 
-	 * @param span span
-	 * @return position of the span
-	 * @throws NoSuchSpanException if the span is not in the cube
-	 */
-	protected int getSpanPosition(String span) throws NoSuchSpanException {
-		return getSpanPosition(span, spanIndex);
-	}
-	
-	/**
-	 * Returns the position of the given span in the given index.
-	 * 
-	 * @param span span
-	 * @param index index
-	 * @return position of the span in the index or exception
-	 * @throws NoSuchSpanException
-	 */
-	protected
-			int
-			getSpanPosition(String span, List<SpanIndex> index)
-																throws NoSuchSpanException {
-		int pos = -1;
-		
-		// Iterate through list of span indices
-		Iterator<SpanIndex> it = index.iterator();
-		int count = 0;
-		while (it.hasNext()) {
-			if (it.next().getSpan().equals(span)) {
-				pos = count;
-				break;
-			}
-			count++;
-		}
-		
-		// If the span is not found: throw exception
-		if (pos == -1)
-			throw new NoSuchSpanException();
-		
-		return pos;
-	}
 	
 	/**
 	 * Constructs a new datacube by applying the given lemma equivalences to the
@@ -306,7 +241,7 @@ public class DataCubeList {
 		for (int i = 0; i < dc.cube.size(); i++) {
 			// Span & Index
 			List<List<Integer>> span = dc.cube.get(i);
-			SpanIndex si = dc.spanIndex.get(i);
+			SpanIndex si = dc.cubeIndex.get(i);
 			
 			// Check each equivalence
 			for (String l2 : lemmaEquivalences.keySet()) {
@@ -385,21 +320,18 @@ public class DataCubeList {
 	 * @param lemmaEquivalences lemma equivalences
 	 * @return
 	 */
-	public
-			DataCubeList
-			categoryEquivalences(
-									HashMap<String, HashMap<String, String>> categoryEquivalences,
-									boolean useInMSP,
-									HashMap<String, String> lemmaEquivalences) {
+	public DataCubeList categoryEquivalences(
+				HashMap<String, HashMap<String, String>> categoryEquivalences,
+				boolean useInMSP,
+				HashMap<String, String> lemmaEquivalences) {
 		// Creating the new cube and index
 		List<List<List<Integer>>> newCube = new ArrayList<List<List<Integer>>>();
-		List<SpanIndex> newSpanIndex = new ArrayList<SpanIndex>(
-				spanIndex.size());
+		CubeIndex newSpanIndex = new CubeIndex();
 		
 		// Copying the spans and creating space for storing the new spans
-		for (int i = 0; i < spanIndex.size(); i++) {
+		for (int i = 0; i < cubeIndex.size(); i++) {
 			newCube.add(new ArrayList<List<Integer>>());
-			newSpanIndex.add(new SpanIndex(spanIndex.get(i).getSpan()));
+			newSpanIndex.add(new SpanIndex(cubeIndex.get(i).getSpan()));
 		}
 		
 		// Go through the spans and lemmas
@@ -408,7 +340,7 @@ public class DataCubeList {
 			List<List<Integer>> curSpan = cube.get(i);
 			
 			// Index of the current span
-			SpanIndex si = spanIndex.get(i);
+			SpanIndex si = cubeIndex.get(i);
 			SpanIndex newSI = newSpanIndex.get(i);
 			
 			// Go through the lemmas
@@ -483,13 +415,11 @@ public class DataCubeList {
 	 * @param subCategories for each lemma and for each category an empty list
 	 * @param allCategories set of all the categories in each lemma
 	 */
-	public
-			void
-			loadSubAllCategories(
-									HashMap<String, HashMap<String, String>> categoryEquivalences,
-									HashMap<String, HashMap<String, Vector<String>>> subCategories,
-									HashMap<String, HashSet<String>> allCategories) {
-		for (SpanIndex si : spanIndex)
+	public void loadSubAllCategories(
+				HashMap<String, HashMap<String, String>> categoryEquivalences,
+				HashMap<String, HashMap<String, Vector<String>>> subCategories,
+				HashMap<String, HashSet<String>> allCategories) {
+		for (SpanIndex si : cubeIndex)
 			for (LemmaIndex li : si.getLemmas()) {
 				// This is the current lemma
 				String lemma = li.getLemma();
@@ -535,8 +465,8 @@ public class DataCubeList {
 		DataCubeList newCube = new DataCubeList();
 		
 		// Copy data
-		newCube.cube = new ArrayList<List<List<Integer>>>(cube.size());
-		newCube.spanIndex = new ArrayList<SpanIndex>(spanIndex.size());
+		newCube.cube		= new ArrayList<List<List<Integer>>>(cube.size());
+		newCube.cubeIndex	= new CubeIndex();
 		for (int i = 0; i < cube.size(); i++) {
 			// Recreate span
 			newCube.cube.add(new ArrayList<List<Integer>>(cube.get(i).size()));
@@ -551,8 +481,8 @@ public class DataCubeList {
 			}
 			
 			// Copy SpanIndex
-			SpanIndex si = spanIndex.get(i);
-			newCube.spanIndex.add(new SpanIndex(si.getSpan(), si.getLemmas()));
+			SpanIndex si = cubeIndex.get(i);
+			newCube.cubeIndex.add(new SpanIndex(si.getSpan(), si.getLemmas()));
 		}
 		
 		return newCube;
@@ -570,10 +500,10 @@ public class DataCubeList {
 		// Contents of the new cube
 		List<List<List<Integer>>> newCube = new ArrayList<List<List<Integer>>>(
 				cube.size());
-		List<SpanIndex> newIndex = new ArrayList<SpanIndex>(spanIndex.size());
+		CubeIndex newIndex = new CubeIndex();
 		
 		// Creating spans
-		for (SpanIndex si : spanIndex) {
+		for (SpanIndex si : cubeIndex) {
 			newCube.add(new ArrayList<List<Integer>>(si.getLemmas().size()));
 			newIndex.add(new SpanIndex(si.getSpan()));
 		}
@@ -586,7 +516,7 @@ public class DataCubeList {
 		for (int i = 0; i < cube.size(); i++) {
 			// The current values
 			List<List<Integer>> curSpan = cube.get(i);
-			SpanIndex si = spanIndex.get(i);
+			SpanIndex si = cubeIndex.get(i);
 			
 			// For self and all successors
 			for (int j = i; j < cube.size(); j++) {
@@ -731,7 +661,7 @@ public class DataCubeList {
 				
 				// Storing the sampled cube
 				samples[i].setCube(cube);
-				samples[i].setSpanIndex(new ArrayList<SpanIndex>(spanIndex));
+				samples[i].setSpanIndex(new CubeIndex(cubeIndex));
 			}
 		}
 		
@@ -747,11 +677,11 @@ public class DataCubeList {
 		// Construct a list of all (span, lemma, category) triples
 		ArrayList<DataCubeKey> keyList = new ArrayList<DataCubeKey>();
 		for (int i = 0; i < cube.size(); i++) {
-			String span = spanIndex.get(i).getSpan();
+			String span = cubeIndex.get(i).getSpan();
 			for (int j = 0; j < cube.get(i).size(); j++) {
-				String lemma = spanIndex.get(i).getLemma(j).getLemma();
+				String lemma = cubeIndex.get(i).getLemma(j).getLemma();
 				for (int k = 0; k < cube.get(i).get(j).size(); k++) {
-					String cat = spanIndex.get(i).getLemma(j).getCategories()
+					String cat = cubeIndex.get(i).getLemma(j).getCategories()
 							.get(k);
 					DataCubeKey key = new DataCubeKey(span, lemma, cat, 1);
 					for (int m = 0; m < cube.get(i).get(j).get(k); m++)
@@ -772,7 +702,7 @@ public class DataCubeList {
 	private DataCubeList sample(int S, ArrayList<DataCubeKey> curKeyList) {
 		// Creating space for cube and temporary index
 		List<List<List<Integer>>> cube = new ArrayList<List<List<Integer>>>();
-		List<SpanIndex> index = new ArrayList<SpanIndex>();
+		CubeIndex index = new CubeIndex();
 		
 		// Select elements at random
 		for (int j = 0; j < S; j++) {
@@ -783,14 +713,14 @@ public class DataCubeList {
 			
 			// Adding to the cube
 			// a. Span
-			if (!containsSpan(key.getMonth(), index)) {
+			if (!index.containsSpan(key.getMonth())) {
 				index.add(new SpanIndex(key.getMonth()));
 				cube.add(new ArrayList<List<Integer>>());
 			}
 			
 			int spanPos = 0;
 			try {
-				spanPos = getSpanPosition(key.getMonth(), index);
+				spanPos = index.getSpanPosition(key.getMonth());
 			} catch (NoSuchSpanException e) {
 				// Either just added, or it was present
 			}
@@ -830,13 +760,13 @@ public class DataCubeList {
 		
 		// Sorting the spans and adding missing spans
 		List<List<List<Integer>>> sortedCube = new ArrayList<List<List<Integer>>>(
-				spanIndex.size());
-		List<SpanIndex> sortedIndex = new ArrayList<SpanIndex>(spanIndex.size());
+				cubeIndex.size());
+		CubeIndex sortedIndex = new CubeIndex();
 		try {
-			for (SpanIndex si : spanIndex) {
-				if (containsSpan(si.getSpan(), index)) {
+			for (SpanIndex si : cubeIndex) {
+				if (index.containsSpan(si.getSpan())) {
 					// Span present: put in place
-					int spanPos = getSpanPosition(si.getSpan(), index);
+					int spanPos = index.getSpanPosition(si.getSpan());
 					sortedCube.add(cube.get(spanPos));
 					sortedIndex.add(index.get(spanPos));
 				} else {
@@ -1000,19 +930,19 @@ public class DataCubeList {
 		if (!weighting && !entropy) {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] = new MSPTriple(mspVarietyUnweighted(cube.get(i)),
-						spanIndex.get(i).getSpan());
+						cubeIndex.get(i).getSpan());
 		} else if (weighting && !entropy) {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] = new MSPTriple(mspVarietyWeighted(cube.get(i)),
-						spanIndex.get(i).getSpan());
+						cubeIndex.get(i).getSpan());
 		} else if (!weighting && entropy) {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] = new MSPTriple(mspEntropyUnweighted(cube.get(i)),
-						spanIndex.get(i).getSpan());
+						cubeIndex.get(i).getSpan());
 		} else {
 			for (int i = 0; i < cube.size(); i++)
 				result[i] = new MSPTriple(mspEntropyWeighted(cube.get(i)),
-						spanIndex.get(i).getSpan());
+						cubeIndex.get(i).getSpan());
 		}
 		
 		return new MSPResult(result, null);
@@ -1037,9 +967,9 @@ public class DataCubeList {
 									int numberOfSamplesMode,
 									double numberOfSamples) {
 		// Making space for the result and the samples
-		MSPTriple[] result = new MSPTriple[spanIndex.size()];
+		MSPTriple[] result = new MSPTriple[cubeIndex.size()];
 		List<List<Double>> sampleMSPs = new ArrayList<List<Double>>(
-				spanIndex.size());
+				cubeIndex.size());
 		
 		// Depending on the sampling mode
 		if (subSampleMode == 0) {
@@ -1076,10 +1006,10 @@ public class DataCubeList {
 		//   Resample the span
 		//   Compute the msp for each sample
 		//   Compute the average and standard deviation
-		for (int i = 0; i < spanIndex.size(); i++) {
+		for (int i = 0; i < cubeIndex.size(); i++) {
 			// Sampling
 			List<List<List<Integer>>> samples = resample(cube.get(i),
-					spanIndex.get(i), subSampleSize, numberOfSamplesMode,
+					cubeIndex.get(i), subSampleSize, numberOfSamplesMode,
 					numberOfSamples);
 			
 			// Compute MSPs
@@ -1127,7 +1057,7 @@ public class DataCubeList {
 				stddev = Math.sqrt(variance);
 			}
 			
-			result[i] = new MSPTriple(average, stddev, spanIndex.get(i)
+			result[i] = new MSPTriple(average, stddev, cubeIndex.get(i)
 					.getSpan());
 		}
 	}
@@ -1179,7 +1109,7 @@ public class DataCubeList {
 		// Calculate the averages and standard deviations of each span
 		for (int i = 0; i < cube.size(); i++) {
 			// Averaging
-			String span = spanIndex.get(i).getSpan();
+			String span = cubeIndex.get(i).getSpan();
 			double avg = 0.0;
 			double stddev = 0.0;
 			int count = 0;
@@ -1295,8 +1225,6 @@ public class DataCubeList {
 			// Compute MSP
 			for (int i = 0; i < B; i++) {
 				// Draw sample
-				List<SpanIndex> sampleIndex = new ArrayList<SpanIndex>(
-						spanIndex);
 				ArrayList<DataCubeKey> curKeys = new ArrayList<DataCubeKey>(
 						keys);
 				DataCubeList sample = sample(S, curKeys);
@@ -1341,7 +1269,7 @@ public class DataCubeList {
 					stddev = Math.sqrt(variance);
 				}
 				
-				result[i] = new MSPTriple(average, stddev, spanIndex.get(i)
+				result[i] = new MSPTriple(average, stddev, cubeIndex.get(i)
 						.getSpan());
 			}
 		} else {
@@ -1507,8 +1435,8 @@ public class DataCubeList {
 	 * 
 	 * @param spanIndex
 	 */
-	public void setSpanIndex(List<SpanIndex> spanIndex) {
-		this.spanIndex = spanIndex;
+	public void setSpanIndex(CubeIndex spanIndex) {
+		this.cubeIndex = spanIndex;
 	}
 	
 	// ==========================================================================
@@ -1554,7 +1482,7 @@ public class DataCubeList {
 	 */
 	public int numberOfTokens(String spanName) {
 		try {
-			int pos = getSpanPosition(spanName);
+			int pos = cubeIndex.getSpanPosition(spanName);
 			return numberOfTokens(cube.get(pos));
 		} catch (NoSuchSpanException e) {
 			logger.error("Span not found: " + spanName);
@@ -1570,10 +1498,10 @@ public class DataCubeList {
 	 */
 	public int numberOfLemmas(String span) {
 		int numberOfLemmas = 0;
-		if (containsSpan(span))
+		if (cubeIndex.containsSpan(span))
 			try {
-				int pos = getSpanPosition(span);
-				numberOfLemmas = spanIndex.get(pos).getLemmas().size();
+				int pos = cubeIndex.getSpanPosition(span);
+				numberOfLemmas = cubeIndex.get(pos).getLemmas().size();
 			} catch (NoSuchSpanException e) {
 				logger.error("Span not found: " + span);
 			}
@@ -1622,7 +1550,7 @@ public class DataCubeList {
 	public Vector<String> getDataSets() {
 		Vector<String> spans = new Vector<String>();
 		
-		for (SpanIndex si : spanIndex)
+		for (SpanIndex si : cubeIndex)
 			spans.add(si.getSpan());
 		
 		return spans;
@@ -1636,7 +1564,7 @@ public class DataCubeList {
 	public Vector<String> getLemmas() {
 		HashSet<String> lemmas = new HashSet<String>();
 		
-		for (SpanIndex si : spanIndex)
+		for (SpanIndex si : cubeIndex)
 			for (LemmaIndex li : si.getLemmas())
 				lemmas.add(li.getLemma());
 		
@@ -1654,7 +1582,7 @@ public class DataCubeList {
 		HashSet<String> cats = new HashSet<String>();
 		
 		try {
-			for (SpanIndex si : spanIndex) {
+			for (SpanIndex si : cubeIndex) {
 				if (si.containsLemma(lemma)) {
 					int lemmaPos = si.getLemmaPosition(lemma);
 					for (String cat : si.getLemma(lemmaPos).getCategories())
@@ -1684,7 +1612,7 @@ public class DataCubeList {
 			DataCubeList cube2 = (DataCubeList) o;
 			
 			return equalCubes(cube, cube2.cube)
-					&& equalIndices(spanIndex, cube2.spanIndex);
+					&& cubeIndex.equals(cube2.cubeIndex);
 		} else
 			// Of different types: non-equal!
 			return false;
@@ -1734,61 +1662,6 @@ public class DataCubeList {
 	}
 	
 	/**
-	 * Test whether the given span indices are equal.
-	 * 
-	 * @param spanIndices1 span index 1
-	 * @param spanIndices2 span index 2
-	 * @return equal?
-	 */
-	protected boolean equalIndices(
-									List<SpanIndex> spanIndices1,
-									List<SpanIndex> spanIndices2) {
-		// 1. Same number of spans?
-		if (spanIndices1.size() != spanIndices2.size())
-			return false;
-		
-		// 2. Compare the spans:
-		for (int i = 0; i < spanIndices1.size(); i++) {
-			SpanIndex si1 = spanIndices1.get(i);
-			SpanIndex si2 = spanIndices2.get(i);
-			
-			// 3. Same name?
-			if (!si1.getSpan().equals(si2.getSpan()))
-				return false;
-			
-			// 4. Same number of lemmas?
-			List<LemmaIndex> lemmas1 = si1.getLemmas();
-			List<LemmaIndex> lemmas2 = si2.getLemmas();
-			if (lemmas1.size() != lemmas2.size())
-				return false;
-			
-			// 5. Compare the lemmas
-			for (int j = 0; j < lemmas1.size(); j++) {
-				LemmaIndex li1 = lemmas1.get(j);
-				LemmaIndex li2 = lemmas2.get(j);
-				
-				// 6. Same name?
-				if (!li1.getLemma().equals(li2.getLemma()))
-					return false;
-				
-				// 7. Same number of categories?
-				List<String> cats1 = li1.getCategories();
-				List<String> cats2 = li2.getCategories();
-				if (cats1.size() != cats2.size())
-					return false;
-				
-				// 8. Compare categories
-				for (int k = 0; k < cats1.size(); k++)
-					if (!cats1.get(k).equals(cats2.get(k)))
-						return false;
-			}
-		}
-		
-		// Checked everything and got here: all ok
-		return true;
-	}
-	
-	/**
 	 * Creates a String representation of this cube.
 	 * 
 	 * @return String representation
@@ -1797,7 +1670,7 @@ public class DataCubeList {
 	public String toString() {
 		String s = "";
 		for (int i = 0; i < cube.size(); i++)
-			s += convertSpan(cube.get(i), spanIndex.get(i));
+			s += convertSpan(cube.get(i), cubeIndex.get(i));
 		return s;
 	}
 	

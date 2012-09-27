@@ -126,4 +126,24 @@ public class LemmaIndex {
 			throw new NoSuchCategoryException();
 		return pos;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof LemmaIndex) {
+			// Convert
+			LemmaIndex li = (LemmaIndex)o;
+			
+			// Compare
+			boolean equal = lemma.equals(li.lemma) &&
+					categories.size() == li.categories.size();
+			for (int i = 0; equal && i < categories.size(); i++)
+				equal = categories.get(i).equals(li.categories.get(i));
+			return equal;
+		} else
+			return false;
+	}
 }

@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import junit.framework.Assert;
+import msp.data.CubeIndex;
 import msp.data.DataCubeList;
 import msp.data.LemmaIndex;
 import msp.data.MSPResult;
@@ -74,7 +75,7 @@ public class DataCubeListTest {
 	 * @param allSampleSize		size of the sample in all datasets sampling
 	 */
 	public DataCubeListTest(List<List<List<Integer>>> cubicle,
-							List<SpanIndex> spanIndex,
+							CubeIndex spanIndex,
 							List<Double> unweightedVariety,
 							List<Double> weightedVariety,
 							List<Double> unweightedEntropy,
@@ -370,11 +371,11 @@ public class DataCubeListTest {
 		cubicle.add(new ArrayList<List<Integer>>());
 		cumCube.add(new ArrayList<List<Integer>>());
 		
-		List<SpanIndex> spanIndex = new LinkedList<SpanIndex>();
+		CubeIndex spanIndex = new CubeIndex();
 		SpanIndex si = new SpanIndex("0;01");
 		spanIndex.add(si);
 		
-		List<SpanIndex> cumIndex  = new LinkedList<SpanIndex>();
+		CubeIndex cumIndex  = new CubeIndex();
 		SpanIndex cSI = new SpanIndex("0;01"); 
 		cumIndex.add(cSI);
 		
@@ -446,12 +447,12 @@ public class DataCubeListTest {
 		cumCube.add(new ArrayList<List<Integer>>());
 		cumCube.add(new ArrayList<List<Integer>>());
 		
-		spanIndex = new ArrayList<SpanIndex>(3);
+		spanIndex = new CubeIndex();
 		spanIndex.add(new SpanIndex("0;01"));
 		spanIndex.add(new SpanIndex("0;02"));
 		spanIndex.add(new SpanIndex("0;03"));
 		
-		cumIndex = new ArrayList<SpanIndex>(3);
+		cumIndex = new CubeIndex();
 		cumIndex.add(new SpanIndex("0;01"));
 		cumIndex.add(new SpanIndex("0;02"));
 		cumIndex.add(new SpanIndex("0;03"));

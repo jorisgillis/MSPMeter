@@ -26,9 +26,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+
+import msp.data.CubeIndex;
 import msp.data.DataCubeList;
 import msp.data.LemmaIndex;
 import msp.data.SpanIndex;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -116,7 +119,7 @@ public class DCListLemmaEquivalencesListTest {
 		cubicleIn.get(1).get(1).add(1);	// 1pp
 		cubicleIn.get(1).get(1).add(1);	// inf
 		
-		List<SpanIndex> spanIndexIn = new LinkedList<SpanIndex>();
+		CubeIndex spanIndexIn = new CubeIndex();
 		spanIndexIn.add(new SpanIndex("0;01"));
 		spanIndexIn.add(new SpanIndex("0;02"));
 		
@@ -164,7 +167,7 @@ public class DCListLemmaEquivalencesListTest {
 		cubicleOut.get(1).get(1).add(1);	// 1pp
 		cubicleOut.get(1).get(1).add(1);	// inf
 
-		List<SpanIndex> spanIndexOut = new ArrayList<SpanIndex>();
+		CubeIndex spanIndexOut = new CubeIndex();
 		spanIndexOut.add(new SpanIndex("0;01"));
 		spanIndexOut.add(new SpanIndex("0;02"));
 		
@@ -192,7 +195,7 @@ public class DCListLemmaEquivalencesListTest {
 		
 		//- 1.
 		cubicleIn	= new ArrayList<List<List<Integer>>>();
-		spanIndexIn	= new ArrayList<SpanIndex>();
+		spanIndexIn	= new CubeIndex();
 		
 		cubicleIn.add(new ArrayList<List<Integer>>());
 		spanIndexIn.add(new SpanIndex("0;01"));
@@ -220,7 +223,7 @@ public class DCListLemmaEquivalencesListTest {
 		equivalences.put("mee#doen", "doen");
 		
 		cubicleOut		= new ArrayList<List<List<Integer>>>();
-		spanIndexOut	= new ArrayList<SpanIndex>();
+		spanIndexOut	= new CubeIndex();
 		
 		cubicleOut.add(new ArrayList<List<Integer>>());
 		spanIndexOut.add(new SpanIndex("0;01"));

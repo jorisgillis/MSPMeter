@@ -21,8 +21,10 @@
 
 package test.msp;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import msp.data.CubeIndex;
 import msp.data.DataCubeList;
 import msp.data.LemmaIndex;
 import msp.data.SpanIndex;
@@ -39,7 +41,7 @@ public class DCListSampleTest {
 	public static void main(String[] args) {
 		// Constructing a cube
 		List<List<List<Integer>>> cube = new ArrayList<List<List<Integer>>>();
-		List<SpanIndex> index = new ArrayList<SpanIndex>();
+		CubeIndex index = new CubeIndex();
 		
 		cube.add(new ArrayList<List<Integer>>());
 		cube.add(new ArrayList<List<Integer>>());

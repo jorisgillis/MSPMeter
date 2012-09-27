@@ -176,4 +176,24 @@ public class SpanIndex {
 
 		return pos;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof SpanIndex) {
+			// Convert
+			SpanIndex si = (SpanIndex)o;
+			
+			// Compare
+			boolean equal = span.equals(si.span) && 
+					lemmas.size() == si.lemmas.size();
+			for (int i = 0; equal && i < lemmas.size(); i++)
+				equal = lemmas.get(i).equals(si.lemmas.get(i));
+			return equal;
+		} else
+			return false;
+	}
 }

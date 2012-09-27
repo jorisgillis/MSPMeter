@@ -21,14 +21,17 @@
 
 package test.msp;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.ArrayList;
 import java.util.List;
+
+import msp.data.CubeIndex;
 import msp.data.DataCubeList;
 import msp.data.LemmaIndex;
 import msp.data.SpanIndex;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,7 +89,7 @@ public class DCListCategoryEquivalencesTest {
 
 		//- 0.
 		List<List<List<Integer>>> cube = new ArrayList<List<List<Integer>>>(2);
-		List<SpanIndex> index = new ArrayList<SpanIndex>();
+		CubeIndex index = new CubeIndex();
 
 		cube.add(new ArrayList<List<Integer>>(2));
 		cube.add(new ArrayList<List<Integer>>(2));
@@ -134,7 +137,7 @@ public class DCListCategoryEquivalencesTest {
 		dc.setSpanIndex(index);
 
 		cube = new ArrayList<List<List<Integer>>>();
-		index = new ArrayList<SpanIndex>();
+		index = new CubeIndex();
 		
 		cube.add(new ArrayList<List<Integer>>());
 		cube.add(new ArrayList<List<Integer>>());
@@ -190,7 +193,7 @@ public class DCListCategoryEquivalencesTest {
 		
 		//- 1.
 		cube = new ArrayList<List<List<Integer>>>();
-		index = new ArrayList<SpanIndex>();
+		index = new CubeIndex();
 		
 		cube.add(new ArrayList<List<Integer>>());
 		cube.add(new ArrayList<List<Integer>>());
