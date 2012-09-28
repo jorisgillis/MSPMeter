@@ -706,7 +706,7 @@ public class DataCubeList {
 		CubeIndex index = new CubeIndex();
 		CubeIndex sortedIndex = null;
 		
-		if (S < curKeyList.size()) {
+		if (S <= curKeyList.size()) {
 			// Keeping track of chosen tokens
 			boolean[] chosen = new boolean[curKeyList.size()];
 			
@@ -818,7 +818,7 @@ public class DataCubeList {
 	 * @param si index of the span
 	 * @return key list
 	 */
-	protected List<SpanKey> constructSpanKeyList(
+	private List<SpanKey> constructSpanKeyList(
 													List<List<Integer>> span,
 													SpanIndex si) {
 		// Make room
@@ -851,7 +851,7 @@ public class DataCubeList {
 	 * @param keys lemma-category pairs
 	 * @return a sample of size S
 	 */
-	protected List<List<Integer>> sampleSpan(int S, List<SpanKey> keys) {
+	private List<List<Integer>> sampleSpan(int S, List<SpanKey> keys) {
 		// Making room
 		List<List<Integer>> sample = new ArrayList<List<Integer>>(S);
 		SpanIndex si = new SpanIndex("tmp");
