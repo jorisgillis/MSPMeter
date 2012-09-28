@@ -788,52 +788,6 @@ public class DataCubeList {
 	}
 	
 	/**
-	 * Takes a number of samples of the given span based on the provided
-	 * parameters.
-	 * 
-	 * @param span span to sample
-	 * @param sampleSize number of tokens per sample
-	 * @param numSamplesMode number of samples mode: 0 = resampling factor, 1 =
-	 *            fixed value
-	 * @param numSamples number of samples
-	 * @return
-	 */
-	public List<List<List<Integer>>> resample(
-												List<List<Integer>> span,
-												SpanIndex si,
-												int sampleSize,
-												int numSamplesMode,
-												double numSamples) {
-		// 1. Compute the number of samples
-		int N = numberOfTokens(span);
-		int B = 1;
-		if (numSamplesMode == 0)
-			B = (int) Math.ceil(N * numSamples / sampleSize);
-		else
-			B = (int) Math.ceil(numSamples);
-		
-		// 2. Construct the key list
-		List<SpanKey> keys = constructSpanKeyList(span, si);
-		
-		// 3. Sample
-		// Making room for the samples
-		List<List<List<Integer>>> samples = new ArrayList<List<List<Integer>>>(
-				B);
-		for (int i = 0; i < B; i++) {
-			// Copy key list
-			List<SpanKey> curKeys = new ArrayList<SpanKey>(keys);
-			
-			// Draw sample
-			if (curKeys.size() < sampleSize)
-				samples.add(null);
-			else
-				samples.add(sampleSpan(sampleSize, curKeys));
-		}
-		
-		return samples;
-	}
-	
-	/**
 	 * Constructs a list of lemma-category pairs.
 	 * 
 	 * @param span span to construct key list for
@@ -1008,36 +962,38 @@ public class DataCubeList {
 		//   Compute the average and standard deviation
 		for (int i = 0; i < cubeIndex.size(); i++) {
 			// Sampling
-			List<List<List<Integer>>> samples = resample(cube.get(i),
-					cubeIndex.get(i), subSampleSize, numberOfSamplesMode,
-					numberOfSamples);
+//			List<List<List<Integer>>> samples = resample(cube.get(i),
+//					cubeIndex.get(i), subSampleSize, numberOfSamplesMode,
+//					numberOfSamples);
 			
-			// Compute MSPs
-			sampleMSPs.add(new ArrayList<Double>(samples.size()));
-			if (!weighting && !entropy) {
-				// Unweighted Variety
-				for (int j = 0; j < samples.size(); j++)
-					if (samples.get(j) != null)
-						sampleMSPs.get(i).add(
-								mspVarietyUnweighted(samples.get(j)));
-			} else if (weighting && !entropy) {
-				// Weighted Variety
-				for (int j = 0; j < samples.size(); j++)
-					if (samples.get(j) != null)
-						sampleMSPs.get(i).add(
-								mspVarietyWeighted(samples.get(j)));
-			} else if (!weighting && entropy) {
-				// Unweighted Entropy
-				for (int j = 0; j < samples.size(); j++)
-					if (samples.get(j) != null)
-						sampleMSPs.get(i).add(
-								mspEntropyUnweighted(samples.get(j)));
-			} else if (weighting && entropy) {
-				// Weighted Entropy
-				for (int j = 0; j < samples.size(); j++)
-					if (samples.get(j) != null)
-						sampleMSPs.get(i).add(
-								mspEntropyWeighted(samples.get(j)));
+			// 1. Compute the number of samples
+			List<List<Integer>> span = cube.get(i);
+			int N = numberOfTokens(span);
+			int B = 1;
+			if (numberOfSamplesMode == 0)
+				B = (int) Math.ceil(N * numberOfSamples / subSampleSize);
+			else
+				B = (int) Math.ceil(numberOfSamples);
+			
+			// Construct key list
+			List<SpanKey> keys = constructSpanKeyList(span, cubeIndex.get(i));
+			
+			// 2. Sample and Compute MSPs
+			sampleMSPs.add(new ArrayList<Double>(B));
+			for (int j = 0; j < B; j++) {
+				// Sample
+				List<SpanKey> curKeys = new ArrayList<SpanKey>(keys);
+				List<List<Integer>> sample = sampleSpan(subSampleSize, curKeys);
+				
+				// Compute MSP
+				if (!weighting && !entropy)
+					sampleMSPs.get(i).add(mspVarietyUnweighted(sample));
+				else if (weighting && !entropy)
+					sampleMSPs.get(i).add(mspVarietyWeighted(sample));
+				else if (!weighting && entropy)
+					sampleMSPs.get(i).add(mspEntropyUnweighted(sample));
+				else
+					sampleMSPs.get(i).add(mspEntropyWeighted(sample));
 			}
 			
 			// Compute the average and deviation
