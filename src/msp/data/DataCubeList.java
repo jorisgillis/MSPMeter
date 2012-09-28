@@ -622,8 +622,8 @@ public class DataCubeList {
 				ArrayList<DataCubeKey> curKeyList = new ArrayList<DataCubeKey>(
 						keyList);
 				
-				// Take a sampe
-				samples[i] = sample(S, curKeyList);
+				// Take a sample
+				samples[i] = sampleCube(S, curKeyList);
 				
 				// // Spans need to be ordered in the same way as the original
 				// cube
@@ -692,91 +692,115 @@ public class DataCubeList {
 		return keyList;
 	}
 	
+	
 	/**
-	 * Takes a sample from the this cube.
-	 * 
+	 * Takes a sample from the this cube.  Note: do not oversample!
 	 * @param S number of elements
 	 * @param curKeyList the current list of keys
 	 * @return a new cube: sampling of the cube with ALL SPANS in order!
 	 */
-	private DataCubeList sample(int S, ArrayList<DataCubeKey> curKeyList) {
+	private DataCubeList sampleCube(int S, ArrayList<DataCubeKey> curKeyList) {
 		// Creating space for cube and temporary index
 		List<List<List<Integer>>> cube = new ArrayList<List<List<Integer>>>();
+		List<List<List<Integer>>> sortedCube = null;
 		CubeIndex index = new CubeIndex();
+		CubeIndex sortedIndex = null;
 		
-		// Select elements at random
-		for (int j = 0; j < S; j++) {
-			// Selecting & Removing from curKeyList
-			int randPos = (int) (Math.random() * curKeyList.size());
-			DataCubeKey key = curKeyList.get(randPos);
-			curKeyList.remove(randPos);
+		if (S < curKeyList.size()) {
+			// Keeping track of chosen tokens
+			boolean[] chosen = new boolean[curKeyList.size()];
 			
-			// Adding to the cube
-			// a. Span
-			if (!index.containsSpan(key.getMonth())) {
-				index.add(new SpanIndex(key.getMonth()));
-				cube.add(new ArrayList<List<Integer>>());
-			}
-			
-			int spanPos = 0;
-			try {
-				spanPos = index.getSpanPosition(key.getMonth());
-			} catch (NoSuchSpanException e) {
-				// Either just added, or it was present
-			}
-			
-			// b. Lemma
-			if (!index.get(spanPos).containsLemma(key.getLemma())) {
-				index.get(spanPos)
-						.addLemmaIndex(new LemmaIndex(key.getLemma()));
-				cube.get(spanPos).add(new ArrayList<Integer>());
-			}
-			
-			int lemmaPos = 0;
-			try {
-				lemmaPos = index.get(spanPos).getLemmaPosition(key.getLemma());
-			} catch (NoSuchLemmaException e) {
-				// Either just added, or it was present
-			}
-			
-			// c. Category
-			if (!index.get(spanPos).getLemma(lemmaPos)
-					.containsCategory(key.getCategory())) {
-				// Insert
-				index.get(spanPos).getLemma(lemmaPos)
-						.addCategory(key.getCategory());
-				cube.get(spanPos).get(lemmaPos).add(1);
-			} else
-				// Update
+			// Select elements at random
+			for (int j = 0; j < S; j++) {
+				// Random position
+				int randPosOriginal = (int) (Math.random() * curKeyList.size());
+				
+				// Find free token
+				int inc = 1;
+				int randPos = randPosOriginal;
+				while (chosen[randPos]) {
+					if (randPos == chosen.length-1) {
+						// End of the array, thus we need to search for a token
+						// before randPosOriginal that is still free to be 
+						// chosen.
+						// Because there can be no oversampling, this will not
+						// go out of bounds.
+						inc = -1;
+						randPos = randPosOriginal - 1;
+					} else
+						randPos += inc;
+				}
+				
+				// Get the random token
+				chosen[randPos] = true;
+				DataCubeKey key = curKeyList.get(randPos);
+				
+				// Adding to the cube
+				// a. Span
+				if (!index.containsSpan(key.getMonth())) {
+					index.add(new SpanIndex(key.getMonth()));
+					cube.add(new ArrayList<List<Integer>>());
+				}
+				
+				int spanPos = 0;
 				try {
-					int catPos = index.get(spanPos).getLemma(lemmaPos)
-							.getCategoryPosition(key.getCategory());
-					int x = cube.get(spanPos).get(lemmaPos).get(catPos) + 1;
-					cube.get(spanPos).get(lemmaPos).set(catPos, x);
-				} catch (NoSuchCategoryException e) {
-					// Is present!
+					spanPos = index.getSpanPosition(key.getMonth());
+				} catch (NoSuchSpanException e) {
+					// Either just added, or it was present
 				}
-		}
-		
-		// Sorting the spans and adding missing spans
-		List<List<List<Integer>>> sortedCube = new ArrayList<List<List<Integer>>>(
-				cubeIndex.size());
-		CubeIndex sortedIndex = new CubeIndex();
-		try {
-			for (SpanIndex si : cubeIndex) {
-				if (index.containsSpan(si.getSpan())) {
-					// Span present: put in place
-					int spanPos = index.getSpanPosition(si.getSpan());
-					sortedCube.add(cube.get(spanPos));
-					sortedIndex.add(index.get(spanPos));
-				} else {
-					// Span not present: add empty span
-					sortedCube.add(new ArrayList<List<Integer>>());
-					sortedIndex.add(new SpanIndex(si.getSpan()));
+				
+				// b. Lemma
+				if (!index.get(spanPos).containsLemma(key.getLemma())) {
+					index.get(spanPos)
+							.addLemmaIndex(new LemmaIndex(key.getLemma()));
+					cube.get(spanPos).add(new ArrayList<Integer>());
 				}
+				
+				int lemmaPos = 0;
+				try {
+					lemmaPos = index.get(spanPos).getLemmaPosition(key.getLemma());
+				} catch (NoSuchLemmaException e) {
+					// Either just added, or it was present
+				}
+				
+				// c. Category
+				if (!index.get(spanPos).getLemma(lemmaPos)
+						.containsCategory(key.getCategory())) {
+					// Insert
+					index.get(spanPos).getLemma(lemmaPos)
+							.addCategory(key.getCategory());
+					cube.get(spanPos).get(lemmaPos).add(1);
+				} else
+					// Update
+					try {
+						int catPos = index.get(spanPos).getLemma(lemmaPos)
+								.getCategoryPosition(key.getCategory());
+						int x = cube.get(spanPos).get(lemmaPos).get(catPos) + 1;
+						cube.get(spanPos).get(lemmaPos).set(catPos, x);
+					} catch (NoSuchCategoryException e) {
+						// Is present!
+					}
 			}
-		} catch (NoSuchSpanException e) {
-			logger.error("Did not find a span that is present!");
+			
+			// Sorting the spans and adding missing spans
+			sortedCube = new ArrayList<List<List<Integer>>>(cubeIndex.size());
+			sortedIndex = new CubeIndex();
+			try {
+				for (SpanIndex si : cubeIndex) {
+					if (index.containsSpan(si.getSpan())) {
+						// Span present: put in place
+						int spanPos = index.getSpanPosition(si.getSpan());
+						sortedCube.add(cube.get(spanPos));
+						sortedIndex.add(index.get(spanPos));
+					} else {
+						// Span not present: add empty span
+						sortedCube.add(new ArrayList<List<Integer>>());
+						sortedIndex.add(new SpanIndex(si.getSpan()));
+					}
+				}
+			} catch (NoSuchSpanException e) {
+				logger.error("Did not find a span that is present!");
+			}
 		}
 		
 		// Constructing the sample cube
@@ -819,9 +843,10 @@ public class DataCubeList {
 		return keys;
 	}
 	
+	
 	/**
-	 * Draw a sample from a given list of keys of the given size S.
-	 * 
+	 * Draw a sample from a given list of keys of the given size S: Alternative
+	 * approach.
 	 * @param S size of the sample
 	 * @param keys lemma-category pairs
 	 * @return a sample of size S
@@ -831,36 +856,55 @@ public class DataCubeList {
 		List<List<Integer>> sample = new ArrayList<List<Integer>>(S);
 		SpanIndex si = new SpanIndex("tmp");
 		
-		for (int i = 0; i < S; i++) {
-			// Random lemma-category combination
-			int randPos = (int) (Math.random() * keys.size());
-			SpanKey sk = keys.get(randPos);
-			keys.remove(randPos);
-			
-			// Lemma present?
-			if (!si.containsLemma(sk.getLemma())) {
-				sample.add(new ArrayList<Integer>());
-				si.addLemmaIndex(new LemmaIndex(sk.getLemma()));
-			}
-			try {
-				int lemmaPos = si.getLemmaPosition(sk.getLemma());
-				LemmaIndex li = si.getLemma(lemmaPos);
+		// Keeping track of already sampled tokens
+		boolean[] chosen = new boolean[keys.size()];
+		
+		if (chosen.length >= S) {
+			// NO oversampling
+			for (int i = 0; i < S; i++) {
+				// Random lemma-category combination
+				int randPosOriginal = (int) (Math.random() * keys.size());
 				
-				// Category present or not?
-				if (!li.containsCategory(sk.getCategory())) {
-					// Insert
-					li.addCategory(sk.getCategory());
-					sample.get(lemmaPos).add(1);
-				} else {
-					// Update
-					int catPos = li.getCategoryPosition(sk.getCategory());
-					Integer x = sample.get(lemmaPos).get(catPos);
-					sample.get(lemmaPos).set(catPos, x + 1);
+				// Find a free token
+				int inc = 1;
+				int randPos = randPosOriginal;
+				while (chosen[randPos]) {
+					if (randPos == chosen.length-1) {
+						inc = -1;
+						randPos = randPosOriginal-1;
+					} else
+						randPos += inc;
 				}
-			} catch (NoSuchLemmaException e) {
-				logger.error("Could not find lemma that was just added.");
-			} catch (NoSuchCategoryException e) {
-				logger.error("Could not find category that was just added.");
+				
+				// Get random token
+				chosen[randPos] = true;
+				SpanKey sk = keys.get(randPos);
+				
+				// Lemma present?
+				if (!si.containsLemma(sk.getLemma())) {
+					sample.add(new ArrayList<Integer>());
+					si.addLemmaIndex(new LemmaIndex(sk.getLemma()));
+				}
+				try {
+					int lemmaPos = si.getLemmaPosition(sk.getLemma());
+					LemmaIndex li = si.getLemma(lemmaPos);
+					
+					// Category present or not?
+					if (!li.containsCategory(sk.getCategory())) {
+						// Insert
+						li.addCategory(sk.getCategory());
+						sample.get(lemmaPos).add(1);
+					} else {
+						// Update
+						int catPos = li.getCategoryPosition(sk.getCategory());
+						Integer x = sample.get(lemmaPos).get(catPos);
+						sample.get(lemmaPos).set(catPos, x + 1);
+					}
+				} catch (NoSuchLemmaException e) {
+					logger.error("Could not find lemma that was just added.");
+				} catch (NoSuchCategoryException e) {
+					logger.error("Could not find category that was just added.");
+				}
 			}
 		}
 		
@@ -962,9 +1006,6 @@ public class DataCubeList {
 		//   Compute the average and standard deviation
 		for (int i = 0; i < cubeIndex.size(); i++) {
 			// Sampling
-//			List<List<List<Integer>>> samples = resample(cube.get(i),
-//					cubeIndex.get(i), subSampleSize, numberOfSamplesMode,
-//					numberOfSamples);
 			
 			// 1. Compute the number of samples
 			List<List<Integer>> span = cube.get(i);
@@ -975,27 +1016,31 @@ public class DataCubeList {
 			else
 				B = (int) Math.ceil(numberOfSamples);
 			
-			// Construct key list
-			List<SpanKey> keys = constructSpanKeyList(span, cubeIndex.get(i));
-			
-			// 2. Sample and Compute MSPs
+			// Making room for samples
 			sampleMSPs.add(new ArrayList<Double>(B));
-			for (int j = 0; j < B; j++) {
-				// Sample
-				List<SpanKey> curKeys = new ArrayList<SpanKey>(keys);
-				List<List<Integer>> sample = sampleSpan(subSampleSize, curKeys);
-				
-				// Compute MSP
-				if (!weighting && !entropy)
-					sampleMSPs.get(i).add(mspVarietyUnweighted(sample));
-				else if (weighting && !entropy)
-					sampleMSPs.get(i).add(mspVarietyWeighted(sample));
-				else if (!weighting && entropy)
-					sampleMSPs.get(i).add(mspEntropyUnweighted(sample));
-				else
-					sampleMSPs.get(i).add(mspEntropyWeighted(sample));
-			}
 			
+			if (N >= subSampleSize) {
+				// Construct key list
+				List<SpanKey> keys = constructSpanKeyList(span, cubeIndex.get(i));
+				
+				// 2. Sample and Compute MSPs
+				for (int j = 0; j < B; j++) {
+					// Sample
+					List<List<Integer>> sample = 
+							sampleSpan(subSampleSize, keys);
+					
+					// Compute MSP
+					if (!weighting && !entropy)
+						sampleMSPs.get(i).add(mspVarietyUnweighted(sample));
+					else if (weighting && !entropy)
+						sampleMSPs.get(i).add(mspVarietyWeighted(sample));
+					else if (!weighting && entropy)
+						sampleMSPs.get(i).add(mspEntropyUnweighted(sample));
+					else
+						sampleMSPs.get(i).add(mspEntropyWeighted(sample));
+				}
+			}
+				
 			// Compute the average and deviation
 			double average = 0.0;
 			if (sampleMSPs.get(i).size() > 0) {
@@ -1041,7 +1086,7 @@ public class DataCubeList {
 				numberOfSamples);
 		
 		// Constructing the key list of this cube
-		List<DataCubeKey> keys = constructKeyList();
+		ArrayList<DataCubeKey> keys = constructKeyList();
 		
 		// Run through the samples, calculating the MSPs
 		MSPTriple[][] msps = new MSPTriple[B][];
@@ -1051,12 +1096,8 @@ public class DataCubeList {
 			if (overSampled)
 				msps[j] = null;
 			else {
-				// Copy key list
-				ArrayList<DataCubeKey> curKeys = new ArrayList<DataCubeKey>(
-						keys);
-				
 				// Draw sample
-				DataCubeList sample = sample(subSampleSize, curKeys);
+				DataCubeList sample = sampleCube(subSampleSize, keys);
 				
 				// Compute MSP
 				msps[j] = sample.MSP(weighting, entropy).getResults();
@@ -1176,14 +1217,14 @@ public class DataCubeList {
 			ArrayList<DataCubeKey> keys = constructKeyList();
 			
 			// For each sample
-			// Draw sample
-			// Cumulate
-			// Compute MSP
+			//   Draw sample
+			//   Cumulate
+			//   Compute MSP
 			for (int i = 0; i < B; i++) {
 				// Draw sample
 				ArrayList<DataCubeKey> curKeys = new ArrayList<DataCubeKey>(
 						keys);
-				DataCubeList sample = sample(S, curKeys);
+				DataCubeList sample = sampleCube(S, curKeys);
 				
 				// Cumulate
 				DataCubeList cumulSample = sample.cumulate();
