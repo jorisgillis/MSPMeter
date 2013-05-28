@@ -39,9 +39,11 @@ import dataflow.Grid;
 import dataflow.datastructures.Cell;
 import dataflow.datastructures.FirstSeparatorCell;
 import dataflow.datastructures.SecondSeparatorCell;
+import dataflow.datastructures.TerminatorCell;
 
 /**
- * This panel let's the user construct a regular expression, expressing the structure of a line.
+ * This panel let's the user construct a regular expression, expressing the 
+ * structure of a line.
  * @author Joris Gillis
  */
 @SuppressWarnings("serial")
@@ -50,18 +52,22 @@ public class LineParsingPanel extends Panel {
 	// The interface elements
 	protected JTextField firstSeparator;
 	protected JTextField secondSeparator;
+	protected JTextField terminator;
 	protected LiveLineParsingPanel preview;
 	
 	// Internal use
-	protected String[] metaChars = new String[]{"\\","(","[","{","^","$","|","-","]","}",")","?","*","+","."};
+	protected String[] metaChars = 
+			new String[]{"\\","(","[","{","^","$","|","-","]","}",")","?","*","+","."};
 	
 	// The cells
 	protected FirstSeparatorCell firstSeparatorCell;
 	protected SecondSeparatorCell secondSeparatorCell;
+	protected TerminatorCell terminatorCell;
 	
 	// The previous values, used to track changes
 	protected String prevFirstSep;
 	protected String prevSecondSep;
+	protected String prevTerminator;
 	
 	// The logger
 	private static Logger logger = Logger.getLogger(LineParsingPanel.class);
@@ -74,9 +80,11 @@ public class LineParsingPanel extends Panel {
 		//-- The cells
 		firstSeparatorCell = new FirstSeparatorCell();
 		secondSeparatorCell = new SecondSeparatorCell();
+		terminatorCell = new TerminatorCell();
 		
 		Grid.instance().addCell(firstSeparatorCell);
 		Grid.instance().addCell(secondSeparatorCell);
+		Grid.instance().addCell(terminatorCell);
 		
 		//-- Building the interface
 		setLayout(new BorderLayout());
@@ -90,15 +98,18 @@ public class LineParsingPanel extends Panel {
 		// labels
 		JLabel separator1 = new JLabel("Token indicating lemma: ");
 		JLabel separator2 = new JLabel("Token between lemma and category: ");
+		JLabel separator3 = new JLabel("Token indicating end of category: ");
 		
 		// textfields and defaults
 		try {
 			Defaults d = Defaults.instance();
 			firstSeparator = new JTextField(d.getString("firstSeparator"), 15);
 			secondSeparator = new JTextField(d.getString("secondSeparator"), 15);
+			terminator = new JTextField(d.getString("terminator"), 15);
 			
 			prevFirstSep = escapeString(firstSeparator.getText());
 			prevSecondSep = escapeString(secondSeparator.getText());
+			prevTerminator = escapeString(terminator.getText());
 		} catch( Exception e ) {
 			logger.error("Error on defaulting: "+ e.getMessage());
 			showWarning("Defaults not loaded.");
@@ -112,6 +123,10 @@ public class LineParsingPanel extends Panel {
 		mainPanel.add( separator2, c );
 		c.gridx = 1;
 		mainPanel.add( secondSeparator, c );
+		c.gridx = 0; c.gridy = 2;
+		mainPanel.add( separator3, c );
+		c.gridx = 1;
+		mainPanel.add( terminator, c );
 		
 		// adding it to the panel
 		add( mainPanel, BorderLayout.NORTH );
@@ -136,10 +151,12 @@ public class LineParsingPanel extends Panel {
 		// getting in from the textfield
 		String firstSep = firstSeparator.getText();
 		String secondSep = secondSeparator.getText();
+		String terminatorTokens = terminator.getText();
 		
 		// escaping: adding backslashes
 		firstSep = escapeString(firstSep);
 		secondSep = escapeString(secondSep);
+		terminatorTokens = escapeString(terminatorTokens);
 		
 		// sending it through
 		try {
@@ -147,14 +164,17 @@ public class LineParsingPanel extends Panel {
 				// Setting the value
 				firstSeparatorCell.setValue(firstSep);
 				secondSeparatorCell.setValue(secondSep);
+				terminatorCell.setValue(terminatorTokens);
 				
 				// Storing the value
 				prevFirstSep = firstSep;
 				prevSecondSep = secondSep;
+				prevTerminator = terminatorTokens;
 				
 				Grid.instance().cellChanged(new Cell[]{
 						firstSeparatorCell, 
-						secondSeparatorCell});
+						secondSeparatorCell,
+						terminatorCell});
 			}
 		} catch( Exception e ) {
 			showWarning(e.getMessage());
@@ -187,5 +207,13 @@ public class LineParsingPanel extends Panel {
 	 */
 	public void setSecondSeparator( String secondSeparator ) {
 		this.secondSeparator.setText(secondSeparator);
+	}
+	
+	/**
+	 * Sets the terminator.
+	 * @param terminator	new terminator tokens
+	 */
+	public void setTerminator( String terminator ) {
+		this.terminator.setText(terminator);
 	}
 }

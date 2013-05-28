@@ -56,7 +56,8 @@ public class Defaults {
 		
 		// line parsing
 		values.put("firstSeparator", "|");
-		values.put("secondSeparator", "&~-");
+		values.put("secondSeparator", "&~");
+		values.put("terminator", "");
 		
 		// output
 		values.put("lemmasmissing", "missing_lemmas.txt");

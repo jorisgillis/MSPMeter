@@ -35,6 +35,7 @@ import dataflow.datastructures.LemmadDataCubeCell;
 import dataflow.datastructures.OriginalDataCubeCell;
 import dataflow.datastructures.ResultsCell;
 import dataflow.datastructures.SecondSeparatorCell;
+import dataflow.datastructures.TerminatorCell;
 import dataflow.datastructures.VersionCell;
 import dataflow.datastructures.WorkingDataCubeCell;
 
@@ -78,10 +79,12 @@ public class Architect {
 		grid.setFlow("files", originalDC.getName());
 		grid.setFlow("firstSeparator", originalDC.getName());
 		grid.setFlow("secondSeparator", originalDC.getName());
+		grid.setFlow("terminator", originalDC.getName());
 		
 		grid.setFlow("files", "LiveLineParsing");
 		grid.setFlow("firstSeparator", "LiveLineParsing");
 		grid.setFlow("secondSeparator", "LiveLineParsing");
+		grid.setFlow("terminator", "LiveLineParsing");
 		
 		grid.setFlow("lemmaEquivalences", lemmadDC.getName());
 		grid.setFlow("useInMSP", lemmadDC.getName());
@@ -124,6 +127,7 @@ public class Architect {
 			// lineparsing
 			((FirstSeparatorCell)grid.getCell("firstSeparator")).setValue(d.getString("firstSeparator"));
 			((SecondSeparatorCell)grid.getCell("secondSeparator")).setValue(d.getString("secondSeparator"));
+			((TerminatorCell)grid.getCell("terminator")).setValue(d.getString("terminator"));
 			
 			// version
 			((VersionCell)grid.getCell("version")).setValue(d.getBoolean("weighting"), d.getBoolean("entropy"),

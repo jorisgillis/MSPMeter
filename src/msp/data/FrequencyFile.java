@@ -52,10 +52,13 @@ public class FrequencyFile implements Iterable<FrequencyLineParse> {
 	 * @param file				frequency file
 	 * @param firstSeparator	separates ante from lemma
 	 * @param secondSeparator	separates lemma from category
+	 * @param terminator		end of the category
 	 */
-	public FrequencyFile( File file, String firstSeparator, 
-			String secondSeparator ) throws DataFaultException {
-		processFile(file, firstSeparator, secondSeparator);
+	public FrequencyFile( File file, 
+			String firstSeparator, 
+			String secondSeparator,
+			String terminator) throws DataFaultException {
+		processFile(file, firstSeparator, secondSeparator, terminator);
 	}
 	
 	/**
@@ -63,9 +66,12 @@ public class FrequencyFile implements Iterable<FrequencyLineParse> {
 	 * @param file				file to parse
 	 * @param firstSeparator	separates ante from lemma
 	 * @param secondSeparator	separates lemma from category
+	 * @param terminator		end of the category
 	 */
-	private void processFile( File file, String firstSeparator, 
-			String secondSeparator ) throws DataFaultException {
+	private void processFile(File file, 
+			String firstSeparator, 
+			String secondSeparator,
+			String terminator) throws DataFaultException {
 		
 		if( file == null )
 			throw new DataFaultException("No file specified.");
@@ -83,6 +89,7 @@ public class FrequencyFile implements Iterable<FrequencyLineParse> {
 		 * 3. Get the largest sequence of non-first-separator tokens
 		 * 4. Get the largest sequence of non-second-separators tokens: Lemma
 		 * 5. The remainder of the line (if larger than 0): Category
+		 * 		Or if terminator is set, up to the first terminator token
 		 */
 		// Make room for the parses
 		lines = new LinkedList<FrequencyLineParse>();
@@ -94,6 +101,9 @@ public class FrequencyFile implements Iterable<FrequencyLineParse> {
 		Pattern pFreq = Pattern.compile("[0-9]+");
 		Pattern pFirst = Pattern.compile("[^"+ firstSeparator +"]*");
 		Pattern pSecond = Pattern.compile("[^"+ secondSeparator +"]+");
+		Pattern pTerminator = null;
+		if (terminator != null && !terminator.isEmpty())
+			pTerminator = Pattern.compile("["+ terminator +"]");
 		
 		try {
 			// opening the reader
@@ -134,8 +144,18 @@ public class FrequencyFile implements Iterable<FrequencyLineParse> {
 						
 						// 5. Get the category out
 						String category = "nil";
-						if( pos < line.length() )
-							category = line.substring(pos);
+						if (pos < line.length()) {
+							if (terminator != null && !terminator.isEmpty()) {
+								// Copy up to a terminator token
+								Matcher mTerminator = pTerminator.matcher(line);
+								
+								if (mTerminator.find(pos))
+									category = line.substring(pos, mTerminator.start());
+								else
+									category = line.substring(pos);
+							} else
+								category = line.substring(pos);
+						}
 						
 						lines.add(new FrequencyLineParse(frequency, 
 															ante, 

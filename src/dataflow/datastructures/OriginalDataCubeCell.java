@@ -43,6 +43,8 @@ public class OriginalDataCubeCell extends DataCubeCell {
 	private String firstSeparator = null;
 	/** Tokens between lemma and category */
 	private String secondSeparator = null;
+	/** Tokens indicating the end of the category */
+	private String terminator = null;
 	
 	/*
 	 * (non-Javadoc)
@@ -76,13 +78,15 @@ public class OriginalDataCubeCell extends DataCubeCell {
 				firstSeparator = ((FirstSeparatorCell)grid.getCell(cellName)).getValue();
 			else if( cellName.equals("secondSeparator") )
 				secondSeparator = ((SecondSeparatorCell)grid.getCell(cellName)).getValue();
+			else if( cellName.equals("terminator") )
+				terminator = ((TerminatorCell)grid.getCell(cellName)).getValue();
 		}
 		
 		// Recalculate?
 		if( files != null && firstSeparator != null && secondSeparator != null ) {
 			// New DataCube
 			cube = new DataCubeList();
-			cube.fillCube(files, firstSeparator, secondSeparator);
+			cube.fillCube(files, firstSeparator, secondSeparator, terminator);
 		}
 	}
 	

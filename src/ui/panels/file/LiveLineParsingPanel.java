@@ -44,6 +44,7 @@ import dataflow.datastructures.Cell;
 import dataflow.datastructures.FilesCell;
 import dataflow.datastructures.FirstSeparatorCell;
 import dataflow.datastructures.SecondSeparatorCell;
+import dataflow.datastructures.TerminatorCell;
 
 /**
  * A panel showing a table with the result of the line parsing.
@@ -63,6 +64,8 @@ public class LiveLineParsingPanel extends JPanel implements Cell {
 	protected String firstSeparator;
 	/** The second separator separates the lemma from the category */
 	protected String secondSeparator;
+	/** The tokens terminating the category */
+	protected String terminator;
 	
 	// Logger
 	private static Logger logger = Logger.getLogger(LiveLineParsingPanel.class);
@@ -109,6 +112,8 @@ public class LiveLineParsingPanel extends JPanel implements Cell {
 			else if( cellName == "secondSeparator" )
 				secondSeparator = 
 					((SecondSeparatorCell)grid.getCell("secondSeparator")).getValue();
+			else if ( cellName == "terminator" )
+				terminator = ((TerminatorCell)grid.getCell("terminator")).getValue();
 		}
 		
 		// Update the table
@@ -119,13 +124,15 @@ public class LiveLineParsingPanel extends JPanel implements Cell {
 	 * Updates the table with the values at hand.
 	 */
 	protected void updateTable() {
-		if( files != null && firstSeparator != null && secondSeparator != null ) {
+		if( files != null && firstSeparator != null && secondSeparator != null 
+				&& terminator != null ) {
 			try {
 				LinkedList<ParseRow> rows = new LinkedList<ParseRow>();
 				for( FileRow fr : files ) {
 					FrequencyFile fFile = new FrequencyFile(fr.getFile(), 
 															firstSeparator, 
-															secondSeparator);
+															secondSeparator,
+															terminator);
 					
 					for( FrequencyLineParse parse : fFile ) {
 						ParseRow pr = new ParseRow();

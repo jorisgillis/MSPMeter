@@ -90,15 +90,16 @@ public class DataCubeList {
 	 * Reads a list of files into this datacube. Files with the same annotation
 	 * are placed within the same span.
 	 * 
-	 * @param files list of files
-	 * @param firstSeparator start of lemma
-	 * @param secondSeparator start of category
+	 * @param files				list of files
+	 * @param firstSeparator	start of lemma
+	 * @param secondSeparator	end of lemma/start of category
+	 * @param terminator		end of category
 	 * @throws DataFaultException
 	 */
-	public void fillCube(
-							Vector<FileRow> files,
+	public void fillCube(Vector<FileRow> files,
 							String firstSeparator,
-							String secondSeparator) throws DataFaultException {
+							String secondSeparator,
+							String terminator) throws DataFaultException {
 		/*
 		 * For each line in each file: 1. Remove leading and trailing
 		 * whitespaces. 2. Get the integer at the front: Frequency 3. Get the
@@ -115,6 +116,9 @@ public class DataCubeList {
 			Pattern pFreq = Pattern.compile("[0-9]+");
 			Pattern pFirst = Pattern.compile("[^" + firstSeparator + "]*");
 			Pattern pSecond = Pattern.compile("[^" + secondSeparator + "]+");
+			Pattern pTerminator = null;
+			if (terminator != null && !terminator.isEmpty())
+				pTerminator = Pattern.compile("["+ terminator +"]");
 			
 			// - Setting up the cube and axises
 			cube = new ArrayList<List<List<Integer>>>();
@@ -164,8 +168,18 @@ public class DataCubeList {
 							
 							// 5. Get the category out
 							String category = "nil";
-							if (pos < line.length())
-								category = line.substring(pos);
+							if (pos < line.length()) {
+								if (terminator != null && !terminator.isEmpty()) {
+									// Copy up to a terminator token
+									Matcher mTerminator = pTerminator.matcher(line);
+									
+									if (mTerminator.find(pos))
+										category = line.substring(pos, mTerminator.start());
+									else
+										category = line.substring(pos);
+								} else
+									category = line.substring(pos);
+							}
 							
 							// - Entering it in the cube
 							// a. Span
