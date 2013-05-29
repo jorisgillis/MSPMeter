@@ -160,7 +160,9 @@ public class LineParsingPanel extends Panel {
 		
 		// sending it through
 		try {
-			if( !(prevFirstSep.equals(firstSep) && prevSecondSep.equals(secondSep)) ) {
+			if( !(prevFirstSep.equals(firstSep) 
+					&& prevSecondSep.equals(secondSep)
+					&& prevTerminator.equals(terminatorTokens)) ) {
 				// Setting the value
 				firstSeparatorCell.setValue(firstSep);
 				secondSeparatorCell.setValue(secondSep);

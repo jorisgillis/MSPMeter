@@ -117,8 +117,10 @@ public class DataCubeList {
 			Pattern pFirst = Pattern.compile("[^" + firstSeparator + "]*");
 			Pattern pSecond = Pattern.compile("[^" + secondSeparator + "]+");
 			Pattern pTerminator = null;
-			if (terminator != null && !terminator.isEmpty())
+			if (terminator != null && !terminator.isEmpty()) {
 				pTerminator = Pattern.compile("["+ terminator +"]");
+				logger.debug("Terminator: ["+ terminator +"]");
+			}
 			
 			// - Setting up the cube and axises
 			cube = new ArrayList<List<List<Integer>>>();
